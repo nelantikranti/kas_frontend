@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import AuthGuard from "@/components/AuthGuard";
 
 export const metadata: Metadata = {
   title: "KAS CRM - Elevator Management System",
@@ -32,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <AuthGuard>{children}</AuthGuard>
+        {children}
       </body>
     </html>
   );
