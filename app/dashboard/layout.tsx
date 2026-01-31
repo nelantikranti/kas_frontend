@@ -49,7 +49,15 @@ export default function DashboardLayout({
     }
     
     // Verify token with backend and refresh user data
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    // Clean up the URL - fix common typos
+    apiUrl = apiUrl.trim().replace(/\/+$/, '');
+    // Fix http// or https// to http:// or https://
+    apiUrl = apiUrl.replace(/^http\/\//, 'http://').replace(/^https\/\//, 'https://');
+    // Ensure it starts with http:// or https://
+    if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+      apiUrl = `http://${apiUrl}`;
+    }
     fetch(`${apiUrl}/auth/verify`, {
         method: "POST",
         headers: {

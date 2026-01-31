@@ -103,6 +103,20 @@ export default function Navigation() {
               </Link>
             </div>
 
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? (
+                  <IoClose className="w-6 h-6" />
+                ) : (
+                  <IoMenu className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Mobile Menu */}
@@ -162,13 +176,6 @@ export default function Navigation() {
                   }`}
                 >
                   Contact
-                </Link>
-                <Link
-                  href="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-3 bg-gradient-to-r from-white to-white text-gray-900 rounded-lg font-semibold hover:from-gray-100 hover:to-gray-100 transition-all duration-300 text-center shadow-md mt-2"
-                >
-                  Login
                 </Link>
               </div>
             </div>

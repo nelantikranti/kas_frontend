@@ -1,22 +1,35 @@
 // Get API URL from environment or use default
 const getApiBaseUrl = (): string => {
   // Check for environment variable first
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl) return envUrl;
-
-  // Check if we're in browser (client-side)
-  if (typeof window !== 'undefined') {
-    // If on localhost, use local backend
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return "http://localhost:5000/api";
+  let apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (!apiUrl) {
+    // Check if we're in browser (client-side)
+    if (typeof window !== 'undefined') {
+      // If on localhost, use local backend
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        apiUrl = "http://localhost:5000/api";
+      } else {
+        // For production without env var, log warning
+        console.warn("NEXT_PUBLIC_API_URL is not set. Using default localhost. Please configure it in your environment variables.");
+        apiUrl = "http://localhost:5000/api";
+      }
+    } else {
+      // Default fallback (for server-side or when env var not set)
+      apiUrl = "http://localhost:5000/api";
     }
-
-    // For production without env var, log warning
-    console.warn("NEXT_PUBLIC_API_URL is not set. Using default localhost. Please configure it in your environment variables.");
   }
-
-  // Default fallback (for server-side or when env var not set)
-  return "http://localhost:5000/api";
+  
+  // Clean up the URL - fix common typos
+  apiUrl = apiUrl.trim().replace(/\/+$/, '');
+  // Fix http// or https// to http:// or https://
+  apiUrl = apiUrl.replace(/^http\/\//, 'http://').replace(/^https\/\//, 'https://');
+  // Ensure it starts with http:// or https://
+  if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+    apiUrl = `http://${apiUrl}`;
+  }
+  
+  return apiUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();

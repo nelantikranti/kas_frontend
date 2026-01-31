@@ -23,15 +23,19 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setError(null);
 
-    if (!formData.email || !formData.password) {
-      setError("Email and password are required");
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      let apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      // Clean up the URL - fix common typos
+      apiUrl = apiUrl.trim().replace(/\/+$/, '');
+      // Fix http// or https// to http:// or https://
+      apiUrl = apiUrl.replace(/^http\/\//, 'http://').replace(/^https\/\//, 'https://');
+      // Ensure it starts with http:// or https://
+      if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+        apiUrl = `http://${apiUrl}`;
+      }
+      const loginUrl = `${apiUrl}/auth/login`;
+      
+      const response = await fetch(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,8 +47,12 @@ export default function LoginPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to login" }));
-        setError(errorData.error || "Invalid email or password");
+        const errorData = await response.json().catch(() => ({ error: "Login failed" }));
+        if (response.status === 401) {
+          setError(errorData.error || "Invalid email or password. Please check your credentials and try again.");
+        } else {
+          setError(errorData.error || "Login failed. Please try again.");
+        }
         setIsSubmitting(false);
         return;
       }
@@ -52,23 +60,25 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.token && data.user) {
-        // Store token and user data
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        
-        // Redirect to dashboard
         router.push("/dashboard");
       } else {
-        setError("Invalid response from server");
+        setError("Login failed. Please try again.");
+        setIsSubmitting(false);
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      if (error.message?.includes("fetch") || error.message?.includes("network")) {
+      if (error.message?.includes("fetch") || 
+          error.message?.includes("network") || 
+          error.message?.includes("Failed to fetch") ||
+          error.name === "TypeError" ||
+          error.message?.includes("ERR_CONNECTION_REFUSED") ||
+          error.message?.includes("ECONNREFUSED")) {
         setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
       } else {
-        setError("Failed to login. Please try again.");
+        setError(error.message || "Login failed. Please try again.");
       }
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -98,9 +108,9 @@ export default function LoginPage() {
                   <IoLogIn className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
-                  Welcome Back
+                  Login
                 </h1>
-                <p className="text-sm sm:text-base text-gray-600">Sign in to your KAS Home Elevators CRM account</p>
+                <p className="text-sm sm:text-base text-gray-600">Welcome back to KAS Home Elevators CRM</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -163,12 +173,12 @@ export default function LoginPage() {
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Signing in...</span>
+                      <span>Logging in...</span>
                     </>
                   ) : (
                     <>
                       <IoLogIn className="w-5 h-5" />
-                      <span>Sign In</span>
+                      <span>Login</span>
                     </>
                   )}
                 </button>
@@ -194,4 +204,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
