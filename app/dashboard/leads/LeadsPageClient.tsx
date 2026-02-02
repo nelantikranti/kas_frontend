@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { leadsAPI, projectsAPI, type Lead } from "@/lib/api";
+import { leadsAPI, projectsAPI, healthAPI, type Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import ContactReportModal from "@/components/ContactReportModal";
 import { toast } from "@/components/Toast";
-import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload } from "react-icons/io5";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
+import * as XLSX from "xlsx";
 
 const stages: Lead["stage"][] = [
   "New Lead",
@@ -131,6 +132,9 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState("");
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -306,12 +310,8 @@ export default function LeadsPage() {
   useEffect(() => {
     const checkBackendConnection = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const response = await fetch(`${apiUrl}/health`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        setBackendConnected(response.ok);
+        const isConnected = await healthAPI.check();
+        setBackendConnected(isConnected);
       } catch (error) {
         setBackendConnected(false);
       }
@@ -1323,6 +1323,126 @@ NEXT ACTION:
     }
   };
 
+  const handleImportExcel = async (file: File) => {
+    setIsImporting(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+          if (jsonData.length === 0) {
+            toast.error("Excel file is empty or invalid format.");
+            setIsImporting(false);
+            return;
+          }
+
+          let successCount = 0;
+          let errorCount = 0;
+          const errors: string[] = [];
+
+          for (const row of jsonData as any[]) {
+            try {
+              // Map Excel columns to lead data - try multiple column name variations
+              const name = (row['Name'] || row['name'] || row['Name / Company'] || row['Lead Name'] || row['Customer Name'] || '').toString().trim();
+              const company = (row['Company'] || row['company'] || row['Name / Company'] || row['Organization'] || '').toString().trim();
+              
+              // Try multiple email column variations
+              let email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim();
+              
+              // Try multiple phone column variations
+              let phone = (row['Phone'] || row['phone'] || row['Phone Number'] || row['Mobile'] || row['mobile'] || row['Contact Number'] || row['Contact'] || '').toString().trim().replace(/\D/g, '');
+              
+              const source = (row['Source'] || row['source'] || 'Website').toString().trim();
+              const stage = (row['Stage'] || row['stage'] || 'New Lead').toString().trim();
+              const value = parseFloat(row['Value'] || row['value'] || row['Lead Value'] || 0) || 0;
+              const assignedTo = (row['Assigned To'] || row['assignedTo'] || row['Assigned To'] || row['Sales Person'] || 'Sales Executive 1').toString().trim();
+
+              // Validation
+              if (!name) {
+                errors.push(`Row ${successCount + errorCount + 1}: Name is required`);
+                errorCount++;
+                continue;
+              }
+
+              if (!phone || phone.length !== 10) {
+                errors.push(`Row ${successCount + errorCount + 1}: Valid 10-digit phone number is required`);
+                errorCount++;
+                continue;
+              }
+
+              // Make email optional - generate default if missing
+              if (!email || !email.includes('@')) {
+                // Generate a default email if missing
+                const sanitizedName = name.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
+                email = `${sanitizedName}@imported.lead`;
+              }
+
+              const leadData = {
+                name,
+                company: company || name,
+                email,
+                phone,
+                source: source || 'Website',
+                stage: (stage || 'New Lead') as Lead["stage"],
+                value: value * 100000, // Convert Lakhs to actual value
+                assignedTo: assignedTo || 'Sales Executive 1',
+                notes: '',
+              };
+
+              await leadsAPI.create(leadData);
+              successCount++;
+            } catch (error: any) {
+              errorCount++;
+              errors.push(`Row ${successCount + errorCount}: ${error.message || 'Failed to import'}`);
+            }
+          }
+
+          if (successCount > 0) {
+            toast.success(`Successfully imported ${successCount} lead(s)`);
+            await loadLeads(); // Reload leads
+          }
+
+          if (errorCount > 0) {
+            toast.error(`Failed to import ${errorCount} lead(s). ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`);
+          }
+
+          setIsImportModalOpen(false);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        } catch (error: any) {
+          console.error("Failed to parse Excel:", error);
+          toast.error("Failed to parse Excel file. Please check the format.");
+        } finally {
+          setIsImporting(false);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error: any) {
+      console.error("Failed to import Excel:", error);
+      toast.error("Failed to import Excel file. Please try again.");
+      setIsImporting(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        handleImportExcel(file);
+      } else {
+        toast.error("Please select a valid Excel file (.xlsx or .xls)");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    }
+  };
+
   const filteredLeads = leadList.filter(lead => {
     // Search filter
     const matchesSearch = !searchTerm ||
@@ -1387,6 +1507,24 @@ NEXT ACTION:
               className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
             />
           </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".xlsx,.xls"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={backendConnected === false || isImporting}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false || isImporting
+              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+          >
+            <IoCloudUpload className="w-4 h-4 sm:w-5 sm:h-5" />
+            {isImporting ? "Importing..." : "Import Excel"}
+          </button>
           <button
             onClick={() => setIsModalOpen(true)}
             disabled={backendConnected === false}
@@ -1549,7 +1687,7 @@ NEXT ACTION:
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Source
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1587,7 +1725,7 @@ NEXT ACTION:
                       <div className="text-xs sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-[150px]">{lead.email}</div>
                       <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[120px] sm:max-w-[150px]">{lead.phone}</div>
                     </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden lg:table-cell">
+                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {lead.source}
                     </td>
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">

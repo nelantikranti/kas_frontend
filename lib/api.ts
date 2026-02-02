@@ -471,6 +471,21 @@ export const dashboardAPI = {
   getStats: () => fetchAPI("/dashboard/stats"),
 };
 
+// Health check API
+export const healthAPI = {
+  check: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  },
+};
+
 // Notifications API
 export interface Notification {
   id: string;
