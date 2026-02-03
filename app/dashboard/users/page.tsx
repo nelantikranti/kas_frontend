@@ -278,9 +278,10 @@ export default function UsersPage() {
         }));
         setUsers(usersWithPermissions);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create user:", error);
-      toast.error("Failed to create user. Please try again.");
+      const errorMessage = error?.message || "Failed to create user. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -293,7 +294,7 @@ export default function UsersPage() {
       role: user.role,
       status: user.status,
     });
-    setSelectedPermissions(user.permissions || []);
+    setSelectedPermissions(Array.isArray(user.permissions) ? user.permissions : []);
     setEditErrors({});
     setShowPasswordField(false);
     setShowPermissionsSection(false);
@@ -327,16 +328,17 @@ export default function UsersPage() {
 
 
   const togglePermission = (permission: string) => {
-    setSelectedPermissions((prev) =>
-      prev.includes(permission)
-        ? prev.filter((p) => p !== permission)
-        : [...prev, permission]
-    );
+    setSelectedPermissions((prev) => {
+      const prevArray = Array.isArray(prev) ? prev : [];
+      return prevArray.includes(permission)
+        ? prevArray.filter((p) => p !== permission)
+        : [...prevArray, permission];
+    });
   };
 
   const handleOpenPermissions = (user: User) => {
     setPermissionsUser(user);
-    setSelectedPermissions(user.permissions || []);
+    setSelectedPermissions(Array.isArray(user.permissions) ? user.permissions : []);
     setIsPermissionsModalOpen(true);
   };
 

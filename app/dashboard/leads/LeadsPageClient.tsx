@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { leadsAPI, projectsAPI, healthAPI, type Lead } from "@/lib/api";
+import { leadsAPI, projectsAPI, healthAPI, usersAPI, type Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import ContactReportModal from "@/components/ContactReportModal";
@@ -10,7 +10,7 @@ import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera,
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
-import * as XLSX from "xlsx";
+import { isAdmin, getUserPermissions, can, PERMISSIONS } from "@/lib/permissions";
 
 const stages: Lead["stage"][] = [
   "New Lead",
@@ -135,6 +135,15 @@ export default function LeadsPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; permissions: string[] } | null>(null);
+  const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -260,8 +269,103 @@ export default function LeadsPage() {
   });
 
   useEffect(() => {
+    // Load current user from localStorage
+    const loadUser = () => {
+      if (typeof window !== 'undefined') {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            setCurrentUser({ 
+              name: userData.name, 
+              role: userData.role,
+              permissions: userData.permissions || []
+            });
+          } catch (e) {
+            console.error("Failed to parse user data");
+          }
+        }
+      }
+    };
+
+    loadUser();
     loadLeads();
+
+    // Listen for storage changes (when user logs in/out in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user') {
+        loadUser();
+        loadLeads(); // Reload leads when user changes
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
+
+  useEffect(() => {
+    if (isAssignModalOpen) {
+      const loadUsers = async () => {
+        try {
+          const fetchedUsers = await usersAPI.getAll();
+          setUsers(fetchedUsers);
+        } catch (error) {
+          console.error("Failed to load users:", error);
+          toast.error("Failed to load users");
+        }
+      };
+      loadUsers();
+    }
+  }, [isAssignModalOpen]);
+
+  const handleSelectLead = (leadId: string) => {
+    setSelectedLeadIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(leadId)) {
+        newSet.delete(leadId);
+      } else {
+        newSet.add(leadId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedLeadIds.size === filteredLeads.length) {
+      setSelectedLeadIds(new Set());
+    } else {
+      setSelectedLeadIds(new Set(filteredLeads.map(lead => lead.id || (lead as any)._id)));
+    }
+  };
+
+  const handleAssignLeads = async (userId: string, userName: string) => {
+    if (selectedLeadIds.size === 0) return;
+
+    setAssigning(true);
+    try {
+      const updates = Array.from(selectedLeadIds).map(async (leadId) => {
+        const lead = leadList.find(l => (l.id === leadId) || ((l as any)._id === leadId));
+        if (lead) {
+          await leadsAPI.update(leadId, { assignedTo: userName });
+        }
+      });
+
+      await Promise.all(updates);
+      await loadLeads();
+      setSelectedLeadIds(new Set());
+      setIsAssignModalOpen(false);
+      setUserSearchTerm("");
+      toast.success(`Successfully assigned ${selectedLeadIds.size} lead(s) to ${userName}`);
+    } catch (error) {
+      console.error("Failed to assign leads:", error);
+      toast.error("Failed to assign leads. Please try again.");
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   // Validation helper functions
   const handlePhoneChange = (value: string, setState: (val: any) => void, stateObj: any, field: string) => {
@@ -355,8 +459,6 @@ export default function LeadsPage() {
       setLoading(false);
     }
   };
-
-  const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
 
   // Define stage progression rules - Progressive unlock system
   const getAvailableStages = (currentStage: Lead["stage"]): Lead["stage"][] => {
@@ -1227,6 +1329,29 @@ NEXT ACTION:
     }
   };
 
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedLeadIds.size === 0) return;
+
+    const count = selectedLeadIds.size;
+    setDeleting(true);
+    try {
+      const deletePromises = Array.from(selectedLeadIds).map(async (leadId) => {
+        await leadsAPI.delete(leadId);
+      });
+
+      await Promise.all(deletePromises);
+      await loadLeads();
+      setSelectedLeadIds(new Set());
+      setIsBulkDeleteModalOpen(false);
+      toast.success(`Successfully deleted ${count} lead(s)`);
+    } catch (error) {
+      console.error("Failed to delete leads:", error);
+      toast.error("Failed to delete some leads. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleAddNote = async () => {
     if (!selectedLead || !newNote.trim()) return;
 
@@ -1329,6 +1454,10 @@ NEXT ACTION:
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
+          // Dynamically import xlsx only when needed (inside the callback)
+          const XLSXModule = await import("xlsx");
+          // xlsx exports as a namespace, access it directly
+          const XLSX = XLSXModule;
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -1444,6 +1573,45 @@ NEXT ACTION:
   };
 
   const filteredLeads = leadList.filter(lead => {
+    // Admin sees all leads
+    const userIsAdmin = isAdmin();
+    if (userIsAdmin) {
+      // Search filter for admin
+      const matchesSearch = !searchTerm ||
+        lead.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.phone.includes(searchTerm) ||
+        lead.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.stage.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.assignedTo.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    }
+
+    // Check if user has permission to assign leads (leads:edit or leads:create)
+    const userPermissions = currentUser?.permissions || [];
+    const canAssignLeads = can(PERMISSIONS.LEADS_EDIT, userPermissions) || 
+                          can(PERMISSIONS.LEADS_CREATE, userPermissions);
+
+    // If user has assign permission, show only unassigned leads OR leads assigned to them
+    if (canAssignLeads && currentUser) {
+      // Show unassigned leads (empty or default) OR leads assigned to current user
+      const isUnassigned = !lead.assignedTo || 
+                          lead.assignedTo === "" || 
+                          lead.assignedTo === "Sales Executive 1" || // Default unassigned value
+                          lead.assignedTo === currentUser.name;
+      
+      if (!isUnassigned) {
+        return false;
+      }
+    } else {
+      // Regular users see only leads assigned to them
+      if (!currentUser || lead.assignedTo !== currentUser.name) {
+        return false;
+      }
+    }
+
     // Search filter
     const matchesSearch = !searchTerm ||
       lead.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1560,6 +1728,32 @@ NEXT ACTION:
         </div>
       )}
 
+      {/* Assign Lead & Delete All Buttons */}
+      {selectedLeadIds.size > 0 && (
+        <div className="mb-4 flex items-center gap-3">
+          <button
+            onClick={() => setIsAssignModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+          >
+            <IoPerson className="w-4 h-4 sm:w-5 sm:h-5" />
+            Assign Lead ({selectedLeadIds.size})
+          </button>
+          <button
+            onClick={() => setIsBulkDeleteModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+          >
+            <IoCloseCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+            Delete All ({selectedLeadIds.size})
+          </button>
+          <button
+            onClick={() => setSelectedLeadIds(new Set())}
+            className="text-sm text-gray-600 hover:text-gray-800"
+          >
+            Clear Selection
+          </button>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
 
         {/* Mobile Card View */}
@@ -1569,16 +1763,26 @@ NEXT ACTION:
               {leadList.length === 0 ? "No leads yet" : "No results found"}
             </div>
           ) : (
-            filteredLeads.map((lead) => (
-              <div key={lead.id} className="p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-gray-900">{lead.id}</span>
-                      <StatusBadge status={lead.stage} />
+            filteredLeads.map((lead) => {
+              const leadId = lead.id || (lead as any)._id || "";
+              return (
+                <div key={lead.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedLeadIds.has(leadId)}
+                      onChange={() => handleSelectLead(leadId)}
+                      className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-gray-900">{lead.id}</span>
+                        <StatusBadge status={lead.stage} />
+                      </div>
+                      <p className="text-base font-medium text-gray-900 truncate">{lead.name}</p>
+                      <p className="text-sm text-gray-600 truncate">{lead.company}</p>
                     </div>
-                    <p className="text-base font-medium text-gray-900 truncate">{lead.name}</p>
-                    <p className="text-sm text-gray-600 truncate">{lead.company}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1669,7 +1873,8 @@ NEXT ACTION:
                   </div>
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -1678,6 +1883,14 @@ NEXT ACTION:
           <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedLeadIds.size > 0 && selectedLeadIds.size === filteredLeads.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Lead ID
                 </th>
@@ -1707,13 +1920,23 @@ NEXT ACTION:
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 lg:px-6 py-8 text-center text-gray-500">
+                  <td colSpan={9} className="px-4 lg:px-6 py-8 text-center text-gray-500">
                     {leadList.length === 0 ? "No leads yet" : "No results found"}
                   </td>
                 </tr>
               ) : (
-                filteredLeads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-gray-50">
+                filteredLeads.map((lead) => {
+                  const leadId = lead.id || (lead as any)._id || "";
+                  return (
+                    <tr key={lead.id} className="hover:bg-gray-50">
+                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeadIds.has(leadId)}
+                        onChange={() => handleSelectLead(leadId)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </td>
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
                       <span className="truncate block max-w-[80px] sm:max-w-none">{lead.id}</span>
                     </td>
@@ -1805,7 +2028,9 @@ NEXT ACTION:
                       </div>
                     </td>
                   </tr>
-                )))}
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -5492,6 +5717,66 @@ NEXT ACTION:
         </>
       )}
 
+      {/* Bulk Delete Confirmation Modal */}
+      <Modal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        title={`Delete ${selectedLeadIds.size} Lead(s)?`}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <svg
+                className="h-6 w-6 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Are you sure?
+            </h3>
+            <p className="text-sm text-gray-500">
+              You are about to delete <span className="font-semibold text-gray-900">{selectedLeadIds.size}</span> lead(s). This action cannot be undone.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              onClick={() => setIsBulkDeleteModalOpen(false)}
+              disabled={deleting}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBulkDeleteConfirm}
+              disabled={deleting}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {deleting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <IoCloseCircle className="w-4 h-4" />
+                  Delete All
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Contact Report Modal */}
       <ContactReportModal
         isOpen={isContactModalOpen}
@@ -5499,6 +5784,66 @@ NEXT ACTION:
         onSubmit={handleContactReportSubmit}
         leadName={leadForContact?.name}
       />
+
+      {/* Assign Lead Modal */}
+      <Modal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setUserSearchTerm("");
+        }}
+        title={`Assign ${selectedLeadIds.size} Lead(s)`}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="relative">
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={userSearchTerm}
+              onChange={(e) => setUserSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+            {users
+              .filter((user) =>
+                user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                user.role.toLowerCase().includes(userSearchTerm.toLowerCase())
+              )
+              .map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => handleAssignLeads(user.id, user.name)}
+                  disabled={assigning}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{user.name}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                      <p className="text-xs text-gray-400 mt-1">{user.role}</p>
+                    </div>
+                    {assigning && (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            {users.filter((user) =>
+              user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+              user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+              user.role.toLowerCase().includes(userSearchTerm.toLowerCase())
+            ).length === 0 && (
+              <div className="px-4 py-8 text-center text-gray-500">
+                No users found
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
 
       {/* Image/PDF Viewer Modal */}
       <Modal
