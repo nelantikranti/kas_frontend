@@ -36,12 +36,19 @@ const API_BASE_URL = getApiBaseUrl();
 
 async function fetchAPI(endpoint: string, options?: RequestInit) {
   try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem("authToken") : null;
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    };
+    
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
+      headers,
     });
 
     if (!response.ok) {

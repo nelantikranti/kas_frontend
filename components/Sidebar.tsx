@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
   // Get logged-in user from localStorage and listen for changes
   useEffect(() => {
-    const loadUserData = () => {
+    const loadUserData = async () => {
       if (typeof window !== 'undefined') {
         const userStr = localStorage.getItem("user");
         if (userStr) {
@@ -85,6 +85,27 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             const userData = JSON.parse(userStr);
             setUser(userData);
             setUserPermissions(userData.permissions || []);
+            
+            // Refresh user data from backend to get latest role
+            if (userData.id) {
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+              try {
+                const userResponse = await fetch(`${apiUrl}/users/${userData.id}`);
+                if (userResponse.ok) {
+                  const updatedUser = await userResponse.json();
+                  const updatedUserData = {
+                    ...userData,
+                    role: updatedUser.role || userData.role,
+                    permissions: updatedUser.permissions || userData.permissions || [],
+                  };
+                  setUser(updatedUserData);
+                  setUserPermissions(updatedUserData.permissions || []);
+                  localStorage.setItem("user", JSON.stringify(updatedUserData));
+                }
+              } catch (error) {
+                console.error("Failed to refresh user data:", error);
+              }
+            }
           } catch (e) {
             console.error("Failed to parse user data");
           }

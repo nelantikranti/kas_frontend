@@ -1057,7 +1057,7 @@ SALES OWNER:
                     Budget Discussion
                   </label>
                   <div className="space-y-2">
-                    {["Not Discussed", "Below ₹10L", "₹10–15L", "₹15–20L", "₹20L+"].map((budget) => (
+                    {["Not Discussed", "₹7-10L", "₹10–15L", "₹15–20L", "₹20L+"].map((budget) => (
                       <label key={budget} className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="radio"

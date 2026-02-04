@@ -147,14 +147,16 @@ export default function UsersPage() {
 
   // Get current user role to check if admin
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
   useEffect(() => {
-    // Get current user role from localStorage
+    // Get current user role and ID from localStorage
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
         setCurrentUserRole(user.role || "");
+        setCurrentUserId(user.id || "");
       } catch (e) {
         console.error("Failed to parse user data");
       }
@@ -399,6 +401,7 @@ export default function UsersPage() {
           if (currentUser.id === permissionsUser.id) {
             const updatedCurrentUser = {
               ...currentUser,
+              role: updatedUserData.role || currentUser.role,
               permissions: updatedUserData.permissions || selectedPermissions,
             };
             localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
@@ -414,7 +417,7 @@ export default function UsersPage() {
             }));
           }
         } catch (e) {
-          console.error("Failed to update current user permissions");
+          console.error("Failed to update current user data");
         }
       }
       
@@ -434,6 +437,18 @@ export default function UsersPage() {
   const handleUpdateUser = async () => {
     if (!editingUser) return;
     
+    // Only Admin can change roles
+    if (editUser.role !== editingUser.role && currentUserRole !== "Admin") {
+      toast.error("Only administrators can change user roles.");
+      return;
+    }
+    
+    // Prevent users from changing their own role
+    if (editingUser.id === currentUserId && editUser.role !== editingUser.role) {
+      toast.error("You cannot change your own role. Please contact another administrator.");
+      return;
+    }
+    
     // Validate form
     if (!validateEditForm()) {
       toast.error("Please fix the errors before submitting");
@@ -448,9 +463,14 @@ export default function UsersPage() {
       const updateData: any = {
         name: editUser.name.trim(),
         email: editUser.email.trim(),
-        role: editUser.role,
         status: editUser.status,
       };
+      
+      // Only include role if Admin is changing someone else's role
+      // Admin cannot change their own role, and non-Admins cannot change any roles
+      if (currentUserRole === "Admin" && editingUser.id !== currentUserId && editUser.role) {
+        updateData.role = editUser.role;
+      }
       
       // Only include password if it's provided
       if (showPasswordField && editUser.password) {
@@ -461,11 +481,13 @@ export default function UsersPage() {
       const updatedUser = await usersAPI.update(editingUser.id, updateData);
 
       // Update permissions
+      const token = localStorage.getItem("authToken");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const permissionsResponse = await fetch(`${apiUrl}/users/${editingUser.id}/permissions`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ permissions: selectedPermissions }),
       });
@@ -496,6 +518,7 @@ export default function UsersPage() {
           if (currentUser.id === editingUser.id) {
             const updatedCurrentUser = {
               ...currentUser,
+              role: updatedUserData.role || currentUser.role,
               permissions: updatedUserData.permissions || selectedPermissions,
             };
             localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
@@ -511,7 +534,7 @@ export default function UsersPage() {
             }));
           }
         } catch (e) {
-          console.error("Failed to update current user permissions");
+          console.error("Failed to update current user data");
         }
       }
       
@@ -1234,7 +1257,7 @@ export default function UsersPage() {
               value={editUser.role}
               onChange={(e) => setEditUser({ ...editUser, role: e.target.value as User["role"] })}
                     className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 font-medium"
-                    disabled={isUpdating}
+                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || currentUserRole !== "Admin"}
             >
                     <option value="Admin">Admin</option>
                     <option value="Sales Executive">Sales Executive</option>
@@ -1244,6 +1267,12 @@ export default function UsersPage() {
                     <option value="Technician">Technician</option>
                     <option value="Accountant">Accountant</option>
             </select>
+            {editingUser && editingUser.id === currentUserId && (
+              <p className="text-sm text-red-600 mt-1">You cannot change your own role</p>
+            )}
+            {currentUserRole !== "Admin" && (
+              <p className="text-sm text-red-600 mt-1">Only administrators can change user roles</p>
+            )}
           </div>
           <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">

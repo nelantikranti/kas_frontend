@@ -1488,7 +1488,6 @@ NEXT ACTION:
               const source = (row['Source'] || row['source'] || 'Website').toString().trim();
               const stage = (row['Stage'] || row['stage'] || 'New Lead').toString().trim();
               const value = parseFloat(row['Value'] || row['value'] || row['Lead Value'] || 0) || 0;
-              const assignedTo = (row['Assigned To'] || row['assignedTo'] || row['Assigned To'] || row['Sales Person'] || 'Sales Executive 1').toString().trim();
 
               // Validation
               if (!name) {
@@ -1510,6 +1509,18 @@ NEXT ACTION:
                 email = `${sanitizedName}@imported.lead`;
               }
 
+              // Assign imported leads based on user role
+              // If admin imports, keep leads unassigned so admin can assign them later
+              // If non-admin imports, assign to current user so they can see their imported data
+              let assignedTo: string;
+              if (isAdmin()) {
+                // Admin imports - keep unassigned so admin can assign to someone later
+                assignedTo = 'Sales Executive 1'; // Default unassigned value
+              } else {
+                // Non-admin imports - assign to current user
+                assignedTo = currentUser?.name || 'Sales Executive 1';
+              }
+
               const leadData = {
                 name,
                 company: company || name,
@@ -1518,7 +1529,7 @@ NEXT ACTION:
                 source: source || 'Website',
                 stage: (stage || 'New Lead') as Lead["stage"],
                 value: value * 100000, // Convert Lakhs to actual value
-                assignedTo: assignedTo || 'Sales Executive 1',
+                assignedTo: assignedTo,
                 notes: '',
               };
 
@@ -1573,9 +1584,10 @@ NEXT ACTION:
   };
 
   const filteredLeads = leadList.filter(lead => {
-    // Admin sees all leads
+    // Admin sees all leads (including all imported leads with assigned person's name)
     const userIsAdmin = isAdmin();
     if (userIsAdmin) {
+      // Admin can see all leads regardless of who imported or assigned them
       // Search filter for admin
       const matchesSearch = !searchTerm ||
         lead.id.toLowerCase().includes(searchTerm.toLowerCase()) ||

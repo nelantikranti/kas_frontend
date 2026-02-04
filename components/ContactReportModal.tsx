@@ -289,7 +289,7 @@ export default function ContactReportModal({
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                 <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">7. Client Intent & Commercial</h3>
                                 {renderRadioGroup("Interest Level", "interestLevel", ["High", "Medium", "Low"])}
-                                {renderRadioGroup("Budget Discussion", "budgetDiscussion", ["Not Discussed", "Below ₹10L", "₹10–15L", "₹15–20L", "₹20L+"], false)}
+                                {renderRadioGroup("Budget Discussion", "budgetDiscussion", ["Not Discussed", "₹7-10L", "₹10–15L", "₹15–20L", "₹20L+"], false)}
                                 {renderRadioGroup("Decision Timeline", "decisionTimeline", ["Immediate", "1–3 Months", "3–6 Months"])}
                             </div>
                         </div>

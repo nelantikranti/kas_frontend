@@ -45,12 +45,77 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Load user data
+  // Load user data and refresh from backend
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      setUser(JSON.parse(userStr));
-    }
+    const loadUserData = async () => {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setUser(userData);
+          
+          // Refresh user data from backend to get latest role
+          if (userData.id) {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+            try {
+              const userResponse = await fetch(`${apiUrl}/users/${userData.id}`);
+              if (userResponse.ok) {
+                const updatedUser = await userResponse.json();
+                const updatedUserData = {
+                  ...userData,
+                  role: updatedUser.role || userData.role,
+                  permissions: updatedUser.permissions || userData.permissions || [],
+                };
+                setUser(updatedUserData);
+                localStorage.setItem("user", JSON.stringify(updatedUserData));
+              }
+            } catch (error) {
+              console.error("Failed to refresh user data:", error);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to parse user data");
+        }
+      }
+    };
+    
+    loadUserData();
+    
+    // Listen for storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user' && e.newValue) {
+        try {
+          setUser(JSON.parse(e.newValue));
+        } catch (e) {
+          console.error("Failed to parse user data");
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Poll for localStorage changes (for same-tab updates)
+    const interval = setInterval(() => {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setUser(prevUser => {
+            if (prevUser?.id !== userData.id || prevUser?.role !== userData.role) {
+              return userData;
+            }
+            return prevUser;
+          });
+        } catch (e) {
+          console.error("Failed to parse user data");
+        }
+      }
+    }, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   // Fetch notifications

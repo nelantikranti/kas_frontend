@@ -75,12 +75,13 @@ export default function DashboardLayout({
           if (userStr) {
             try {
               const currentUser = JSON.parse(userStr);
-              // Fetch latest user data including permissions
+              // Fetch latest user data including permissions and role
               const userResponse = await fetch(`${apiUrl}/users/${currentUser.id}`);
               if (userResponse.ok) {
                 const updatedUser = await userResponse.json();
                 const updatedUserData = {
                   ...currentUser,
+                  role: updatedUser.role || currentUser.role,
                   permissions: updatedUser.permissions || currentUser.permissions || [],
                 };
                 localStorage.setItem("user", JSON.stringify(updatedUserData));
