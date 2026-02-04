@@ -1,0 +1,17 @@
+{
+  "name": "KAS CRM",
+  "short_name": "KAS CRM",
+  "description": "KAS CRM - Elevator Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "/kas img.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}
+

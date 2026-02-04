@@ -4,15 +4,17 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   IoCall,
   IoMail,
   IoLocation,
-  IoCheckmarkCircle,
   IoTime,
 } from "react-icons/io5";
 
 export default function ContactPage() {
+  const router = useRouter();
+  
   // Validation helper functions
   const handlePhoneChange = (value: string, setFormDataFn: any, formDataObj: any) => {
     // Remove all non-digit characters
@@ -79,8 +81,9 @@ export default function ContactPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSubmitStatus("success");
         setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+        // Redirect to thank you page
+        router.push("/thank-you");
       } else {
         setSubmitStatus("error");
         setErrorMessage(data.error || "Failed to send message. Please try again.");
@@ -136,14 +139,6 @@ export default function ContactPage() {
             >
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {submitStatus === "success" && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-                    <div className="flex items-center gap-2">
-                      <IoCheckmarkCircle className="w-5 h-5" />
-                      <span>Message sent successfully! We'll get back to you soon.</span>
-                    </div>
-                  </div>
-                )}
                 {submitStatus === "error" && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
                     <p className="font-semibold mb-1">Failed to send message</p>
