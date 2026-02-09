@@ -67,7 +67,7 @@ export default function ProductsPage() {
                 title: "Pneumatic Elevator",
                 description:
                   "Compact, air-powered home elevator with minimal civil work, perfect for modern villas and low-rise homes.",
-                image: "/pneumatic.webp",
+                image: "",
                 points: [
                   "Space-saving cylindrical design for tight spaces",
                   "Works on air pressure technology with low power consumption",

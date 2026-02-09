@@ -473,7 +473,7 @@ export default function LandingPage() {
                 title: "Pneumatic Elevator",
                 description:
                   "Compact, air-powered home elevator with minimal civil work, perfect for modern villas and low-rise homes.",
-                image: "/pneumatic.webp",
+                image: "",
                 points: [
                   "Space-saving cylindrical design for tight spaces",
                   "Works on air pressure technology with low power consumption",
@@ -714,8 +714,8 @@ export default function LandingPage() {
                 icon: <IoCheckmarkCircle className="w-12 h-12" />,
                 title: "Durable Engineering",
                 description: "Built to last with premium materials and rigorous quality testing.",
-                color: "text-orange-600 bg-orange-50",
-                gradient: "from-orange-500 to-orange-600",
+                color: "text-green-600 bg-green-50",
+                gradient: "from-green-500 to-green-600",
               },
             ].map((feature, index) => (
               <motion.div
