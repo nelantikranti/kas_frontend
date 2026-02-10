@@ -346,7 +346,7 @@ export default function BlogsPage() {
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <label className="block text-sm font-semibold text-blue-900 mb-2">
-              ⭐ Google Review Link (Optional)
+              Google Review Link (Optional)
             </label>
             <input
               type="url"
@@ -479,7 +479,7 @@ export default function BlogsPage() {
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <label className="block text-sm font-semibold text-blue-900 mb-2">
-              ⭐ Google Review Link (Optional)
+              Google Review Link (Optional)
             </label>
             <input
               type="url"

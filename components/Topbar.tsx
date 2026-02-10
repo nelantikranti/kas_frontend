@@ -356,16 +356,6 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
                 <IoSettings className="w-4 h-4" />
                 Settings
               </button>
-              <button
-                onClick={() => {
-                  setShowUserMenu(false);
-                  router.push("/dashboard/profile");
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-              >
-                <IoPerson className="w-4 h-4" />
-                Profile
-              </button>
               <div className="border-t border-gray-200 mt-1">
                 <button
                   onClick={handleLogout}

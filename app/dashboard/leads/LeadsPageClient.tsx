@@ -2063,7 +2063,7 @@ NEXT ACTION:
           <div className="space-y-6">
             {/* 1. BASIC LEAD DETAILS */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 1. BASIC LEAD DETAILS (Auto / Pre-filled)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">BASIC LEAD DETAILS (Auto / Pre-filled)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2152,7 +2152,7 @@ NEXT ACTION:
 
             {/* 9. SALES OWNER CONFIRMATION */}
             <div className="pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 9. SALES OWNER CONFIRMATION</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">SALES OWNER CONFIRMATION</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2983,7 +2983,7 @@ NEXT ACTION:
             <div className="space-y-6">
               {/* 1. NEXT STEP IDENTIFIED */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 1. Next Step Identified</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Step Identified</h3>
                 <div className="space-y-2">
                   {["Meeting to be Scheduled", "Site Visit Required", "Send Brochure", "Follow-up Call"].map((step) => (
                     <label key={step} className="flex items-center space-x-2 cursor-pointer">
@@ -3003,7 +3003,7 @@ NEXT ACTION:
 
               {/* 2. DATE AND TIME */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2. Date and Time</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Date and Time</h3>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled Date & Time *</label>
                   <input
@@ -3017,7 +3017,7 @@ NEXT ACTION:
 
               {/* 3. TIMELINE & FOLLOW-UP */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 3. Timeline & Follow-up</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Timeline & Follow-up</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Expected Meeting / Visit Timeline</label>
@@ -3043,7 +3043,7 @@ NEXT ACTION:
 
               {/* 4. SALES OWNER CONFIRMATION */}
               <div className="pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 9. SALES OWNER CONFIRMATION</h3> {/* Kept 9 as per request, likely to match other forms */}
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">SALES OWNER CONFIRMATION</h3> {/* Kept 9 as per request, likely to match other forms */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sales Executive Name *</label>
@@ -3092,7 +3092,7 @@ NEXT ACTION:
             <div className="space-y-6">
               {/* 1. ACTUAL MEETING DETAILS */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 1️⃣ Actual Meeting Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Actual Meeting Details</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Meeting Duration *</label>
@@ -3139,11 +3139,11 @@ NEXT ACTION:
 
               {/* 2. SITE & TECHNICAL CONFIRMATION */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2️⃣ Site & Technical Confirmation (Post-Meeting)</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Site & Technical Confirmation (Post-Meeting)</h3>
 
                 {/* Pit Status */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-2">🕳️ Pit Status</h4>
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Pit Status</h4>
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Pit Available?</label>
@@ -3188,7 +3188,7 @@ NEXT ACTION:
 
                 {/* Shaft Status */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-2">🧱 Shaft Status</h4>
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Shaft Status</h4>
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Shaft Status:</label>
@@ -3245,7 +3245,7 @@ NEXT ACTION:
 
                 {/* Machine Room Status */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-800 mb-2">🏗️ Machine Room Status</h4>
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Machine Room Status</h4>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Machine Room:</label>
                     <div className="space-y-2">
@@ -3269,7 +3269,7 @@ NEXT ACTION:
 
               {/* 3. SOLUTION & PRODUCT FINALIZATION */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 3️⃣ Solution & Product Finalization (Initial)</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Solution & Product Finalization (Initial)</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Proposed Elevator Type:</label>
@@ -3356,7 +3356,7 @@ NEXT ACTION:
 
               {/* 4. COMMERCIAL DISCUSSION SUMMARY */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 4️⃣ Commercial Discussion Summary</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Commercial Discussion Summary</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Budget Alignment:</label>
@@ -3399,7 +3399,7 @@ NEXT ACTION:
 
               {/* 5. CLIENT RESPONSE & QUALITY */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 5️⃣ Client Response & Quality</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Client Response & Quality</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Client Interest Level:</label>
@@ -3460,7 +3460,7 @@ NEXT ACTION:
 
               {/* 6. NEXT ACTION */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 6️⃣ Next Action (Mandatory)</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Action (Mandatory)</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Next Step *</label>
@@ -3505,7 +3505,7 @@ NEXT ACTION:
 
               {/* 7. MEETING NOTES */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 7️⃣ Meeting Notes</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Meeting Notes</h3>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Summary / Notes:</label>
                   <textarea
@@ -3520,7 +3520,7 @@ NEXT ACTION:
 
               {/* 8. TAKE SELFIE */}
               <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 8️⃣ TAKE SELFIE</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">TAKE SELFIE</h3>
                 {!isCameraOpen && !selfieImage && (
                   <button
                     type="button"
@@ -3595,7 +3595,7 @@ NEXT ACTION:
 
               {/* 9. UPLOAD DOCUMENTS */}
               <div className="pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 9️⃣ UPLOAD DOCUMENTS</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">UPLOAD DOCUMENTS</h3>
                 <div className="space-y-3">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                     <input
@@ -3759,7 +3759,7 @@ NEXT ACTION:
             {quotationData.quotationPrepared === "Yes" && (
               <>
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2. QUOTATION DETAILS</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">QUOTATION DETAILS</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Quotation Number</label>
@@ -3837,7 +3837,7 @@ NEXT ACTION:
 
                 {/* 3. PRODUCT & TECHNICAL SUMMARY */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 3. PRODUCT & TECHNICAL SUMMARY</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">PRODUCT & TECHNICAL SUMMARY</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Elevator Type Quoted</label>
@@ -3912,7 +3912,7 @@ NEXT ACTION:
 
                 {/* 4. SCOPE OF SUPPLY */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 4. SCOPE OF SUPPLY (CHECK ALL APPLICABLE)</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">SCOPE OF SUPPLY (CHECK ALL APPLICABLE)</h3>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       "Elevator equipment supply",
@@ -3944,7 +3944,7 @@ NEXT ACTION:
 
                 {/* 5. DELIVERY & TIMELINES */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 5. DELIVERY & TIMELINES</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">DELIVERY & TIMELINES</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Manufacturing / Delivery Lead Time</label>
@@ -3987,7 +3987,7 @@ NEXT ACTION:
 
                 {/* 6. CLIENT COMMUNICATION DETAILS */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 6. CLIENT COMMUNICATION DETAILS</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">CLIENT COMMUNICATION DETAILS</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Quotation Sent Via</label>
@@ -4052,7 +4052,7 @@ NEXT ACTION:
 
                 {/* 7. COMMERCIAL POSITIONING */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 7. COMMERCIAL POSITIONING</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">COMMERCIAL POSITIONING</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Pricing Status</label>
@@ -4114,7 +4114,7 @@ NEXT ACTION:
 
                 {/* 8. NEXT ACTION */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 8. NEXT ACTION (MANDATORY)</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">NEXT ACTION (MANDATORY)</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Next Step</label>
@@ -4148,7 +4148,7 @@ NEXT ACTION:
 
                 {/* 9. SALES OWNER CONFIRMATION */}
                 <div className="pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 9. SALES OWNER CONFIRMATION</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">SALES OWNER CONFIRMATION</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -4219,7 +4219,7 @@ NEXT ACTION:
           <div className="space-y-6">
             {/* 1. DELIBERATION TRIGGER */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 1. DELIBERATION TRIGGER (MANDATORY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">DELIBERATION TRIGGER (MANDATORY)</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Reason for Manager Deliberation *
@@ -4255,7 +4255,7 @@ NEXT ACTION:
 
             {/* 2. QUOTATION SUMMARY */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2. QUOTATION SUMMARY (AUTO / CONFIRM)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">QUOTATION SUMMARY (AUTO / CONFIRM)</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quotation Number</label>
@@ -4322,7 +4322,7 @@ NEXT ACTION:
 
             {/* 3. TECHNICAL OVERVIEW */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 3. TECHNICAL OVERVIEW (FOR MANAGER)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">TECHNICAL OVERVIEW (FOR MANAGER)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Elevator Type</label>
@@ -4405,7 +4405,7 @@ NEXT ACTION:
 
             {/* 4. COMMERCIAL DETAILS */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 4. COMMERCIAL DETAILS</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">COMMERCIAL DETAILS</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -4538,7 +4538,7 @@ NEXT ACTION:
 
             {/* 6. SALES JUSTIFICATION */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 6. SALES JUSTIFICATION (MANDATORY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">SALES JUSTIFICATION (MANDATORY)</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Justification for Approval / Revision *
@@ -4555,7 +4555,7 @@ NEXT ACTION:
 
             {/* 7. MANAGER DECISION */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 7. MANAGER DECISION (MANAGER ONLY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">MANAGER DECISION (MANAGER ONLY)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Approval Status</label>
@@ -4600,7 +4600,7 @@ NEXT ACTION:
 
             {/* 8. NEXT ACTION */}
             <div className="pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 8. NEXT ACTION (AUTO / SELECT)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">NEXT ACTION (AUTO / SELECT)</h3>
               <div className="space-y-4">
                 {deliberationData.approvalStatus === "Approved as Quoted" || deliberationData.approvalStatus === "Approved with Revision" ? (
                   <div>
@@ -4693,7 +4693,7 @@ NEXT ACTION:
           <div className="space-y-6">
             {/* 1. QUOTATION CONFIRMATION */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 1. QUOTATION CONFIRMATION (MANDATORY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">QUOTATION CONFIRMATION (MANDATORY)</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Has the quotation been prepared and sent to the client? *
@@ -4723,7 +4723,7 @@ NEXT ACTION:
             {quotationData.quotationPrepared === "Yes" && (
               <>
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2. QUOTATION DETAILS</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">QUOTATION DETAILS</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Quotation Number</label>
@@ -4813,7 +4813,7 @@ NEXT ACTION:
 
                 {/* 3. PRODUCT & TECHNICAL SUMMARY */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 3. PRODUCT & TECHNICAL SUMMARY</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">PRODUCT & TECHNICAL SUMMARY</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Elevator Type Quoted</label>
@@ -4888,7 +4888,7 @@ NEXT ACTION:
 
                 {/* 4. SCOPE OF SUPPLY */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 4. SCOPE OF SUPPLY (CHECK ALL APPLICABLE)</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">SCOPE OF SUPPLY (CHECK ALL APPLICABLE)</h3>
                   <div className="space-y-2">
                     {[
                       "Elevator equipment supply",
@@ -4920,7 +4920,7 @@ NEXT ACTION:
 
                 {/* 5. DELIVERY & TIMELINES */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 5. DELIVERY & TIMELINES</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">DELIVERY & TIMELINES</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Manufacturing / Delivery Lead Time</label>
@@ -4963,7 +4963,7 @@ NEXT ACTION:
 
                 {/* 6. CLIENT COMMUNICATION DETAILS */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 6. CLIENT COMMUNICATION DETAILS</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">CLIENT COMMUNICATION DETAILS</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Quotation Sent Via</label>
@@ -5028,7 +5028,7 @@ NEXT ACTION:
 
                 {/* 7. COMMERCIAL POSITIONING */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 7. COMMERCIAL POSITIONING</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">COMMERCIAL POSITIONING</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Pricing Status</label>
@@ -5099,7 +5099,7 @@ NEXT ACTION:
 
                 {/* 8. NEXT ACTION */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 8. NEXT ACTION (MANDATORY)</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">NEXT ACTION (MANDATORY)</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Next Step</label>
@@ -5133,7 +5133,7 @@ NEXT ACTION:
 
                 {/* 9. SALES OWNER CONFIRMATION */}
                 <div className="border-b pb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 9. SALES OWNER CONFIRMATION</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">SALES OWNER CONFIRMATION</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Sales Executive Name *</label>
@@ -5201,7 +5201,7 @@ NEXT ACTION:
           <div className="space-y-6">
             {/* 1. DELIBERATION TRIGGER */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 1. DELIBERATION TRIGGER (MANDATORY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">DELIBERATION TRIGGER (MANDATORY)</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Reason for Manager Deliberation: *
@@ -5237,7 +5237,7 @@ NEXT ACTION:
 
             {/* 2. QUOTATION SUMMARY */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2. QUOTATION SUMMARY (AUTO / CONFIRM)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">QUOTATION SUMMARY (AUTO / CONFIRM)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quotation Number</label>
@@ -5303,7 +5303,7 @@ NEXT ACTION:
 
             {/* 3. TECHNICAL OVERVIEW */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 3. TECHNICAL OVERVIEW (FOR MANAGER)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">TECHNICAL OVERVIEW (FOR MANAGER)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Elevator Type</label>
@@ -5386,7 +5386,7 @@ NEXT ACTION:
 
             {/* 4. COMMERCIAL DETAILS */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 4. COMMERCIAL DETAILS</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">COMMERCIAL DETAILS</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Standard Price (as per rate card) (₹)</label>
@@ -5476,7 +5476,7 @@ NEXT ACTION:
 
             {/* 5. CLIENT POSITION & NEGOTIATION STATUS */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 5. CLIENT POSITION & NEGOTIATION STATUS</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">CLIENT POSITION & NEGOTIATION STATUS</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Client Feedback on Quotation</label>
@@ -5530,7 +5530,7 @@ NEXT ACTION:
 
             {/* 6. SALES JUSTIFICATION */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 6. SALES JUSTIFICATION (MANDATORY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">SALES JUSTIFICATION (MANDATORY)</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Justification for Approval / Revision *
@@ -5548,7 +5548,7 @@ NEXT ACTION:
 
             {/* 7. MANAGER DECISION */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 7. MANAGER DECISION (MANAGER ONLY)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">MANAGER DECISION (MANAGER ONLY)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Approval Status</label>
@@ -5593,7 +5593,7 @@ NEXT ACTION:
 
             {/* 8. NEXT ACTION */}
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 8. NEXT ACTION (AUTO / SELECT)</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">NEXT ACTION (AUTO / SELECT)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">If Approved</label>

@@ -21,7 +21,7 @@ export default function ContactReportModal({
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        // 2. CONTACT CONFIRMATION
+        // CONTACT CONFIRMATION
         status: "", // "New Lead" or "Lead Contacted" logic handled by parent, here capture "No" -> stay New Lead
         contactSuccessful: "", // "Yes" or "No"
 
@@ -179,7 +179,7 @@ export default function ContactReportModal({
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
                         <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded mr-2">MANDATORY</span>
-                        2. Contact Confirmation
+                        Contact Confirmation
                     </h3>
                     {renderRadioGroup("Was the lead successfully contacted?", "contactSuccessful", ["Yes", "No"])}
 
@@ -195,7 +195,7 @@ export default function ContactReportModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* 3. CONTACT DETAILS */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">3. Contact Details</h3>
+                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">Contact Details</h3>
                                 {renderRadioGroup("Contact Mode", "contactMode", ["Call", "WhatsApp", "Email", "Walk-in"])}
 
                                 <div className="mb-4">
@@ -213,7 +213,7 @@ export default function ContactReportModal({
 
                             {/* 4. PROPERTY DETAILS */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">4. Property & Requirement</h3>
+                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">Property & Requirement</h3>
                                 {renderRadioGroup("Property Type", "propertyType", ["Independent Villa", "Duplex", "Apartment", "Commercial"])}
                                 {renderRadioGroup("Total Floors Required", "totalFloors", ["G+1", "G+2", "G+3", "G+4"])}
                                 {renderDetailedRadioGroup("Primary Usage Purpose", "primaryUsage", [
@@ -227,12 +227,12 @@ export default function ContactReportModal({
 
                         {/* 5. SITE READINESS */}
                         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                            <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">5. Site Readiness Details (Very Important)</h3>
+                            <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">Site Readiness Details (Very Important)</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Pit */}
                                 <div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">🕳️ Pit Availability</h4>
+                                    <h4 className="font-semibold text-gray-800 mb-2">Pit Availability</h4>
                                     {renderRadioGroup("Pit Available?", "pitAvailable", ["Yes", "No"])}
                                     {formData.pitAvailable === "Yes" && renderDetailedRadioGroup("Pit Depth", "pitDepth", [
                                         { label: "< 300 mm", value: "< 300 mm" },
@@ -244,7 +244,7 @@ export default function ContactReportModal({
 
                                 {/* Shaft */}
                                 <div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">🧱 Shaft Availability</h4>
+                                    <h4 className="font-semibold text-gray-800 mb-2">Shaft Availability</h4>
                                     {renderRadioGroup("Shaft Available?", "shaftAvailable", ["Yes", "No", "Planned"])}
 
                                     {(formData.shaftAvailable === "Yes" || formData.shaftAvailable === "Planned") && (
@@ -266,7 +266,7 @@ export default function ContactReportModal({
 
                                 {/* Machine Room */}
                                 <div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">🏗️ Machine Room</h4>
+                                    <h4 className="font-semibold text-gray-800 mb-2">Machine Room</h4>
                                     {renderDetailedRadioGroup("Machine Room Available?", "machineRoom", [
                                         { label: "Yes", value: "Yes" },
                                         { label: "No (MRL preferred)", value: "No (MRL preferred)" },
@@ -280,14 +280,14 @@ export default function ContactReportModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* 6. ELEVATOR PREFERENCE */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">6. Elevator Preference</h3>
+                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">Elevator Preference</h3>
                                 {renderRadioGroup("Preferred Elevator Type", "elevatorType", ["Traction (MRL)", "Hydraulic", "Pneumatic", "Not Decided"])}
                                 {renderRadioGroup("Brand Expectation", "brandExpectation", ["Standard", "Premium", "Luxury"])}
                             </div>
 
                             {/* 7. CLIENT INTENT */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">7. Client Intent & Commercial</h3>
+                                <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">Client Intent & Commercial</h3>
                                 {renderRadioGroup("Interest Level", "interestLevel", ["High", "Medium", "Low"])}
                                 {renderRadioGroup("Budget Discussion", "budgetDiscussion", ["Not Discussed", "₹7-10L", "₹10–15L", "₹15–20L", "₹20L+"], false)}
                                 {renderRadioGroup("Decision Timeline", "decisionTimeline", ["Immediate", "1–3 Months", "3–6 Months"])}
@@ -298,7 +298,7 @@ export default function ContactReportModal({
                         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-blue-600">
                             <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2 flex items-center">
                                 <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded mr-2">MANDATORY</span>
-                                8. Next Action
+                                Next Action
                             </h3>
                             {renderRadioGroup("Next Step Identified", "nextStep", ["Meeting to be Scheduled", "Site Visit Required", "Send Brochure", "Follow-up Call"])}
 
@@ -327,7 +327,7 @@ export default function ContactReportModal({
 
                         {/* 9. SALES OWNER */}
                         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                            <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">9. Sales Owner Confirmation</h3>
+                            <h3 className="text-base font-bold text-blue-700 mb-4 border-b pb-2">Sales Owner Confirmation</h3>
                             <div className="mb-4">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Sales Executive Name</label>
                                 <input

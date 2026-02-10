@@ -878,7 +878,7 @@ export default function AMCPage() {
 
           {/* Advanced Section */}
           <div className="border-t pt-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Extra (Advanced)</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Extra (Advanced)</h3>
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
               <p className="text-sm text-gray-600">
                 <strong>Month-wise revenue:</strong> Will be calculated automatically based on payment history
