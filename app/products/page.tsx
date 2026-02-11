@@ -13,9 +13,9 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#cef5db' }}>
       <Navigation />
-      
+
       {/* Hero Section */}
-      <section className="relative pt-28 sm:pt-32 md:pt-36 lg:pt-44 pb-20 sm:pb-28 md:pb-32 lg:pb-40 bg-cover bg-center bg-no-repeat text-white" 
+      <section className="relative pt-28 sm:pt-32 md:pt-36 lg:pt-44 pb-20 sm:pb-28 md:pb-32 lg:pb-40 bg-cover bg-center bg-no-repeat text-white"
         style={{
           backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/product.jpg')",
         }}>
@@ -67,7 +67,7 @@ export default function ProductsPage() {
                 title: "Pneumatic Elevator",
                 description:
                   "Compact, air-powered home elevator with minimal civil work, perfect for modern villas and low-rise homes.",
-                image: "",
+                image: "/Pneumatic.jpeg",
                 points: [
                   "Space-saving cylindrical design for tight spaces",
                   "Works on air pressure technology with low power consumption",
@@ -93,34 +93,33 @@ export default function ProductsPage() {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "-150px" }}
-                transition={{ 
-                  delay: index * 0.1, 
+                transition={{
+                  delay: index * 0.1,
                   duration: 0.6,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center bg-green-50 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 sm:p-10 ${
-                  index % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-                }`}
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center bg-green-50 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 sm:p-10 ${index % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
+                  }`}
               >
                 {/* Image side */}
-                <motion.div 
+                <motion.div
                   className="relative h-64 sm:h-80 md:h-96 rounded-2xl overflow-hidden shadow-2xl group cursor-pointer"
-                  initial={{ 
+                  initial={{
                     opacity: 0,
                     x: index % 2 === 0 ? -60 : 60,
                     scale: 0.95
                   }}
-                  whileInView={{ 
+                  whileInView={{
                     opacity: 1,
                     x: 0,
                     scale: 1
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.03,
                     transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
                   }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1 + 0.2,
                     duration: 0.9,
                     ease: [0.16, 1, 0.3, 1]
@@ -130,35 +129,35 @@ export default function ProductsPage() {
                     src={service.image}
                     alt={service.title}
                     className="w-full h-full object-cover"
-                    whileHover={{ 
+                    whileHover={{
                       scale: 1.1,
                       transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
                     }}
                   />
                   {/* Overlay gradient on hover */}
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   />
                   {/* Shine effect */}
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"
                   />
                 </motion.div>
 
                 {/* Content side */}
                 <motion.div
-                  initial={{ 
+                  initial={{
                     opacity: 0,
                     x: index % 2 === 0 ? 60 : -60,
                     y: 20
                   }}
-                  whileInView={{ 
+                  whileInView={{
                     opacity: 1,
                     x: 0,
                     y: 0
                   }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1 + 0.3,
                     duration: 0.9,
                     ease: [0.16, 1, 0.3, 1]
@@ -172,12 +171,12 @@ export default function ProductsPage() {
                   </p>
                   <ul className="list-disc list-inside text-sm sm:text-base text-gray-600 space-y-1 sm:space-y-2 mb-6 sm:mb-8">
                     {service.points.map((point, pointIndex) => (
-                      <motion.li 
+                      <motion.li
                         key={point}
                         initial={{ opacity: 0, x: -10 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ 
+                        transition={{
                           delay: index * 0.1 + 0.3 + (pointIndex * 0.1),
                           duration: 0.5,
                           ease: [0.16, 1, 0.3, 1]
@@ -241,21 +240,21 @@ export default function ProductsPage() {
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
-                initial={{ 
-                  opacity: 0, 
+                initial={{
+                  opacity: 0,
                   y: 50,
                   scale: 0.9,
                   rotateX: -10
                 }}
-                whileInView={{ 
-                  opacity: 1, 
+                whileInView={{
+                  opacity: 1,
                   y: 0,
                   scale: 1,
                   rotateX: 0
                 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ 
-                  delay: index * 0.15, 
+                transition={{
+                  delay: index * 0.15,
                   duration: 0.7,
                   ease: [0.16, 1, 0.3, 1]
                 }}
@@ -275,34 +274,34 @@ export default function ProductsPage() {
                   style={{ background: 'linear-gradient(to bottom right, rgba(206, 245, 219, 0.5), transparent, rgba(206, 245, 219, 0.5))' }}
                   initial={false}
                 />
-                
+
                 {/* Shine effect on hover */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"
                   initial={false}
                 />
-                
+
                 <div className="relative z-10">
-                  <motion.h3 
+                  <motion.h3
                     className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-700 transition-colors duration-300"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ 
-                      delay: index * 0.15 + 0.2, 
-                      duration: 0.5 
+                    transition={{
+                      delay: index * 0.15 + 0.2,
+                      duration: 0.5
                     }}
                   >
                     {feature.title}
                   </motion.h3>
-                  <motion.p 
+                  <motion.p
                     className="text-gray-600 leading-relaxed text-sm sm:text-base"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ 
-                      delay: index * 0.15 + 0.3, 
-                      duration: 0.5 
+                    transition={{
+                      delay: index * 0.15 + 0.3,
+                      duration: 0.5
                     }}
                   >
                     {feature.description}
