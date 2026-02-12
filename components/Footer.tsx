@@ -14,7 +14,7 @@ export default function Footer() {
   const addresses = [
     {
       text: "GFH5 plot 243, 244, 2C6, Rami Reddy Nagar, Jeedimetla, Hyderabad, Telangana 500055",
-      mapUrl: "https://www.google.com/maps/search/?api=1&query=GFH5+plot+243+244+2C6+Rami+Reddy+Nagar+Jeedimetla+Hyderabad+Telangana+500055"
+      mapUrl: "https://share.google/EjPv6YDNow5AJlZz5"
     },
     {
       text: "Al Falah St - Al Danah - Zone 1 - Abu Dhabi",
@@ -25,7 +25,7 @@ export default function Footer() {
       mapUrl: "https://www.google.com/maps/search/?api=1&query=Level+M1+2A+Jalan+Stesen+Sentral+2+Kuala+Lumpur+Sentral+50470"
     },
     {
-      text: "350-A, Vishal Khand, Gomti Nagar, Lucknow, UP",
+      text: "212, 2nd Floor, Levana Cyber Heights, Vibhuti Khand, Gomti Nagar, Lucknow-226010",
       mapUrl: "https://www.google.com/maps/search/?api=1&query=350-A+Vishal+Khand+Gomti+Nagar+Lucknow+UP"
     },
   ];
