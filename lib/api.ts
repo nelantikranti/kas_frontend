@@ -453,6 +453,13 @@ export const projectsAPI = {
   create: (data: any) => fetchAPI("/projects", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/projects/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) => fetchAPI(`/projects/${id}`, { method: "DELETE" }),
+  getExpenses: (projectId: string) => fetchAPI(`/projects/${projectId}/expenses`),
+  addExpense: (projectId: string, data: { amount: number; description?: string }) =>
+    fetchAPI(`/projects/${projectId}/expenses`, { method: "POST", body: JSON.stringify(data) }),
+  updateExpense: (projectId: string, expenseId: string, data: { amount: number; description?: string }) =>
+    fetchAPI(`/projects/${projectId}/expenses/${expenseId}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteExpense: (projectId: string, expenseId: string) =>
+    fetchAPI(`/projects/${projectId}/expenses/${expenseId}`, { method: "DELETE" }),
 };
 
 // AMC API

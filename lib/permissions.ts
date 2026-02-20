@@ -12,6 +12,10 @@ export const PERMISSIONS = {
   PROJECTS_VIEW: "projects:view",
   PROJECTS_CREATE: "projects:create",
   PROJECTS_ASSIGN: "projects:assign",
+  EXPENSE_VIEW: "expense:view",
+  EXPENSE_EDIT: "expense:edit",
+  EXPENSE_ADD: "expense:add",
+  EXPENSE_DELETE: "expense:delete",
   AMC_VIEW: "amc:view",
   AMC_UPDATE: "amc:update",
   USERS_VIEW: "users:view",
@@ -36,7 +40,7 @@ export const can = (permission: string, userPermissions: string[] = []): boolean
   return userPermissions.includes(permission);
 };
 
-// Get user permissions from localStorage
+// Get user permissions from localStorage (Admin always gets all permissions)
 export const getUserPermissions = (): string[] => {
   if (typeof window === 'undefined') return [];
   
@@ -44,6 +48,9 @@ export const getUserPermissions = (): string[] => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
+      if (user.role === "Admin") {
+        return Object.values(PERMISSIONS);
+      }
       return user.permissions || [];
     }
   } catch (e) {
@@ -101,6 +108,10 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.PROJECTS_VIEW, label: "Projects View" },
       { key: PERMISSIONS.PROJECTS_CREATE, label: "Projects Create" },
       { key: PERMISSIONS.PROJECTS_ASSIGN, label: "Projects Assign" },
+      { key: PERMISSIONS.EXPENSE_VIEW, label: "Expense View" },
+      { key: PERMISSIONS.EXPENSE_EDIT, label: "Expense Edit" },
+      { key: PERMISSIONS.EXPENSE_ADD, label: "Expense Add" },
+      { key: PERMISSIONS.EXPENSE_DELETE, label: "Expense Delete" },
     ],
   },
   {
