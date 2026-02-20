@@ -5,7 +5,7 @@ import { quotationsAPI, Quotation, leadsAPI, Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
-import { IoAdd, IoDocumentText, IoSearch, IoDownload, IoEye } from "react-icons/io5";
+import { IoAdd, IoDocumentText, IoSearch, IoDownload, IoEye, IoTrash } from "react-icons/io5";
 
 export default function QuotationsPage() {
   const [quotationList, setQuotationList] = useState<Quotation[]>([]);
@@ -409,6 +409,23 @@ export default function QuotationsPage() {
                 >
                   <IoDownload className="w-4 h-4" />
                   Download
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm("Delete this quotation? This action cannot be undone.")) return;
+                    try {
+                      await quotationsAPI.delete(quotation.id);
+                      setQuotationList((prev) => prev.filter((q) => q.id !== quotation.id));
+                      toast.success("Quotation deleted");
+                    } catch (err) {
+                      console.error("Failed to delete quotation:", err);
+                      toast.error("Failed to delete quotation. Please try again.");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+                >
+                  <IoTrash className="w-4 h-4" />
+                  Delete
                 </button>
               </div>
             </div>

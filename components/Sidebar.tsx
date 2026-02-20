@@ -17,6 +17,7 @@ import {
   IoChevronBack,
   IoChevronForward,
   IoNewspaper,
+  IoChatbubbles,
 } from "react-icons/io5";
 import { PERMISSIONS, can } from "@/lib/permissions";
 
@@ -52,8 +53,10 @@ const allNavItems: NavItem[] = [
   { name: "Form Submissions", href: "/dashboard/submissions", icon: <IoMail className="w-5 h-5" />, requiredPermission: PERMISSIONS.FORM_SUBMISSIONS_VIEW },
   { name: "Demo Requests", href: "/dashboard/demo", icon: <IoVideocam className="w-5 h-5" />, requiredPermission: PERMISSIONS.DEMO_REQUESTS_VIEW },
   { name: "Blogs & Reviews", href: "/dashboard/blogs", icon: <IoNewspaper className="w-5 h-5" />, requiredPermission: PERMISSIONS.BLOGS_VIEW },
+  { name: "Testimonials", href: "/dashboard/testimonials", icon: <IoChatbubbles className="w-5 h-5" />, requiredPermission: PERMISSIONS.TESTIMONIALS_VIEW },
   { name: "Users", href: "/dashboard/users", icon: <IoPerson className="w-5 h-5" />, requiredPermission: PERMISSIONS.USERS_MANAGE },
   { name: "Settings", href: "/dashboard/settings", icon: <IoSettings className="w-5 h-5" />, requiredPermission: PERMISSIONS.SETTINGS_MANAGE },
+  { name: "Activity", href: "/dashboard/activity", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.ACTIVITY_VIEW },
 ];
 
 // Helper function to get filtered nav items based on user permissions

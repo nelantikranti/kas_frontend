@@ -26,6 +26,8 @@ export const PERMISSIONS = {
   FORM_SUBMISSIONS_DELETE: "form_submissions:delete",
   DEMO_REQUESTS_VIEW: "demo_requests:view",
   DEMO_REQUESTS_DELETE: "demo_requests:delete",
+  TESTIMONIALS_VIEW: "testimonials:view",
+  ACTIVITY_VIEW: "activity:view",
 } as const;
 
 // Check if user has permission
@@ -134,6 +136,12 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.BLOGS_CREATE, label: "Blogs Create" },
       { key: PERMISSIONS.BLOGS_EDIT, label: "Blogs Edit" },
       { key: PERMISSIONS.BLOGS_DELETE, label: "Blogs Delete" },
+    ],
+  },
+  {
+    label: "Testimonials",
+    permissions: [
+      { key: PERMISSIONS.TESTIMONIALS_VIEW, label: "Testimonials View" },
     ],
   },
   {

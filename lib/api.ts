@@ -43,7 +43,7 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
     };
     
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+      (headers as any)["Authorization"] = `Bearer ${token}`;
     }
     
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -516,4 +516,46 @@ export const notificationsAPI = {
   delete: (id: string) => fetchAPI(`/notifications/${id}`, { method: "DELETE" }),
   create: (data: { userId?: string; message: string; type?: string; relatedId?: string }) =>
     fetchAPI("/notifications", { method: "POST", body: JSON.stringify(data) }),
+};
+
+// Activity API
+export interface ActivityLog {
+  id: string;
+  userName: string;
+  userRole?: string;
+  actionType: "Login" | "Logout" | "Create" | "Update" | "Delete" | string;
+  moduleName?: string;
+  description?: string;
+  ipAddress?: string;
+  deviceInfo?: string;
+  status?: "Success" | "Failed" | string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export const activityAPI = {
+  // list with query params: search, actionType, module, dateFrom, dateTo, page, limit
+  list: (params: Record<string, any> = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params || {}).reduce((acc: any, [k, v]) => {
+        if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+        return acc;
+      }, {})
+    ).toString();
+    return fetchAPI(`/activities${qs ? `?${qs}` : ""}`);
+  },
+  // export CSV - backend may implement; fallback to client-side export
+  exportCSV: (params: Record<string, any> = {}) => {
+    const qs = new URLSearchParams(params as any).toString();
+    return fetchAPI(`/activities/export${qs ? `?${qs}` : ""}`);
+  },
+};
+
+// Testimonials API
+export const testimonialsAPI = {
+  getAll: (admin: boolean = false) => fetchAPI(`/testimonials${admin ? "?admin=true" : ""}`),
+  getById: (id: string) => fetchAPI(`/testimonials/${id}`),
+  create: (data: any) => fetchAPI("/testimonials", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: any) => fetchAPI(`/testimonials/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: string) => fetchAPI(`/testimonials/${id}`, { method: "DELETE" }),
 };

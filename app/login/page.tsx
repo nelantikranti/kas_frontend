@@ -1,7 +1,6 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -200,7 +199,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <Footer />
+      {/* Footer intentionally omitted on login page for a clean auth UX */}
     </div>
   );
 }

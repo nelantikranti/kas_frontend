@@ -440,14 +440,12 @@ export default function ProjectsPage() {
                   <IoDocumentText className="w-4 h-4" />
                   Documents
                 </button>
-                {/* Show delete button only when stage is "Testing & Final Handover" */}
-                {project.currentStage === "Testing & Final Handover" && (
-                  <AnimatedDeleteButton
-                    onClick={() => handleDeleteClick(project)}
-                    size="sm"
-                    title="Delete Project"
-                  />
-                )}
+                {/* Delete button for Admin: allow deleting any project */}
+                <AnimatedDeleteButton
+                  onClick={() => handleDeleteClick(project)}
+                  size="sm"
+                  title="Delete Project"
+                />
               </div>
             </div>
           </div>

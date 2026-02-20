@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { products as productList } from "@/data/products";
+import TestimonialsScroller from "../components/TestimonialsScroller";
 import {
   IoArrowForward,
   IoCheckmarkCircle,
@@ -13,32 +15,9 @@ import {
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [demoForm, setDemoForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(null);
 
-  // Validation helper functions
-  const handlePhoneChange = (value: string, setDemoFormFn: any, demoFormObj: any) => {
-    // Remove all non-digit characters
-    const cleaned = value.replace(/\D/g, '');
-    // Allow only up to 10 digits
-    if (cleaned.length <= 10) {
-      setDemoFormFn({ ...demoFormObj, phone: cleaned });
-    }
-  };
-
-  const validatePhone = (phone: string): boolean => {
-    // Must be exactly 10 digits
-    return /^\d{10}$/.test(phone);
-  };
+  // Validation helpers (kept for other forms)
 
   const features = [
     {
@@ -72,49 +51,15 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, [features.length]);
 
-  const handleDemoSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus(null);
+  
 
-    // Validation
-    if (demoForm.phone && !validatePhone(demoForm.phone)) {
-      setSubmitStatus("error");
-      setIsSubmitting(false);
-      return;
-    }
+ 
 
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const response = await fetch(`${apiUrl}/demo`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(demoForm),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSubmitStatus("success");
-        setDemoForm({ name: "", email: "", phone: "", company: "", message: "" });
-        // Close modal after 2 seconds
-        setTimeout(() => {
-          setIsDemoModalOpen(false);
-          setSubmitStatus(null);
-        }, 2000);
-      } else {
-        setSubmitStatus("error");
-        console.error("Submission error:", data.error || "Unknown error");
-      }
-    } catch (error) {
-      console.error("Failed to submit demo request:", error);
-      setSubmitStatus("error");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // Avoid hydration mismatch by rendering testimonials only after client mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#cef5db' }}>
@@ -267,28 +212,7 @@ export default function LandingPage() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Hero Request Demo button (static, separate from banner animation) */}
-              <div className="mt-10 sm:mt-12 flex justify-center">
-                <button
-                  onClick={() => setIsDemoModalOpen(true)}
-                  className="relative flex items-center px-10 py-4 overflow-hidden font-semibold text-lg transition-all bg-green-600 rounded-lg group shadow-2xl hover:shadow-green-500/50 hover:scale-105"
-                  style={{
-                    clipPath:
-                      'polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px))',
-                  }}
-                >
-                  <span className="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-green-700 rounded group-hover:-mr-3 group-hover:-mt-3">
-                    <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white" />
-                  </span>
-                  <span className="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-green-700 rounded group-hover:-ml-3 group-hover:-mb-3">
-                    <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white" />
-                  </span>
-                  <span className="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-green-700 rounded-lg group-hover:translate-x-0" />
-                  <span className="relative w-full text-center text-white transition-colors duration-200 ease-in-out group-hover:text-white">
-                    Request Demo
-                  </span>
-                </button>
-              </div>
+              {/* Hero CTA removed */}
             </div>
 
           </div>
@@ -444,56 +368,7 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="space-y-12 sm:space-y-16">
-            {[
-              {
-                title: "Hydraulic Elevator",
-                description:
-                  "Reliable and cost-effective elevator solution for low to mid-rise buildings, engineered for smooth and stable performance in everyday use.",
-                image: "/premium_lift7.jpeg",
-                points: [
-                  "Ideal for residential and commercial low to mid-rise buildings",
-                  "Smooth ride quality with powerful hydraulic drive",
-                  "Lower initial cost and easy installation",
-                  "High load capacity for regular passenger movement",
-                ],
-              },
-              {
-                title: "Traction Elevators",
-                description:
-                  "Specialized elevator designed for hospitals and medical facilities, with wide cabins and safe, jerk-free movement for patients and medical staff.",
-                image: "/premium_lift3.jpg",
-                points: [
-                  "Extra-wide cabin to accommodate stretchers and wheelchairs",
-                  "Smooth acceleration and deceleration for patient comfort",
-                  "Anti-skid flooring and strong handrails for safety",
-                  "Suitable for hospitals, clinics, and healthcare centers",
-                ],
-              },
-              {
-                title: "Pneumatic Elevator",
-                description:
-                  "Compact, air-powered home elevator with minimal civil work, perfect for modern villas and low-rise homes.",
-                image: "/Pneumatic.jpeg",
-                points: [
-                  "Space-saving cylindrical design for tight spaces",
-                  "Works on air pressure technology with low power consumption",
-                  "Quick installation with minimal shaft and pit requirements",
-                  "Perfect for duplex homes, bungalows, and private residences",
-                ],
-              },
-              {
-                title: "MRL (Machine Room-Less) Elevator",
-                description:
-                  "Energy-efficient elevator without a separate machine room, designed for modern buildings that demand both space savings and premium aesthetics.",
-                image: "/premium_lift5.jpg",
-                points: [
-                  "No dedicated machine room required – saves building space",
-                  "Efficient gearless technology for smooth and quiet ride",
-                  "Flexible design options for residential and commercial use",
-                  "Ideal for apartments, offices, malls, and premium buildings",
-                ],
-              },
-            ].map((service, index) => (
+            {productList.map((service, index) => (
               <motion.div
                 key={service.title}
                 initial={{ opacity: 0 }}
@@ -594,7 +469,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <Link
-                    href="/products"
+                    href={`/products/${service.slug}`}
                     className="inline-flex items-center text-sm sm:text-base font-semibold uppercase tracking-wide border-b-2 pb-2 transition-colors text-gray-900 border-green-600 hover:border-green-700"
                   >
                     READ MORE
@@ -768,159 +643,20 @@ export default function LandingPage() {
             Upgrade your home with premium elevator cabins that combine comfort, safety, and elegant design..
             </p>
             <div className="flex justify-center items-center">
-              <button
-                onClick={() => setIsDemoModalOpen(true)}
-                className="relative flex items-center px-10 py-5 overflow-hidden font-semibold text-lg transition-all bg-green-600 rounded-lg group shadow-2xl hover:shadow-green-500/50 hover:scale-105"
-                style={{
-                  clipPath: 'polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))'
-                }}
-              >
-                <span className="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-green-700 rounded group-hover:-mr-4 group-hover:-mt-4">
-                  <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white" />
-                </span>
-                <span className="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-green-700 rounded group-hover:-ml-4 group-hover:-mb-4">
-                  <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white" />
-                </span>
-                <span className="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-green-700 rounded-lg group-hover:translate-x-0" />
-                <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
-                Request Demo
-                </span>
-              </button>
+              {/* CTA removed */}
             </div>
           </motion.div>
         </div>
       </section>
+
+      <TestimonialsScroller />
 
       {/* Footer Section */}
       <section>
         <Footer />
       </section>
 
-      {/* Demo Request Modal */}
-      {isDemoModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Request Demo</h2>
-              <button
-                onClick={() => {
-                  setIsDemoModalOpen(false);
-                  setSubmitStatus(null);
-                }}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <span className="text-2xl text-gray-500">&times;</span>
-              </button>
-            </div>
-            <form onSubmit={handleDemoSubmit} className="p-6 space-y-4">
-              {submitStatus === "success" && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-                  <div className="flex items-center gap-2">
-                    <IoCheckmarkCircle className="w-5 h-5" />
-                    <span>Demo request submitted successfully! We'll contact you soon.</span>
-                  </div>
-                </div>
-              )}
-              {submitStatus === "error" && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-                  Failed to submit request. Please try again.
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={demoForm.name}
-                  onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={demoForm.email}
-                  onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={demoForm.phone}
-                  onChange={(e) => handlePhoneChange(e.target.value, setDemoForm, demoForm)}
-                  maxLength={10}
-                  pattern="[0-9]{10}"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter 10 digit phone number"
-                />
-                {demoForm.phone && demoForm.phone.length !== 10 && (
-                  <p className="text-xs text-red-600 mt-1">Phone number must be exactly 10 digits</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
-                </label>
-                <input
-                  type="text"
-                  value={demoForm.company}
-                  onChange={(e) => setDemoForm({ ...demoForm, company: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter company name (optional)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
-                </label>
-                <textarea
-                  value={demoForm.message}
-                  onChange={(e) => setDemoForm({ ...demoForm, message: e.target.value })}
-                  rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Any specific requirements or questions?"
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Request"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDemoModalOpen(false);
-                    setSubmitStatus(null);
-                  }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+      {/* Demo modal and form removed */}
     </div>
   );
 }

@@ -12,6 +12,8 @@ import {
   IoTime,
   IoBarChart,
 } from "react-icons/io5";
+import SalesPipelineOverview from "@/components/dashboard/SalesPipelineOverview";
+ 
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -33,6 +35,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Poll dashboard data periodically so pipeline updates when lead status changes elsewhere.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadData().catch(() => {});
+    }, 20000); // every 20s
+    return () => clearInterval(interval);
   }, []);
 
   // Helper function to parse meeting date/time from notes
@@ -101,7 +111,12 @@ export default function DashboardPage() {
       const leadContacted = leadsData.filter((l: any) => l.stage === "Lead Contacted").length;
       const meetingScheduledLeads = leadsData.filter((l: any) => l.stage === "Meeting Scheduled");
       const meetingScheduled = meetingScheduledLeads.length;
-      const meetingsCompleted = leadsData.filter((l: any) => l.stage === "Meeting Completed").length;
+      // Treat meetings as completed if either stage is "Meeting Completed" or an explicit meetingStatus flag exists.
+      const meetingsCompleted = leadsData.filter(
+        (l: any) =>
+          l.stage === "Meeting Completed" ||
+          (l.meetingStatus && String(l.meetingStatus).toLowerCase() === "completed")
+      ).length;
       const quotationSent = leadsData.filter((l: any) => l.stage === "Quotation Sent").length;
       const managerDeliberation = leadsData.filter((l: any) => l.stage === "Manager Deliberation").length;
 
@@ -216,6 +231,11 @@ export default function DashboardPage() {
       stage: "Manager Deliberation" as const,
     },
   ];
+  
+  const currentSelectedStat = selectedStatCard ? statCards.find(s => s.title === selectedStatCard) : null;
+  const filteredLeadsForModal = currentSelectedStat
+    ? (currentSelectedStat.stage === "All" ? allLeads : allLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage))
+    : [];
 
   if (loading) {
     return (
@@ -224,6 +244,53 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const salesStages = [
+    {
+      stage: "New Leads",
+      percentage: stats.totalLeads > 0 ? 100 : 0,
+      color: "#3b82f6", // blue
+    },
+    {
+      stage: "Meetings Completed",
+      percentage:
+        stats.totalLeads > 0 ? Math.round((stats.meetingsCompleted / stats.totalLeads) * 100) : 0,
+      color: "#8b5cf6", // violet
+    },
+    {
+      stage: "Quotations Sent",
+      percentage:
+        stats.totalLeads > 0 ? Math.round((stats.quotationSent / stats.totalLeads) * 100) : 0,
+      color: "#10b981", // green
+    },
+    {
+      stage: "Orders Confirmed",
+      percentage:
+        allProjects.length > 0
+          ? Math.round(
+              (allProjects.filter((p: any) => p.currentStage === "Order Confirmed").length /
+                Math.max(1, allProjects.length)) *
+                100
+            )
+          : 0,
+      color: "#f59e0b", // orange
+    },
+    {
+      stage: "Installations",
+      percentage:
+        allProjects.length > 0
+          ? Math.round(
+              (allProjects.filter(
+                (p: any) =>
+                  p.currentStage === "Installed" || p.currentStage === "Installation Completed"
+              ).length /
+                Math.max(1, allProjects.length)) *
+                100
+            )
+          : 0,
+      color: "#ef4444", // red
+    },
+  ];
 
   return (
     <div>
@@ -234,100 +301,97 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {statCards.map((stat) => (
-            <div
+          <div
             key={stat.title}
             onClick={() => handleCardClick(stat.title)}
-              className="cursor-pointer"
-            >
-              <StatCard {...stat} />
-                          </div>
-                        ))}
-                      </div>
-
-      {/* Details Modal */}
-      {selectedStatCard && (() => {
-        const selectedStat = statCards.find(s => s.title === selectedStatCard);
-        if (!selectedStat) return null;
-        
-        const filteredLeads = selectedStat.stage === "All" 
-          ? allLeads 
-          : allLeads.filter((lead: any) => lead.stage === selectedStat.stage);
-        
-        return (
-          <Modal
-            isOpen={selectedStatCard !== null}
-            onClose={() => setSelectedStatCard(null)}
-            title={selectedStat.stage === "All" ? "All Leads" : `${selectedStat.title} Leads`}
-            size="lg"
+            className="cursor-pointer"
           >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-600">
-                  Total: <span className="font-semibold text-gray-900">{filteredLeads.length}</span> leads
-                </p>
-                      </div>
-              
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                {filteredLeads.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">
-                      {selectedStat.stage === "All" ? "No leads found" : `No leads in ${selectedStat.title} stage`}
-                    </p>
-                            </div>
-                ) : (
-                  filteredLeads.map((lead: any) => {
-                    const meetingDateTime = lead.stage === "Meeting Scheduled" 
-                      ? (lead.meetingDateTime || parseMeetingDateTime(lead))
-                      : null;
-                    
-                    return (
-                      <div key={lead.id || lead._id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-gray-900 truncate">{lead.name}</p>
-                            <p className="text-xs text-gray-600 truncate mt-1">{lead.company || "N/A"}</p>
-                            {meetingDateTime && (
-                              <div className="flex items-center gap-1 mt-2 text-xs text-purple-600 font-medium">
-                                <IoCalendar className="w-3 h-3" />
-                                <span>{meetingDateTime}</span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                              {lead.email && (
-                                <span className="truncate">{lead.email}</span>
-                              )}
-                              {lead.phone && (
-                                <span>{lead.phone}</span>
-                              )}
-                            </div>
-                            {lead.value && (
-                              <p className="text-xs font-semibold text-green-600 mt-1">
-                                Value: ₹{(lead.value / 100000).toFixed(1)}L
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full whitespace-nowrap flex-shrink-0">
-                            {lead.stage}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-              )}
+            <StatCard {...stat} />
+          </div>
+        ))}
       </div>
 
-              <div className="pt-4 border-t">
-                    <button
-                  onClick={handleViewMore}
-                  className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                    >
-                  View More
-                    </button>
-                  </div>
+      
+
+      <div className="mb-6">
+        <SalesPipelineOverview data={salesStages} showDebug={false} />
+      </div>
+
+      {/* Details Modal */}
+      {currentSelectedStat && (
+        <Modal
+          isOpen={selectedStatCard !== null}
+          onClose={() => setSelectedStatCard(null)}
+          title={currentSelectedStat.stage === "All" ? "All Leads" : `${currentSelectedStat.title} Leads`}
+          size="lg"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-600">
+                Total: <span className="font-semibold text-gray-900">{filteredLeadsForModal.length}</span> leads
+              </p>
             </div>
-          </Modal>
-        );
-      })()}
+
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+              {filteredLeadsForModal.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    {currentSelectedStat.stage === "All" ? "No leads found" : `No leads in ${currentSelectedStat.title} stage`}
+                  </p>
+                </div>
+              ) : (
+                filteredLeadsForModal.map((lead: any) => {
+                  const meetingDateTime = lead.stage === "Meeting Scheduled"
+                    ? (lead.meetingDateTime || parseMeetingDateTime(lead))
+                    : null;
+
+                  return (
+                    <div key={lead.id || lead._id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-gray-900 truncate">{lead.name}</p>
+                          <p className="text-xs text-gray-600 truncate mt-1">{lead.company || "N/A"}</p>
+                          {meetingDateTime && (
+                            <div className="flex items-center gap-1 mt-2 text-xs text-purple-600 font-medium">
+                              <IoCalendar className="w-3 h-3" />
+                              <span>{meetingDateTime}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                            {lead.email && (
+                              <span className="truncate">{lead.email}</span>
+                            )}
+                            {lead.phone && (
+                              <span>{lead.phone}</span>
+                            )}
+                          </div>
+                          {lead.value && (
+                            <p className="text-xs font-semibold text-green-600 mt-1">
+                              Value: ₹{(lead.value / 100000).toFixed(1)}L
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full whitespace-nowrap flex-shrink-0">
+                          {lead.stage}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-4 border-t">
+              <button
+                onClick={handleViewMore}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                View More
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
