@@ -5,11 +5,10 @@ import { projectsAPI, Project, ProjectStage } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Timeline from "@/components/Timeline";
 import Modal from "@/components/Modal";
-import { IoAdd, IoSearch, IoDocumentText, IoCloudUpload, IoCheckmarkCircle, IoCloseCircle, IoTime, IoStatsChart, IoBuild, IoConstruct, IoClipboard, IoShieldCheckmark, IoCube, IoCalendar, IoWallet, IoTrendingUp, IoTrendingDown, IoPencil, IoCheckmark } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCloudUpload, IoCheckmarkCircle, IoCloseCircle, IoTime, IoStatsChart, IoBuild, IoConstruct, IoClipboard, IoShieldCheckmark, IoCube, IoCalendar } from "react-icons/io5";
 import { toast } from "@/components/Toast";
 import ProjectLineGraph from "@/components/ProjectLineGraph";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
-import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 const projectStages: ProjectStage[] = [
   "First Technical Visit",
@@ -44,14 +43,6 @@ export default function ProjectsPage() {
   const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
-  const [expenseModalProject, setExpenseModalProject] = useState<Project | null>(null);
-  const [isExpenseDetailsModalOpen, setIsExpenseDetailsModalOpen] = useState(false);
-  const [expenseDetailsProject, setExpenseDetailsProject] = useState<Project | null>(null);
-  const [expensesByProject, setExpensesByProject] = useState<Record<string, { id: string; amount: number; description: string }[]>>({});
-  const [orderValueByProject, setOrderValueByProject] = useState<Record<string, number>>({});
-  const [expenseForm, setExpenseForm] = useState({ amount: "", description: "" });
-  const [editingExpense, setEditingExpense] = useState<{ projectId: string; expenseId: string; amount: string; description: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [newProject, setNewProject] = useState({
@@ -65,18 +56,7 @@ export default function ProjectsPage() {
     assignedEngineer: "",
     status: "On Track" as "On Track" | "Delayed" | "On Hold",
     currentStage: "First Technical Visit" as ProjectStage,
-    projectCost: "" as string | number,
   });
-
-  const userPermissions = getUserPermissions();
-  const canViewExpense = can(PERMISSIONS.EXPENSE_VIEW, userPermissions);
-  const canAddExpense = can(PERMISSIONS.EXPENSE_ADD, userPermissions);
-  const canEditExpense = can(PERMISSIONS.EXPENSE_EDIT, userPermissions);
-  const canDeleteExpense = can(PERMISSIONS.EXPENSE_DELETE, userPermissions);
-  // View/Edit/Delete each imply seeing expense data; Add-only users don't see expense list/totals
-  const canSeeExpenseData = canViewExpense || canEditExpense || canDeleteExpense;
-  const showProjectCost = !canAddExpense || canSeeExpenseData;
-  const expenseGridCols = 4 + (showProjectCost ? 1 : 0) + (canSeeExpenseData ? 2 : 0);
 
   useEffect(() => {
     loadProjects();
@@ -99,22 +79,6 @@ export default function ProjectsPage() {
       setLoading(true);
       const projects = await projectsAPI.getAll();
       setProjectList(projects);
-      if (!canSeeExpenseData) {
-        setExpensesByProject({});
-        return;
-      }
-      const expensesMap: Record<string, { id: string; amount: number; description: string }[]> = {};
-      await Promise.all(
-        projects.map(async (p: Project) => {
-          try {
-            const list = await projectsAPI.getExpenses(p.id);
-            expensesMap[p.id] = Array.isArray(list) ? list : [];
-          } catch {
-            expensesMap[p.id] = [];
-          }
-        })
-      );
-      setExpensesByProject(expensesMap);
     } catch (error) {
       console.error("Failed to load projects:", error);
     } finally {
@@ -145,108 +109,6 @@ export default function ProjectsPage() {
   const handleViewDetails = (project: Project) => {
     setSelectedProject(project);
     setIsModalOpen(true);
-  };
-
-  const handleOpenExpenseModal = (project: Project) => {
-    setExpenseModalProject(project);
-    setExpenseForm({ amount: "", description: "" });
-    setIsExpenseModalOpen(true);
-  };
-
-  const handleOpenExpenseDetails = (project: Project) => {
-    setExpenseDetailsProject(project);
-    setIsExpenseDetailsModalOpen(true);
-  };
-
-  const getOrderValue = (project: Project): number => {
-    const override = orderValueByProject[project.id];
-    if (override !== undefined && override > 0) return override;
-    return project.orderValue ?? 0;
-  };
-
-  const handleAddExpense = async (projectId: string) => {
-    const amount = parseFloat(expenseForm.amount);
-    if (!expenseForm.amount || isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid expense amount.");
-      return;
-    }
-    const description = expenseForm.description.trim() || "Expense";
-    try {
-      const created = await projectsAPI.addExpense(projectId, { amount, description });
-      setExpensesByProject((prev) => ({
-        ...prev,
-        [projectId]: [{ id: created.id, amount: created.amount, description: created.description || "Expense" }, ...(prev[projectId] || [])],
-      }));
-      setExpenseForm({ amount: "", description: "" });
-      toast.success("Expense saved.");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save expense.");
-    }
-  };
-
-  const removeExpense = async (projectId: string, expenseId: string) => {
-    try {
-      await projectsAPI.deleteExpense(projectId, expenseId);
-      setExpensesByProject((prev) => ({
-        ...prev,
-        [projectId]: (prev[projectId] || []).filter((e) => e.id !== expenseId),
-      }));
-      if (editingExpense?.expenseId === expenseId) setEditingExpense(null);
-      toast.success("Expense removed.");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to delete expense.");
-    }
-  };
-
-  const handleUpdateExpense = async (projectId: string, expenseId: string) => {
-    if (!editingExpense || editingExpense.expenseId !== expenseId) return;
-    const amount = parseFloat(editingExpense.amount);
-    if (!editingExpense.amount || isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid expense amount.");
-      return;
-    }
-    const description = editingExpense.description.trim() || "Expense";
-    try {
-      const updated = await projectsAPI.updateExpense(projectId, expenseId, { amount, description });
-      setExpensesByProject((prev) => ({
-        ...prev,
-        [projectId]: (prev[projectId] || []).map((e) =>
-          e.id === expenseId ? { id: e.id, amount: updated.amount, description: updated.description || "Expense" } : e
-        ),
-      }));
-      setEditingExpense(null);
-      toast.success("Expense updated.");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to update expense.");
-    }
-  };
-
-  const setOrderValueForProject = (projectId: string, value: number) => {
-    setOrderValueByProject((prev) => ({ ...prev, [projectId]: value }));
-  };
-
-  const saveProjectCost = async (projectId: string, value: number) => {
-    try {
-      await projectsAPI.update(projectId, { orderValue: value });
-      setProjectList((prev) => prev.map((p) => (p.id === projectId ? { ...p, orderValue: value } : p)));
-      setExpenseModalProject((prev) => (prev && prev.id === projectId ? { ...prev, orderValue: value } : prev));
-      setOrderValueByProject((prev) => {
-        const next = { ...prev };
-        delete next[projectId];
-        return next;
-      });
-    } catch (e) {
-      console.error("Failed to save project cost:", e);
-      toast.error("Failed to save project cost.");
-    }
-  };
-
-  const getExpenseSummary = (project: Project) => {
-    const expenses = expensesByProject[project.id] || [];
-    const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const completeCost = getOrderValue(project);
-    const profitLoss = completeCost - totalExpense;
-    return { totalExpense, completeCost, profitLoss, expenses };
   };
 
   const handleDeleteClick = (project: Project) => {
@@ -292,7 +154,7 @@ export default function ProjectsPage() {
 
       // Prepare project data with proper defaults
       // Note: progress will be calculated automatically by backend pre-save hook based on currentStage
-      const projectData: Record<string, unknown> = {
+      const projectData = {
         projectName: newProject.projectName.trim(),
         customerName: newProject.customerName.trim(),
         location: newProject.location.trim(),
@@ -305,10 +167,6 @@ export default function ProjectsPage() {
         currentStage: "First Technical Visit" as ProjectStage, // Start from First Technical Visit
         // progress will be auto-calculated by backend based on currentStage
       };
-      if (newProject.projectCost !== "" && newProject.projectCost !== undefined) {
-        const cost = typeof newProject.projectCost === "string" ? parseFloat(newProject.projectCost) : newProject.projectCost;
-        if (!isNaN(cost) && cost > 0) projectData.orderValue = cost;
-      }
 
       console.log("Creating project with data:", projectData);
       await projectsAPI.create(projectData);
@@ -326,7 +184,6 @@ export default function ProjectsPage() {
         assignedEngineer: "",
         status: "On Track",
         currentStage: "First Technical Visit",
-        projectCost: "",
       });
       loadProjects();
     } catch (error: any) {
@@ -545,11 +402,7 @@ export default function ProjectsPage() {
               </div>
             </div>
 
-            <div
-              className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-gray-200 ${
-                expenseGridCols === 4 ? "lg:grid-cols-4" : expenseGridCols === 5 ? "lg:grid-cols-5" : "lg:grid-cols-7"
-              }`}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-gray-200">
               <div>
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Elevator Type</p>
                 <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{project.elevatorType}</p>
@@ -566,42 +419,6 @@ export default function ProjectsPage() {
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Expected Completion</p>
                 <p className="text-sm sm:text-base font-medium text-gray-900">{project.expectedCompletion}</p>
               </div>
-              {showProjectCost && (
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1">Project Cost</p>
-                <p className="text-sm sm:text-base font-medium text-gray-900">
-                  {getOrderValue(project) > 0 ? `₹${getOrderValue(project).toLocaleString("en-IN")}` : "—"}
-                </p>
-              </div>
-              )}
-              {canSeeExpenseData && (
-                <>
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-1">Expense</p>
-                    <p className="text-sm sm:text-base font-medium text-gray-900">
-                      ₹{(expensesByProject[project.id] || []).reduce((sum, e) => sum + e.amount, 0).toLocaleString("en-IN")}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-1">Profit / Loss</p>
-                    {(() => {
-                      const { profitLoss, completeCost } = getExpenseSummary(project);
-                      if (completeCost <= 0) return <p className="text-sm text-gray-400">Set project cost</p>;
-                      const isProfit = profitLoss >= 0;
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenExpenseDetails(project)}
-                          className={`inline-flex items-center gap-1 text-sm sm:text-base font-medium underline underline-offset-2 hover:opacity-80 text-left ${isProfit ? "text-green-600" : "text-red-600"}`}
-                        >
-                          {isProfit ? <IoTrendingUp className="w-4 h-4 flex-shrink-0" /> : <IoTrendingDown className="w-4 h-4 flex-shrink-0" />}
-                          {isProfit ? "Profit" : "Loss"} ₹{Math.abs(profitLoss).toLocaleString("en-IN")}
-                        </button>
-                      );
-                    })()}
-                  </div>
-                </>
-              )}
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
@@ -612,16 +429,7 @@ export default function ProjectsPage() {
                 <span className="hidden sm:inline">View Timeline →</span>
                 <span className="sm:hidden">View Timeline</span>
               </button>
-              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                {canAddExpense && (
-                  <button
-                    onClick={() => handleOpenExpenseModal(project)}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm flex-1 sm:flex-none"
-                  >
-                    <IoWallet className="w-4 h-4" />
-                    Add Expense
-                  </button>
-                )}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => {
                     setSelectedProject(project);
@@ -729,280 +537,6 @@ export default function ProjectsPage() {
         )}
       </Modal>
 
-      {(canSeeExpenseData || canAddExpense) && (
-        <>
-      {/* Add Expense Modal — expense data only when canSeeExpenseData; add form when canAddExpense */}
-      <Modal
-        isOpen={isExpenseModalOpen && expenseModalProject !== null}
-        onClose={() => {
-          setIsExpenseModalOpen(false);
-          setExpenseModalProject(null);
-          setExpenseForm({ amount: "", description: "" });
-          setEditingExpense(null);
-        }}
-        title={`Add Expense - ${expenseModalProject?.projectName ?? ""}`}
-        size="lg"
-      >
-        {expenseModalProject && (() => {
-          const { totalExpense, completeCost, profitLoss, expenses } = getExpenseSummary(expenseModalProject);
-          const displayOrderValue = getOrderValue(expenseModalProject);
-          return (
-            <div className="space-y-6">
-              {canSeeExpenseData && (
-                <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project cost (₹) — editable</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={displayOrderValue || ""}
-                  onChange={(e) => setOrderValueForProject(expenseModalProject.id, parseFloat(e.target.value) || 0)}
-                  onBlur={(e) => {
-                    const v = parseFloat(e.target.value);
-                    if (!isNaN(v) && v >= 0 && v !== (expenseModalProject.orderValue ?? 0)) {
-                      saveProjectCost(expenseModalProject.id, v);
-                    }
-                  }}
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  placeholder="Enter project cost"
-                />
-              </div>
-
-              <div className="border-2 border-amber-200 bg-amber-50 rounded-lg p-4">
-                <h4 className="font-semibold text-amber-900 mb-2">Profit / Loss</h4>
-                <p className="text-xs text-gray-600 mb-2">Total project cost minus total expense.</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Total project cost</span>
-                    <span className="font-medium">₹{completeCost.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Total expense</span>
-                    <span className="font-medium">₹{totalExpense.toLocaleString("en-IN")}</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-amber-200 flex items-center justify-between">
-                  <span className="font-semibold text-gray-800">Result</span>
-                  <span className={`font-bold text-lg ${profitLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
-                    {profitLoss >= 0 ? "Profit" : "Loss"}: ₹{Math.abs(profitLoss).toLocaleString("en-IN")}
-                  </span>
-                </div>
-              </div>
-                </>
-              )}
-
-              {canAddExpense && (
-              <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
-                <h4 className="font-semibold text-gray-900 mb-3">Add new expense</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Amount (₹) *</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={expenseForm.amount}
-                      onChange={(e) => setExpenseForm((f) => ({ ...f, amount: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                    <input
-                      type="text"
-                      value={expenseForm.description}
-                      onChange={(e) => setExpenseForm((f) => ({ ...f, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      placeholder="e.g. Material, Labour"
-                    />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleAddExpense(expenseModalProject.id)}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium"
-                >
-                  <IoAdd className="w-4 h-4" />
-                  Add Expense
-                </button>
-              </div>
-              )}
-
-              {canSeeExpenseData && expenses.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Added expenses</h4>
-                  <ul className="space-y-2 max-h-40 overflow-y-auto">
-                    {expenses.map((exp) => {
-                      const isEditing = canEditExpense && editingExpense?.expenseId === exp.id && editingExpense?.projectId === expenseModalProject.id;
-                      return (
-                        <li key={exp.id} className="flex items-center justify-between py-2 px-3 bg-white border border-gray-200 rounded-lg">
-                          {isEditing ? (
-                            <>
-                              <div className="flex-1 grid grid-cols-2 gap-2 mr-2">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  value={editingExpense.amount}
-                                  onChange={(e) => setEditingExpense((p) => (p ? { ...p, amount: e.target.value } : null))}
-                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                                  placeholder="Amount"
-                                />
-                                <input
-                                  type="text"
-                                  value={editingExpense.description}
-                                  onChange={(e) => setEditingExpense((p) => (p ? { ...p, description: e.target.value } : null))}
-                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                                  placeholder="Description"
-                                />
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <button type="button" onClick={() => handleUpdateExpense(expenseModalProject.id, exp.id)} className="text-green-600 hover:text-green-700 p-1" aria-label="Save"><IoCheckmark className="w-5 h-5" /></button>
-                                <button type="button" onClick={() => setEditingExpense(null)} className="text-gray-500 hover:text-gray-700 p-1" aria-label="Cancel"><IoCloseCircle className="w-5 h-5" /></button>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-gray-700">{exp.description}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">₹{exp.amount.toLocaleString("en-IN")}</span>
-                                {canEditExpense && (
-                                  <button type="button" onClick={() => setEditingExpense({ projectId: expenseModalProject.id, expenseId: exp.id, amount: String(exp.amount), description: exp.description })} className="text-amber-600 hover:text-amber-700 p-1" aria-label="Edit"><IoPencil className="w-5 h-5" /></button>
-                                )}
-                                {canDeleteExpense && (
-                                  <button type="button" onClick={() => removeExpense(expenseModalProject.id, exp.id)} className="text-red-600 hover:text-red-700 p-1" aria-label="Remove"><IoCloseCircle className="w-5 h-5" /></button>
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-      </Modal>
-
-      {/* Expense & P/L Details Modal */}
-      <Modal
-        isOpen={isExpenseDetailsModalOpen && expenseDetailsProject !== null}
-        onClose={() => {
-          setIsExpenseDetailsModalOpen(false);
-          setExpenseDetailsProject(null);
-          setEditingExpense(null);
-        }}
-        title={`Expense & P/L Details — ${expenseDetailsProject?.projectName ?? ""}`}
-        size="lg"
-      >
-        {expenseDetailsProject && (() => {
-          const { totalExpense, completeCost, profitLoss, expenses } = getExpenseSummary(expenseDetailsProject);
-          return (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <p className="text-gray-600"><span className="font-medium text-gray-800">Customer:</span> {expenseDetailsProject.customerName}</p>
-                <p className="text-gray-600"><span className="font-medium text-gray-800">Location:</span> {expenseDetailsProject.location}</p>
-              </div>
-
-              <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-800">Summary</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-800">Amount (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    <tr>
-                      <td className="py-3 px-4 text-gray-700">Total project cost</td>
-                      <td className="py-3 px-4 text-right font-medium">₹{completeCost.toLocaleString("en-IN")}</td>
-                    </tr>
-                    <tr className="bg-amber-50">
-                      <td className="py-3 px-4 font-medium text-gray-800">Total expense</td>
-                      <td className="py-3 px-4 text-right font-medium">₹{totalExpense.toLocaleString("en-IN")}</td>
-                    </tr>
-                    <tr className="bg-green-50">
-                      <td className="py-3 px-4 font-semibold text-gray-800">Profit / Loss (cost − expense)</td>
-                      <td className={`py-3 px-4 text-right font-bold ${profitLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {profitLoss >= 0 ? "Profit" : "Loss"} ₹{Math.abs(profitLoss).toLocaleString("en-IN")}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Expense breakdown</h4>
-                {expenses.length === 0 ? (
-                  <p className="text-gray-500 text-sm py-2">No expenses added yet.</p>
-                ) : (
-                  <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">#</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Description</th>
-                          <th className="text-right py-2 px-3 font-medium text-gray-700">Amount (₹)</th>
-                          {(canEditExpense || canDeleteExpense) && <th className="text-right py-2 px-3 font-medium text-gray-700">Actions</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {expenses.map((exp, i) => {
-                          const isEditing = canEditExpense && editingExpense?.expenseId === exp.id && editingExpense?.projectId === expenseDetailsProject.id;
-                          return (
-                            <tr key={exp.id}>
-                              <td className="py-2 px-3 text-gray-500">{i + 1}</td>
-                              {isEditing ? (
-                                <>
-                                  <td className="py-2 px-3"><input type="text" value={editingExpense.description} onChange={(e) => setEditingExpense((p) => (p ? { ...p, description: e.target.value } : null))} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" /></td>
-                                  <td className="py-2 px-3"><input type="number" min="0" step="0.01" value={editingExpense.amount} onChange={(e) => setEditingExpense((p) => (p ? { ...p, amount: e.target.value } : null))} className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right" /></td>
-                                  <td className="py-2 px-3 text-right">
-                                    <div className="flex justify-end gap-1">
-                                      <button type="button" onClick={() => handleUpdateExpense(expenseDetailsProject.id, exp.id)} className="text-green-600 hover:text-green-700 p-1" aria-label="Save"><IoCheckmark className="w-5 h-5" /></button>
-                                      <button type="button" onClick={() => setEditingExpense(null)} className="text-gray-500 hover:text-gray-700 p-1" aria-label="Cancel"><IoCloseCircle className="w-5 h-5" /></button>
-                                    </div>
-                                  </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td className="py-2 px-3 text-gray-800">{exp.description}</td>
-                                  <td className="py-2 px-3 text-right font-medium">₹{exp.amount.toLocaleString("en-IN")}</td>
-                                  {(canEditExpense || canDeleteExpense) && (
-                                    <td className="py-2 px-3 text-right">
-                                      <div className="flex justify-end gap-1">
-                                        {canEditExpense && <button type="button" onClick={() => setEditingExpense({ projectId: expenseDetailsProject.id, expenseId: exp.id, amount: String(exp.amount), description: exp.description })} className="text-amber-600 hover:text-amber-700 p-1" aria-label="Edit"><IoPencil className="w-5 h-5" /></button>}
-                                        {canDeleteExpense && <button type="button" onClick={() => removeExpense(expenseDetailsProject.id, exp.id)} className="text-red-600 hover:text-red-700 p-1" aria-label="Remove"><IoCloseCircle className="w-5 h-5" /></button>}
-                                      </div>
-                                    </td>
-                                  )}
-                                </>
-                              )}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                      <tfoot className="bg-gray-50 border-t-2 border-gray-200">
-                        <tr>
-                          <td className="py-2 px-3" colSpan={2}><span className="font-semibold text-gray-800">Total expense</span></td>
-                          <td className="py-2 px-3 text-right font-semibold">₹{totalExpense.toLocaleString("en-IN")}</td>
-                          {(canEditExpense || canDeleteExpense) && <td className="py-2 px-3" />}
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
-      </Modal>
-        </>
-      )}
-
       {/* Create Project Modal */}
       <Modal
         isOpen={isCreateModalOpen}
@@ -1019,7 +553,6 @@ export default function ProjectsPage() {
             assignedEngineer: "",
             status: "On Track",
             currentStage: "First Technical Visit",
-            projectCost: "",
           });
         }}
         title="Create New Project"
@@ -1183,18 +716,6 @@ export default function ProjectsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project Cost (₹) — optional</label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={newProject.projectCost === "" ? "" : newProject.projectCost}
-                onChange={(e) => setNewProject({ ...newProject, projectCost: e.target.value === "" ? "" : e.target.value })}
-                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-                placeholder="Optional"
-              />
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={newProject.status}
@@ -1244,7 +765,6 @@ export default function ProjectsPage() {
                   assignedEngineer: "",
                   status: "On Track",
                   currentStage: "First Technical Visit",
-                  projectCost: "",
                 });
               }}
               className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
