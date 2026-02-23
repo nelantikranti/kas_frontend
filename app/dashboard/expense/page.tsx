@@ -24,7 +24,8 @@ export default function ExpensePage() {
   const canAddExpense = can(PERMISSIONS.EXPENSE_ADD, userPermissions);
   const canDeleteExpense = can(PERMISSIONS.EXPENSE_DELETE, userPermissions);
   const viewOnlyExpense = canView && !canEditExpense && !canAddExpense && !canDeleteExpense;
-  const showCostAndPL = !viewOnlyExpense && !canEditExpense && !canAddExpense;
+  const hasAllOrMultipleExpensePermissions = canView && (canAddExpense || canEditExpense || canDeleteExpense);
+  const showCostAndPL = hasAllOrMultipleExpensePermissions;
 
   useEffect(() => {
     if (!canView) {

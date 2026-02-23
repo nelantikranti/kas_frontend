@@ -44,6 +44,8 @@ export default function ProjectsPage() {
   const canDeleteExpense = can(PERMISSIONS.EXPENSE_DELETE, userPermissions);
   const canSeeExpenseList = canViewExpense || canDeleteExpense || canEditExpense;
   const addExpenseOnly = canAddExpense && !canViewExpense && !canEditExpense && !canDeleteExpense;
+  const hasAllOrMultipleExpensePermissions =
+    canViewExpense && (canAddExpense || canEditExpense || canDeleteExpense);
 
   const [projectList, setProjectList] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -617,7 +619,7 @@ export default function ProjectsPage() {
 
             <div
               className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-gray-200 ${
-                canAddExpense ? "lg:grid-cols-4" : canEditExpense ? "lg:grid-cols-5" : "lg:grid-cols-6"
+                addExpenseOnly ? "lg:grid-cols-4" : hasAllOrMultipleExpensePermissions ? "lg:grid-cols-6" : "lg:grid-cols-5"
               }`}
             >
               <div>
@@ -636,8 +638,8 @@ export default function ProjectsPage() {
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Expected Completion</p>
                 <p className="text-sm sm:text-base font-medium text-gray-900">{project.expectedCompletion}</p>
               </div>
-              {/* Total project cost - never show when user has add or edit expense permission */}
-              {!canEditExpense && !canAddExpense && (
+              {/* Total project cost - show when user has all/multiple expense permissions (view + add/edit/delete) */}
+              {hasAllOrMultipleExpensePermissions && (
                 <div>
                   <p className="text-xs sm:text-sm text-gray-500 mb-1">Total project cost</p>
                   <p className="text-sm sm:text-base font-medium text-gray-900">
@@ -645,8 +647,8 @@ export default function ProjectsPage() {
                   </p>
                 </div>
               )}
-              {/* Expense / P&L - hide entirely when user has add expense permission (only add, no cost/P&L) */}
-              {!canAddExpense && (
+              {/* Expense / P&L - hide for add-only; show "View expenses" or P&L numbers when user has all/multiple */}
+              {!addExpenseOnly && (
                 <div>
                   <p className="text-xs sm:text-sm text-gray-500 mb-1">Expense / P&amp;L</p>
                   {canSeeExpenseList ? (
@@ -655,7 +657,22 @@ export default function ProjectsPage() {
                       onClick={() => openExpenseDetail(project)}
                       className="text-left w-full rounded-lg border border-gray-200 p-2 hover:bg-gray-50 transition-colors"
                     >
-                      <p className="text-sm text-blue-600 font-medium">View expenses</p>
+                      {hasAllOrMultipleExpensePermissions ? (() => {
+                        const expenses = expensesByProject[project.id] || [];
+                        const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
+                        const cost = project.orderValue ?? 0;
+                        const profitLoss = cost - totalExpense;
+                        return cost <= 0 ? (
+                          <p className="text-sm text-gray-500">Set cost for P/L</p>
+                        ) : (
+                          <p className={`text-sm font-medium flex items-center gap-1 ${profitLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
+                            {profitLoss >= 0 ? <IoTrendingUp className="w-4 h-4" /> : <IoTrendingDown className="w-4 h-4" />}
+                            {profitLoss >= 0 ? "Profit" : "Loss"} ₹{Math.abs(profitLoss).toLocaleString("en-IN")}
+                          </p>
+                        );
+                      })() : (
+                        <p className="text-sm text-blue-600 font-medium">View expenses</p>
+                      )}
                     </button>
                   ) : (
                     <p className="text-sm text-gray-400 py-2">—</p>
@@ -798,8 +815,8 @@ export default function ProjectsPage() {
       >
         {expenseProject && (
           <div className="space-y-6">
-            {/* Total project cost - hidden when user has add or edit expense (only add expense permission, no cost) */}
-            {!addExpenseOnly && !canEditExpense && !canAddExpense && (
+            {/* Total project cost - show when user has all/multiple expense permissions */}
+            {hasAllOrMultipleExpensePermissions && (
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <h4 className="font-semibold text-gray-900 mb-2">Total project cost</h4>
               <p className="text-sm text-gray-600 mb-2">Set the project cost (order value) to calculate profit or loss.</p>
@@ -862,8 +879,8 @@ export default function ProjectsPage() {
             </div>
             )}
 
-            {/* Summary: Project cost, Total expense, Profit/Loss - hide when user has add or edit expense */}
-            {!addExpenseOnly && !canEditExpense && !canAddExpense && (
+            {/* Summary: Project cost, Total expense, Profit/Loss - show when user has all/multiple expense permissions */}
+            {hasAllOrMultipleExpensePermissions && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg border border-gray-200 p-4">
                 <p className="text-sm text-gray-500 mb-1">Project cost</p>
@@ -1007,7 +1024,32 @@ export default function ProjectsPage() {
       >
         {expenseDetailProject && (
           <div className="space-y-4">
-            {/* Project cost, Total expense, P/L - hidden for edit-expense (they only view & edit expenses) */}
+            {/* Project cost, Total expense, P/L - show when user has all/multiple expense permissions */}
+            {hasAllOrMultipleExpensePermissions && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-gray-500">Project cost</p>
+                <p className="font-bold text-gray-900">
+                  {(expenseDetailProject.orderValue ?? 0) > 0 ? `₹${(expenseDetailProject.orderValue ?? 0).toLocaleString("en-IN")}` : "Not set"}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-gray-500">Total expense</p>
+                <p className="font-bold text-gray-900">₹{expenseDetailList.reduce((s, e) => s + e.amount, 0).toLocaleString("en-IN")}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-gray-500">P/L</p>
+                {(expenseDetailProject.orderValue ?? 0) <= 0 ? (
+                  <p className="text-gray-400">Set cost</p>
+                ) : (
+                  <p className={`font-bold ${(expenseDetailProject.orderValue ?? 0) - expenseDetailList.reduce((s, e) => s + e.amount, 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {(expenseDetailProject.orderValue ?? 0) - expenseDetailList.reduce((s, e) => s + e.amount, 0) >= 0 ? "Profit" : "Loss"} ₹
+                    {Math.abs((expenseDetailProject.orderValue ?? 0) - expenseDetailList.reduce((s, e) => s + e.amount, 0)).toLocaleString("en-IN")}
+                  </p>
+                )}
+              </div>
+            </div>
+            )}
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
