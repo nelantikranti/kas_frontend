@@ -18,6 +18,7 @@ import {
   IoChevronForward,
   IoNewspaper,
   IoChatbubbles,
+  IoWallet,
 } from "react-icons/io5";
 import { PERMISSIONS, can } from "@/lib/permissions";
 
@@ -47,6 +48,7 @@ const allNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <IoHome className="w-5 h-5" />, requiredPermission: PERMISSIONS.DASHBOARD_VIEW },
   { name: "Leads", href: "/dashboard/leads", icon: <IoPeople className="w-5 h-5" />, requiredPermission: PERMISSIONS.LEADS_VIEW },
   { name: "Projects", href: "/dashboard/projects", icon: <IoFolder className="w-5 h-5" />, requiredPermission: PERMISSIONS.PROJECTS_VIEW },
+  { name: "Expense", href: "/dashboard/expense", icon: <IoWallet className="w-5 h-5" />, requiredPermission: PERMISSIONS.EXPENSE_VIEW },
   { name: "Quotations", href: "/dashboard/quotations", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.QUOTATIONS_VIEW },
   { name: "Reminders", href: "/dashboard/reminders", icon: <IoTime className="w-5 h-5" />, requiredPermission: PERMISSIONS.LEADS_VIEW },
   { name: "AMC & Services", href: "/dashboard/amc", icon: <IoCalendar className="w-5 h-5" />, requiredPermission: PERMISSIONS.AMC_VIEW },
@@ -61,12 +63,12 @@ const allNavItems: NavItem[] = [
 
 // Helper function to get filtered nav items based on user permissions
 const getNavItems = (userRole: string | null, userPermissions: string[] = []): NavItem[] => {
-  // Admin sees everything
-  if (userRole === "Admin") {
-    return allNavItems;
-  }
   
   // Filter by permissions
+  // Only Superadmin bypasses permissions; everyone else (including Admin) is filtered by permissions
+  if (userRole === "Superadmin") {
+    return allNavItems;
+  }
   return allNavItems.filter(item => {
     if (!item.requiredPermission) return true;
     return can(item.requiredPermission, userPermissions);

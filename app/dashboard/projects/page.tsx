@@ -5,10 +5,11 @@ import { projectsAPI, Project, ProjectStage } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Timeline from "@/components/Timeline";
 import Modal from "@/components/Modal";
-import { IoAdd, IoSearch, IoDocumentText, IoCloudUpload, IoCheckmarkCircle, IoCloseCircle, IoTime, IoStatsChart, IoBuild, IoConstruct, IoClipboard, IoShieldCheckmark, IoCube, IoCalendar } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCloudUpload, IoCheckmarkCircle, IoCloseCircle, IoTime, IoStatsChart, IoBuild, IoConstruct, IoClipboard, IoShieldCheckmark, IoCube, IoCalendar, IoWallet, IoTrendingUp, IoTrendingDown, IoCreate, IoTrash } from "react-icons/io5";
 import { toast } from "@/components/Toast";
 import ProjectLineGraph from "@/components/ProjectLineGraph";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 const projectStages: ProjectStage[] = [
   "First Technical Visit",
@@ -36,6 +37,14 @@ const stageConfig = [
 ];
 
 export default function ProjectsPage() {
+  const userPermissions = getUserPermissions();
+  const canViewExpense = can(PERMISSIONS.EXPENSE_VIEW, userPermissions);
+  const canAddExpense = can(PERMISSIONS.EXPENSE_ADD, userPermissions);
+  const canEditExpense = can(PERMISSIONS.EXPENSE_EDIT, userPermissions);
+  const canDeleteExpense = can(PERMISSIONS.EXPENSE_DELETE, userPermissions);
+  const canSeeExpenseList = canViewExpense || canDeleteExpense || canEditExpense;
+  const addExpenseOnly = canAddExpense && !canViewExpense && !canEditExpense && !canDeleteExpense;
+
   const [projectList, setProjectList] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +52,21 @@ export default function ProjectsPage() {
   const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [expenseProject, setExpenseProject] = useState<Project | null>(null);
+  const [projectExpenses, setProjectExpenses] = useState<{ id: string; amount: number; description: string }[]>([]);
+  const [expenseForm, setExpenseForm] = useState({ amount: "", description: "" });
+  const [expenseLoading, setExpenseLoading] = useState(false);
+  const [expensesByProject, setExpensesByProject] = useState<Record<string, { id: string; amount: number; description: string }[]>>({});
+  const [projectCostInput, setProjectCostInput] = useState("");
+  const [savingProjectCost, setSavingProjectCost] = useState(false);
+  const [isExpenseDetailOpen, setIsExpenseDetailOpen] = useState(false);
+  const [expenseDetailProject, setExpenseDetailProject] = useState<Project | null>(null);
+  const [expenseDetailList, setExpenseDetailList] = useState<{ id: string; amount: number; description: string }[]>([]);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editExpenseForm, setEditExpenseForm] = useState({ amount: "", description: "" });
+  const [editingExpenseIdInAddModal, setEditingExpenseIdInAddModal] = useState<string | null>(null);
+  const [editExpenseFormInAddModal, setEditExpenseFormInAddModal] = useState({ amount: "", description: "" });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [newProject, setNewProject] = useState({
@@ -79,6 +103,22 @@ export default function ProjectsPage() {
       setLoading(true);
       const projects = await projectsAPI.getAll();
       setProjectList(projects);
+      if (!canSeeExpenseList) {
+        setExpensesByProject({});
+        return;
+      }
+      const map: Record<string, { id: string; amount: number; description: string }[]> = {};
+      await Promise.all(
+        projects.map(async (p: Project) => {
+          try {
+            const list = await projectsAPI.getExpenses(p.id);
+            map[p.id] = Array.isArray(list) ? list : [];
+          } catch {
+            map[p.id] = [];
+          }
+        })
+      );
+      setExpensesByProject(map);
     } catch (error) {
       console.error("Failed to load projects:", error);
     } finally {
@@ -128,6 +168,179 @@ export default function ProjectsPage() {
     } catch (error: any) {
       console.error("Failed to delete project:", error);
       toast.error(error?.message || "Failed to delete project. Please try again.");
+    }
+  };
+
+  const openExpenseModal = async (project: Project) => {
+    setExpenseProject(project);
+    setExpenseForm({ amount: "", description: "" });
+    setProjectCostInput((project.orderValue ?? 0) > 0 ? String(project.orderValue) : "");
+    setIsExpenseModalOpen(true);
+    if (addExpenseOnly) {
+      setProjectExpenses([]);
+      return;
+    }
+    try {
+      const list = await projectsAPI.getExpenses(project.id);
+      setProjectExpenses(Array.isArray(list) ? list : []);
+    } catch {
+      setProjectExpenses([]);
+    }
+  };
+
+  const handleSaveProjectCost = async () => {
+    if (!expenseProject) return;
+    const value = parseFloat(projectCostInput.replace(/[^\d.-]/g, ""));
+    if (isNaN(value) || value < 0) {
+      toast.error("Please enter a valid project cost.");
+      return;
+    }
+    try {
+      setSavingProjectCost(true);
+      await projectsAPI.update(expenseProject.id, { orderValue: value });
+      setProjectList((prev) =>
+        prev.map((p) => (p.id === expenseProject.id ? { ...p, orderValue: value } : p))
+      );
+      setExpenseProject((p) => (p && p.id === expenseProject.id ? { ...p, orderValue: value } : p));
+      setExpensesByProject((prev) => prev);
+      toast.success("Project cost saved.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to save project cost.");
+    } finally {
+      setSavingProjectCost(false);
+    }
+  };
+
+  const closeExpenseModal = () => {
+    setIsExpenseModalOpen(false);
+    setExpenseProject(null);
+    setProjectExpenses([]);
+    setExpenseForm({ amount: "", description: "" });
+    setProjectCostInput("");
+    setEditingExpenseIdInAddModal(null);
+  };
+
+  const handleAddExpense = async () => {
+    if (!expenseProject) return;
+    const amount = parseFloat(expenseForm.amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid expense amount.");
+      return;
+    }
+    try {
+      setExpenseLoading(true);
+      await projectsAPI.addExpense(expenseProject.id, {
+        amount,
+        description: expenseForm.description.trim() || "Expense",
+      });
+      const list = await projectsAPI.getExpenses(expenseProject.id);
+      setProjectExpenses(Array.isArray(list) ? list : []);
+      setExpensesByProject((prev) => ({ ...prev, [expenseProject.id]: list }));
+      setExpenseForm({ amount: "", description: "" });
+      toast.success("Expense added successfully!");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to add expense. Please try again.");
+    } finally {
+      setExpenseLoading(false);
+    }
+  };
+
+  const openExpenseDetail = async (project: Project) => {
+    setIsExpenseModalOpen(false);
+    setExpenseDetailProject(project);
+    setEditingExpenseId(null);
+    setIsExpenseDetailOpen(true);
+    try {
+      const list = await projectsAPI.getExpenses(project.id);
+      setExpenseDetailList(Array.isArray(list) ? list : []);
+    } catch {
+      setExpenseDetailList([]);
+    }
+  };
+
+  const closeExpenseDetail = () => {
+    setIsExpenseDetailOpen(false);
+    setExpenseDetailProject(null);
+    setExpenseDetailList([]);
+    setEditingExpenseId(null);
+  };
+
+  const refreshExpenseDetailAndCard = async () => {
+    if (!expenseDetailProject) return;
+    const list = await projectsAPI.getExpenses(expenseDetailProject.id);
+    setExpenseDetailList(Array.isArray(list) ? list : []);
+    setExpensesByProject((prev) => ({ ...prev, [expenseDetailProject.id]: list }));
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!expenseDetailProject || !editingExpenseId) return;
+    const amount = parseFloat(editExpenseForm.amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Enter a valid amount.");
+      return;
+    }
+    try {
+      await projectsAPI.updateExpense(expenseDetailProject.id, editingExpenseId, {
+        amount,
+        description: editExpenseForm.description.trim() || "Expense",
+      });
+      await refreshExpenseDetailAndCard();
+      setEditingExpenseId(null);
+      toast.success("Expense updated.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update expense.");
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    if (!expenseDetailProject) return;
+    if (!confirm("Delete this expense?")) return;
+    try {
+      await projectsAPI.deleteExpense(expenseDetailProject.id, expenseId);
+      await refreshExpenseDetailAndCard();
+      toast.success("Expense deleted.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete expense.");
+    }
+  };
+
+  const refreshAddModalExpenses = async () => {
+    if (!expenseProject) return;
+    const list = await projectsAPI.getExpenses(expenseProject.id);
+    setProjectExpenses(Array.isArray(list) ? list : []);
+    setExpensesByProject((prev) => ({ ...prev, [expenseProject.id]: list }));
+  };
+
+  const handleUpdateExpenseInAddModal = async () => {
+    if (!expenseProject || !editingExpenseIdInAddModal) return;
+    const amount = parseFloat(editExpenseFormInAddModal.amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Enter a valid amount.");
+      return;
+    }
+    try {
+      await projectsAPI.updateExpense(expenseProject.id, editingExpenseIdInAddModal, {
+        amount,
+        description: editExpenseFormInAddModal.description.trim() || "Expense",
+      });
+      await refreshAddModalExpenses();
+      setEditingExpenseIdInAddModal(null);
+      toast.success("Expense updated.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update expense.");
+    }
+  };
+
+  const handleDeleteExpenseInAddModal = async (expenseId: string) => {
+    if (!expenseProject) return;
+    if (!confirm("Delete this expense?")) return;
+    try {
+      await projectsAPI.deleteExpense(expenseProject.id, expenseId);
+      await refreshAddModalExpenses();
+      setEditingExpenseIdInAddModal(null);
+      toast.success("Expense deleted.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete expense.");
     }
   };
 
@@ -402,7 +615,11 @@ export default function ProjectsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-gray-200">
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-gray-200 ${
+                canAddExpense ? "lg:grid-cols-4" : canEditExpense ? "lg:grid-cols-5" : "lg:grid-cols-6"
+              }`}
+            >
               <div>
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Elevator Type</p>
                 <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{project.elevatorType}</p>
@@ -419,6 +636,32 @@ export default function ProjectsPage() {
                 <p className="text-xs sm:text-sm text-gray-500 mb-1">Expected Completion</p>
                 <p className="text-sm sm:text-base font-medium text-gray-900">{project.expectedCompletion}</p>
               </div>
+              {/* Total project cost - never show when user has add or edit expense permission */}
+              {!canEditExpense && !canAddExpense && (
+                <div>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1">Total project cost</p>
+                  <p className="text-sm sm:text-base font-medium text-gray-900">
+                    {(project.orderValue ?? 0) > 0 ? `₹${(project.orderValue ?? 0).toLocaleString("en-IN")}` : "—"}
+                  </p>
+                </div>
+              )}
+              {/* Expense / P&L - hide entirely when user has add expense permission (only add, no cost/P&L) */}
+              {!canAddExpense && (
+                <div>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1">Expense / P&amp;L</p>
+                  {canSeeExpenseList ? (
+                    <button
+                      type="button"
+                      onClick={() => openExpenseDetail(project)}
+                      className="text-left w-full rounded-lg border border-gray-200 p-2 hover:bg-gray-50 transition-colors"
+                    >
+                      <p className="text-sm text-blue-600 font-medium">View expenses</p>
+                    </button>
+                  ) : (
+                    <p className="text-sm text-gray-400 py-2">—</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
@@ -429,7 +672,16 @@ export default function ProjectsPage() {
                 <span className="hidden sm:inline">View Timeline →</span>
                 <span className="sm:hidden">View Timeline</span>
               </button>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                {canAddExpense && (
+                <button
+                  onClick={() => openExpenseModal(project)}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm flex-1 sm:flex-none"
+                >
+                  <IoWallet className="w-4 h-4" />
+                  Add Expense
+                </button>
+                )}
                 <button
                   onClick={() => {
                     setSelectedProject(project);
@@ -532,6 +784,309 @@ export default function ProjectsPage() {
               <p className="text-xs text-gray-500 text-center">
                 Document upload functionality will be connected to backend storage
               </p>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Add Expense Modal */}
+      <Modal
+        isOpen={isExpenseModalOpen && expenseProject !== null}
+        onClose={closeExpenseModal}
+        title={expenseProject ? `Add Expense - ${expenseProject.projectName}` : "Add Expense"}
+        size="lg"
+      >
+        {expenseProject && (
+          <div className="space-y-6">
+            {/* Total project cost - hidden when user has add or edit expense (only add expense permission, no cost) */}
+            {!addExpenseOnly && !canEditExpense && !canAddExpense && (
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="font-semibold text-gray-900 mb-2">Total project cost</h4>
+              <p className="text-sm text-gray-600 mb-2">Set the project cost (order value) to calculate profit or loss.</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={projectCostInput}
+                  onChange={(e) => setProjectCostInput(e.target.value)}
+                  className="w-40 px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="₹ Project cost"
+                />
+                <button
+                  onClick={handleSaveProjectCost}
+                  disabled={savingProjectCost}
+                  className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 font-medium text-sm"
+                >
+                  {savingProjectCost ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </div>
+            )}
+
+            {/* Add expense form - only when user can add */}
+            {canAddExpense && (
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-900 mb-3">New Expense</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={expenseForm.amount}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    placeholder="Enter amount"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <input
+                    type="text"
+                    value={expenseForm.description}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    placeholder="e.g. Material, Labour"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={handleAddExpense}
+                disabled={expenseLoading || !expenseForm.amount.trim()}
+                className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm"
+              >
+                {expenseLoading ? "Adding…" : "Add Expense"}
+              </button>
+            </div>
+            )}
+
+            {/* Summary: Project cost, Total expense, Profit/Loss - hide when user has add or edit expense */}
+            {!addExpenseOnly && !canEditExpense && !canAddExpense && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <p className="text-sm text-gray-500 mb-1">Project cost</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {(expenseProject.orderValue ?? 0) > 0
+                    ? `₹${(expenseProject.orderValue ?? 0).toLocaleString("en-IN")}`
+                    : "Not set"}
+                </p>
+              </div>
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <p className="text-sm text-gray-500 mb-1">Total expense</p>
+                <p className="text-lg font-bold text-gray-900">
+                  ₹{projectExpenses.reduce((sum, e) => sum + e.amount, 0).toLocaleString("en-IN")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => expenseProject && openExpenseDetail(expenseProject)}
+                className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <p className="text-sm text-gray-500 mb-1">Profit / Loss (click to view all)</p>
+                {(expenseProject.orderValue ?? 0) <= 0 ? (
+                  <p className="text-sm text-gray-400">Set project cost to see P/L</p>
+                ) : (
+                  <p className={`text-lg font-bold flex items-center gap-1 ${(() => {
+                    const projectCost = expenseProject.orderValue ?? 0;
+                    const totalExpense = projectExpenses.reduce((sum, e) => sum + e.amount, 0);
+                    const profitLoss = projectCost - totalExpense;
+                    return profitLoss >= 0 ? "text-green-600" : "text-red-600";
+                  })()}`}>
+                    {(() => {
+                      const projectCost = expenseProject.orderValue ?? 0;
+                      const totalExpense = projectExpenses.reduce((sum, e) => sum + e.amount, 0);
+                      const profitLoss = projectCost - totalExpense;
+                      return (
+                        <>
+                          {profitLoss >= 0 ? <IoTrendingUp className="w-5 h-5" /> : <IoTrendingDown className="w-5 h-5" />}
+                          {profitLoss >= 0 ? "Profit" : "Loss"} ₹{Math.abs(profitLoss).toLocaleString("en-IN")}
+                        </>
+                      );
+                    })()}
+                  </p>
+                )}
+                <p className="text-xs text-blue-600 mt-1">View all expenses →</p>
+              </button>
+            </div>
+            )}
+
+            {/* List of existing expenses - hide for add-only */}
+            {!addExpenseOnly && projectExpenses.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Expense history</h4>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">Description</th>
+                        <th className="px-3 py-2 text-right font-medium text-gray-700">Amount</th>
+                        {(canEditExpense || canDeleteExpense) && <th className="px-3 py-2 text-right font-medium text-gray-700 w-24">Actions</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {projectExpenses.map((e) => (
+                        <tr key={e.id} className="hover:bg-gray-50">
+                          {editingExpenseIdInAddModal === e.id && canEditExpense ? (
+                            <>
+                              <td className="px-3 py-2">
+                                <input
+                                  value={editExpenseFormInAddModal.description}
+                                  onChange={(ev) => setEditExpenseFormInAddModal((f) => ({ ...f, description: ev.target.value }))}
+                                  className="w-full px-2 py-1 border rounded text-sm"
+                                  placeholder="Description"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={editExpenseFormInAddModal.amount}
+                                  onChange={(ev) => setEditExpenseFormInAddModal((f) => ({ ...f, amount: ev.target.value }))}
+                                  className="w-full px-2 py-1 border rounded text-sm text-right"
+                                  placeholder="Amount"
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <button type="button" onClick={handleUpdateExpenseInAddModal} className="text-green-600 hover:text-green-700 font-medium text-xs mr-2">Save</button>
+                                <button type="button" onClick={() => setEditingExpenseIdInAddModal(null)} className="text-gray-500 hover:text-gray-700 text-xs">Cancel</button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="px-3 py-2 text-gray-900">{e.description}</td>
+                              <td className="px-3 py-2 text-right font-medium">₹{e.amount.toLocaleString("en-IN")}</td>
+                              {(canEditExpense || canDeleteExpense) && (
+                              <td className="px-3 py-2 text-right">
+                                {canEditExpense && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingExpenseIdInAddModal(e.id);
+                                    setEditExpenseFormInAddModal({ amount: String(e.amount), description: e.description });
+                                  }}
+                                  className="text-blue-600 hover:text-blue-700 p-1 rounded"
+                                  title="Edit"
+                                >
+                                  <IoCreate className="w-4 h-4 inline" />
+                                </button>
+                                )}
+                                {canDeleteExpense && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteExpenseInAddModal(e.id)}
+                                  className="text-red-600 hover:text-red-700 p-1 rounded ml-1"
+                                  title="Delete"
+                                >
+                                  <IoTrash className="w-4 h-4 inline" />
+                                </button>
+                                )}
+                              </td>
+                              )}
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Expense detail modal - list only for view; + delete for delete perm; + cost/P&L and edit for edit perm */}
+      <Modal
+        isOpen={isExpenseDetailOpen && expenseDetailProject !== null}
+        onClose={closeExpenseDetail}
+        title={expenseDetailProject ? `Expenses - ${expenseDetailProject.projectName}` : "Expenses"}
+        size="lg"
+      >
+        {expenseDetailProject && (
+          <div className="space-y-4">
+            {/* Project cost, Total expense, P/L - hidden for edit-expense (they only view & edit expenses) */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">Description</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-700">Amount</th>
+                    {(canEditExpense || canDeleteExpense) && <th className="px-3 py-2 text-right font-medium text-gray-700 w-24">Actions</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {expenseDetailList.length === 0 ? (
+                    <tr>
+                      <td colSpan={canEditExpense || canDeleteExpense ? 3 : 2} className="px-3 py-6 text-center text-gray-500">No expenses yet. Add from the project card.</td>
+                    </tr>
+                  ) : (
+                    expenseDetailList.map((e) => (
+                      <tr key={e.id} className="hover:bg-gray-50">
+                        {editingExpenseId === e.id && canEditExpense ? (
+                          <>
+                            <td className="px-3 py-2">
+                              <input
+                                value={editExpenseForm.description}
+                                onChange={(ev) => setEditExpenseForm((f) => ({ ...f, description: ev.target.value }))}
+                                className="w-full px-2 py-1 border rounded text-sm"
+                                placeholder="Description"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editExpenseForm.amount}
+                                onChange={(ev) => setEditExpenseForm((f) => ({ ...f, amount: ev.target.value }))}
+                                className="w-full px-2 py-1 border rounded text-sm text-right"
+                                placeholder="Amount"
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <button onClick={handleUpdateExpense} className="text-green-600 hover:text-green-700 font-medium text-xs mr-2">Save</button>
+                              <button onClick={() => setEditingExpenseId(null)} className="text-gray-500 hover:text-gray-700 text-xs">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-3 py-2 text-gray-900">{e.description}</td>
+                            <td className="px-3 py-2 text-right font-medium">₹{e.amount.toLocaleString("en-IN")}</td>
+                            {(canEditExpense || canDeleteExpense) && (
+                            <td className="px-3 py-2 text-right">
+                              {canEditExpense && (
+                              <button
+                                onClick={() => {
+                                  setEditingExpenseId(e.id);
+                                  setEditExpenseForm({ amount: String(e.amount), description: e.description });
+                                }}
+                                className="text-blue-600 hover:text-blue-700 p-1 rounded"
+                                title="Edit"
+                              >
+                                <IoCreate className="w-4 h-4 inline" />
+                              </button>
+                              )}
+                              {canDeleteExpense && (
+                              <button
+                                onClick={() => handleDeleteExpense(e.id)}
+                                className="text-red-600 hover:text-red-700 p-1 rounded ml-1"
+                                title="Delete"
+                              >
+                                <IoTrash className="w-4 h-4 inline" />
+                              </button>
+                              )}
+                            </td>
+                            )}
+                          </>
+                        )}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
