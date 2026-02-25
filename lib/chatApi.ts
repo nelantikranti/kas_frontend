@@ -12,15 +12,16 @@ const getChatApiBaseUrl = (): string => {
 
 export interface ChatResponse {
   response: string;
+  redirect_to?: string | null;
 }
 
 /**
  * Send a user message to the chatbot API and return the bot's response.
  * @param message – The user's message text
- * @returns The bot's reply string
+ * @returns Object with response text and optional redirect_to (e.g. "/contact") to send user to that page
  * @throws On network error or non-OK response (caller can fall back to mock/local response)
  */
-export async function sendChatMessage(message: string): Promise<string> {
+export async function sendChatMessage(message: string): Promise<ChatResponse> {
   const baseUrl = getChatApiBaseUrl();
   const res = await fetch(`${baseUrl}/chat`, {
     method: "POST",
@@ -34,5 +35,8 @@ export async function sendChatMessage(message: string): Promise<string> {
   }
 
   const data: ChatResponse = await res.json();
-  return typeof data?.response === "string" ? data.response : "";
+  return {
+    response: typeof data?.response === "string" ? data.response : "",
+    redirect_to: data?.redirect_to ?? null,
+  };
 }

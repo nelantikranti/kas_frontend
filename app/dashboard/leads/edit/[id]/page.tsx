@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { leadsAPI, projectsAPI, type Lead } from "@/lib/api";
+import { leadsAPI, projectsAPI, groupsAPI, type Lead } from "@/lib/api";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
 import { IoArrowBack, IoCheckmarkCircle } from "react-icons/io5";
@@ -55,6 +55,7 @@ export default function EditLeadPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [originalStage, setOriginalStage] = useState<Lead["stage"]>("New Lead");
+  const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [leadData, setLeadData] = useState({
     // Basic Lead Details
     name: "",
@@ -112,13 +113,26 @@ export default function EditLeadPage() {
     assignedTo: "",
     notes: "",
     company: "",
+    groupId: "",
   });
 
   useEffect(() => {
     if (leadId) {
       loadLead();
+      loadGroups();
     }
   }, [leadId]);
+
+  const loadGroups = async () => {
+    try {
+      const data = await groupsAPI.getAll();
+      const list = Array.isArray(data) ? data : [];
+      setGroups(list.map((g: any) => ({ id: g.id, groupName: g.groupName })));
+    } catch (error) {
+      console.error("Failed to load groups:", error);
+      setGroups([]);
+    }
+  };
 
   const loadLead = async () => {
     try {
@@ -289,6 +303,7 @@ export default function EditLeadPage() {
         // Backend fields
         notes: notes,
         company: lead.company || "",
+        groupId: lead.groupId || "",
       });
       
       console.log("✅ Lead data loaded:", {
@@ -400,6 +415,9 @@ SALES OWNER:
         notes: notes,
         lastContact: leadData.contactDateTime || new Date().toISOString(),
       };
+
+      // Always send groupId so backend can clear group when user selects "Select Group"
+      updateData.groupId = leadData.groupId || null;
 
       await leadsAPI.update(leadId, updateData);
       
@@ -1162,6 +1180,23 @@ SALES OWNER:
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter sales executive name"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Group
+                  </label>
+                  <select
+                    value={leadData.groupId}
+                    onChange={(e) => setLeadData({ ...leadData, groupId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Group</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.groupName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

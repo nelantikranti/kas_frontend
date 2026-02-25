@@ -34,6 +34,14 @@ export const PERMISSIONS = {
   DEMO_REQUESTS_DELETE: "demo_requests:delete",
   TESTIMONIALS_VIEW: "testimonials:view",
   ACTIVITY_VIEW: "activity:view",
+  GROUPS_VIEW: "groups:view",
+  GROUPS_CREATE: "groups:create",
+  GROUPS_EDIT: "groups:edit",
+  GROUPS_DELETE: "groups:delete",
+  PIPELINES_VIEW: "pipelines:view",
+  PIPELINES_CREATE: "pipelines:create",
+  PIPELINES_EDIT: "pipelines:edit",
+  PIPELINES_DELETE: "pipelines:delete",
 } as const;
 
 // All permission values (Superadmin gets this list)
@@ -185,6 +193,24 @@ export const PERMISSION_GROUPS = [
     permissions: [
       { key: PERMISSIONS.DEMO_REQUESTS_VIEW, label: "Demo Requests View" },
       { key: PERMISSIONS.DEMO_REQUESTS_DELETE, label: "Demo Requests Delete" },
+    ],
+  },
+  {
+    label: "Groups",
+    permissions: [
+      { key: PERMISSIONS.GROUPS_VIEW, label: "Groups View" },
+      { key: PERMISSIONS.GROUPS_CREATE, label: "Groups Create" },
+      { key: PERMISSIONS.GROUPS_EDIT, label: "Groups Edit" },
+      { key: PERMISSIONS.GROUPS_DELETE, label: "Groups Delete" },
+    ],
+  },
+  {
+    label: "Leads Pipelines",
+    permissions: [
+      { key: PERMISSIONS.PIPELINES_VIEW, label: "Pipelines View" },
+      { key: PERMISSIONS.PIPELINES_CREATE, label: "Pipelines Create" },
+      { key: PERMISSIONS.PIPELINES_EDIT, label: "Pipelines Edit" },
+      { key: PERMISSIONS.PIPELINES_DELETE, label: "Pipelines Delete" },
     ],
   },
 ];

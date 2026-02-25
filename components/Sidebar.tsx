@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   IoHome,
   IoPeople,
+  IoPeopleCircle,
   IoDocumentText,
   IoFolder,
   IoCalendar,
@@ -19,6 +20,7 @@ import {
   IoNewspaper,
   IoChatbubbles,
   IoWallet,
+  IoList,
 } from "react-icons/io5";
 import { PERMISSIONS, can } from "@/lib/permissions";
 
@@ -47,6 +49,8 @@ interface User {
 const allNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <IoHome className="w-5 h-5" />, requiredPermission: PERMISSIONS.DASHBOARD_VIEW },
   { name: "Leads", href: "/dashboard/leads", icon: <IoPeople className="w-5 h-5" />, requiredPermission: PERMISSIONS.LEADS_VIEW },
+  { name: "Groups", href: "/dashboard/groups", icon: <IoPeopleCircle className="w-5 h-5" />, requiredPermission: PERMISSIONS.GROUPS_VIEW },
+  { name: "Leads Pipelines", href: "/dashboard/pipelines", icon: <IoList className="w-5 h-5" />, requiredPermission: PERMISSIONS.PIPELINES_VIEW },
   { name: "Projects", href: "/dashboard/projects", icon: <IoFolder className="w-5 h-5" />, requiredPermission: PERMISSIONS.PROJECTS_VIEW },
   { name: "Expense", href: "/dashboard/expense", icon: <IoWallet className="w-5 h-5" />, requiredPermission: PERMISSIONS.EXPENSE_VIEW },
   { name: "Quotations", href: "/dashboard/quotations", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.QUOTATIONS_VIEW },
@@ -71,6 +75,10 @@ const getNavItems = (userRole: string | null, userPermissions: string[] = []): N
   }
   return allNavItems.filter(item => {
     if (!item.requiredPermission) return true;
+    // Groups: show if user has GROUPS_VIEW or LEADS_VIEW (groups are lead groups)
+    if (item.requiredPermission === PERMISSIONS.GROUPS_VIEW) {
+      return can(PERMISSIONS.GROUPS_VIEW, userPermissions) || can(PERMISSIONS.LEADS_VIEW, userPermissions);
+    }
     return can(item.requiredPermission, userPermissions);
   });
 };
