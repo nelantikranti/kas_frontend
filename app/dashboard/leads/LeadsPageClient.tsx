@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { leadsAPI, projectsAPI, healthAPI, usersAPI, type Lead } from "@/lib/api";
+import { useSearchParams } from "next/navigation";
+import { leadsAPI, projectsAPI, healthAPI, usersAPI, groupsAPI, type Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import ContactReportModal from "@/components/ContactReportModal";
 import { toast } from "@/components/Toast";
-import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload, IoMegaphone } from "react-icons/io5";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
@@ -114,6 +115,7 @@ const getStageColor = (stage: Lead["stage"]) => {
 
 export default function LeadsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [leadList, setLeadList] = useState<Lead[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -134,6 +136,13 @@ export default function LeadsPage() {
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isAdsImportModalOpen, setIsAdsImportModalOpen] = useState(false);
+  const [adsImportPlatform, setAdsImportPlatform] = useState<"facebook" | "google">("facebook");
+  const [adsImporting, setAdsImporting] = useState(false);
+  const [fbImportCreds, setFbImportCreds] = useState({ accessToken: "", pageId: "", formId: "", assignedTo: "" });
+  const [googleImportCreds, setGoogleImportCreds] = useState({
+    clientId: "", clientSecret: "", refreshToken: "", customerId: "", developerToken: "", assignedTo: "",
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -144,6 +153,8 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string; permissions: string[] } | null>(null);
   const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
+  const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -266,6 +277,7 @@ export default function LeadsPage() {
     value: "",
     assignedTo: "Sales Executive 1",
     notes: "",
+    groupId: "",
   });
 
   useEffect(() => {
@@ -289,7 +301,27 @@ export default function LeadsPage() {
     };
 
     loadUser();
-    loadLeads();
+    // If coming from Groups page with a pre-selected groupId in URL, use it as initial filter
+    const initialGroupId = searchParams.get("groupId") || "";
+    if (initialGroupId) {
+      setSelectedGroupId(initialGroupId);
+      loadLeads(initialGroupId);
+    } else {
+      loadLeads();
+    }
+
+    const loadGroups = async () => {
+      try {
+        const data = await groupsAPI.getAll();
+        const list = Array.isArray(data) ? data : [];
+        setGroups(list.map((g: any) => ({ id: g.id, groupName: g.groupName })));
+      } catch (error) {
+        console.error("Failed to load groups:", error);
+        setGroups([]);
+      }
+    };
+
+    loadGroups();
 
     // Listen for storage changes (when user logs in/out in another tab)
     const handleStorageChange = (e: StorageEvent) => {
@@ -423,10 +455,11 @@ export default function LeadsPage() {
     checkBackendConnection();
   }, []);
 
-  const loadLeads = async () => {
+  const loadLeads = async (groupId?: string) => {
     try {
       setLoading(true);
-      const leads = await leadsAPI.getAll();
+      const filterGroupId = groupId !== undefined ? groupId : selectedGroupId;
+      const leads = await leadsAPI.getAll(filterGroupId || undefined);
       // Normalize MongoDB _id to id for consistency
       const normalizedLeads = leads.map((lead: any) => {
         const leadId = lead._id?.toString() || lead.id || "";
@@ -1393,7 +1426,7 @@ NEXT ACTION:
     }
 
     try {
-      const leadData = {
+      const leadData: any = {
         name: newLead.name,
         company: newLead.projectLocation, // Using project location as company for now
         email: newLead.email,
@@ -1404,6 +1437,10 @@ NEXT ACTION:
         assignedTo: newLead.assignedTo,
         notes: newLead.remarks,
       };
+
+      if (newLead.groupId) {
+        leadData.groupId = newLead.groupId;
+      }
 
       const createdLead = await leadsAPI.create(leadData);
       setLeadList([...leadList, createdLead]);
@@ -1425,6 +1462,7 @@ NEXT ACTION:
         value: "",
         assignedTo: "Sales Executive 1",
         notes: "",
+        groupId: "",
       });
     } catch (error: any) {
       console.error("Failed to create lead:", error);
@@ -1583,6 +1621,65 @@ NEXT ACTION:
     }
   };
 
+  const handleImportFromFacebook = async () => {
+    if (!fbImportCreds.accessToken.trim()) {
+      toast.error("Access Token is required.");
+      return;
+    }
+    if (!fbImportCreds.pageId.trim() && !fbImportCreds.formId.trim()) {
+      toast.error("Provide either Page ID or Form ID.");
+      return;
+    }
+    setAdsImporting(true);
+    try {
+      const res = await leadsAPI.importFromFacebook({
+        accessToken: fbImportCreds.accessToken.trim(),
+        pageId: fbImportCreds.pageId.trim() || undefined,
+        formId: fbImportCreds.formId.trim() || undefined,
+        assignedTo: fbImportCreds.assignedTo.trim() || (isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1")),
+        groupId: selectedGroupId || null,
+      });
+      toast.success(res.message || `Imported ${res.imported} lead(s) from Facebook Ads.`);
+      if (res.imported > 0) await loadLeads();
+      if (res.errors?.length) toast.error(res.errors.slice(0, 2).join(" "));
+      setIsAdsImportModalOpen(false);
+      setFbImportCreds({ accessToken: "", pageId: "", formId: "", assignedTo: "" });
+    } catch (e: any) {
+      toast.error(e.message || "Facebook import failed.");
+    } finally {
+      setAdsImporting(false);
+    }
+  };
+
+  const handleImportFromGoogleAds = async () => {
+    const { clientId, clientSecret, refreshToken, customerId, developerToken, assignedTo } = googleImportCreds;
+    if (!clientId.trim() || !clientSecret.trim() || !refreshToken.trim() || !customerId.trim() || !developerToken.trim()) {
+      toast.error("All Google Ads credentials are required.");
+      return;
+    }
+    setAdsImporting(true);
+    try {
+      const res = await leadsAPI.importFromGoogleAds({
+        clientId: clientId.trim(),
+        clientSecret: clientSecret.trim(),
+        refreshToken: refreshToken.trim(),
+        customerId: customerId.trim(),
+        developerToken: developerToken.trim(),
+        assignedTo: assignedTo.trim() || (isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1")),
+        groupId: selectedGroupId || null,
+      });
+      toast.success(res.message || `Imported ${res.imported} lead(s) from Google Ads.`);
+      if (res.imported > 0) await loadLeads();
+      if (res.errors?.length) toast.error(res.errors.slice(0, 2).join(" "));
+      setIsAdsImportModalOpen(false);
+      setGoogleImportCreds({ clientId: "", clientSecret: "", refreshToken: "", customerId: "", developerToken: "", assignedTo: "" });
+    } catch (e: any) {
+      toast.error(e.message || "Google Ads import failed.");
+    } finally {
+      setAdsImporting(false);
+    }
+  };
+
   const filteredLeads = leadList.filter(lead => {
     // Admin sees all leads (including all imported leads with assigned person's name)
     const userIsAdmin = isAdmin();
@@ -1687,6 +1784,22 @@ NEXT ACTION:
               className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
             />
           </div>
+          <select
+            value={selectedGroupId}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSelectedGroupId(v);
+              loadLeads(v || undefined);
+            }}
+            className="w-full sm:w-48 md:w-56 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+          >
+            <option value="">All Groups</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.groupName}
+              </option>
+            ))}
+          </select>
           <input
             type="file"
             ref={fileInputRef}
@@ -1706,6 +1819,17 @@ NEXT ACTION:
             {isImporting ? "Importing..." : "Import Excel"}
           </button>
           <button
+            onClick={() => setIsAdsImportModalOpen(true)}
+            disabled={backendConnected === false || adsImporting}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false || adsImporting
+              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+              : "bg-indigo-600 text-white hover:bg-indigo-700"
+              }`}
+          >
+            <IoMegaphone className="w-4 h-4 sm:w-5 sm:h-5" />
+            {adsImporting ? "Importing..." : "Import from Ads"}
+          </button>
+          <button
             onClick={() => setIsModalOpen(true)}
             disabled={backendConnected === false}
             className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false
@@ -1720,7 +1844,7 @@ NEXT ACTION:
       </div>
 
       {/* Search Results Info */}
-      {searchTerm && (
+      {(searchTerm || selectedGroupId) && (
         <div className={`mb-4 text-sm rounded-lg px-4 py-2 inline-block ${filteredLeads.length > 0
           ? "bg-green-50 border border-green-200 text-gray-600"
           : "bg-red-50 border border-red-200 text-red-600"
@@ -1728,13 +1852,18 @@ NEXT ACTION:
           {filteredLeads.length > 0 ? (
             <>
               Showing <span className="font-semibold text-green-700">{filteredLeads.length}</span> of <span className="font-semibold">{leadList.length}</span> leads
+              {selectedGroupId && (
+                <span className="ml-2">• Group: <span className="font-semibold">{groups.find((g) => g.id === selectedGroupId)?.groupName ?? "—"}</span></span>
+              )}
               {searchTerm && (
                 <span className="ml-2">• Search: "<span className="font-semibold">{searchTerm}</span>"</span>
               )}
             </>
           ) : (
             <>
-              No leads found matching "<span className="font-semibold">{searchTerm}</span>"
+              {selectedGroupId && !searchTerm
+                ? "No leads assigned to this group"
+                : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
             </>
           )}
         </div>
@@ -1916,6 +2045,9 @@ NEXT ACTION:
                   Source
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Group
+                </th>
+                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stage
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1963,6 +2095,9 @@ NEXT ACTION:
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {lead.source}
                     </td>
+                <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                  {lead.groupName || "-"}
+                </td>
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
                       <div className="relative min-w-[140px] sm:min-w-[160px] lg:min-w-[180px] max-w-full">
                         <select
@@ -2121,6 +2256,23 @@ NEXT ACTION:
                     {indianStates.map((state) => (
                       <option key={state} value={state}>
                         {state}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Group
+                  </label>
+                  <select
+                    value={newLead.groupId}
+                    onChange={(e) => setNewLead({ ...newLead, groupId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Group</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.groupName}
                       </option>
                     ))}
                   </select>
@@ -5854,6 +6006,176 @@ NEXT ACTION:
               </div>
             )}
           </div>
+        </div>
+      </Modal>
+
+      {/* Import from Ads (Facebook / Google Ads) Modal */}
+      <Modal
+        isOpen={isAdsImportModalOpen}
+        onClose={() => {
+          if (!adsImporting) {
+            setIsAdsImportModalOpen(false);
+            setAdsImportPlatform("facebook");
+          }
+        }}
+        title="Import leads from Ads"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="flex border-b border-gray-200">
+            <button
+              type="button"
+              onClick={() => setAdsImportPlatform("facebook")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${adsImportPlatform === "facebook"
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              Facebook Lead Ads
+            </button>
+            <button
+              type="button"
+              onClick={() => setAdsImportPlatform("google")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${adsImportPlatform === "google"
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              Google Ads
+            </button>
+          </div>
+
+          {adsImportPlatform === "facebook" && (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">Use a Page or User access token with <strong>leads_retrieval</strong> permission. Provide either Page ID (to fetch all forms) or Form ID (single form).</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Access Token *</label>
+                <input
+                  type="password"
+                  value={fbImportCreds.accessToken}
+                  onChange={(e) => setFbImportCreds((c) => ({ ...c, accessToken: e.target.value }))}
+                  placeholder="EAAxxxx..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Page ID</label>
+                  <input
+                    type="text"
+                    value={fbImportCreds.pageId}
+                    onChange={(e) => setFbImportCreds((c) => ({ ...c, pageId: e.target.value }))}
+                    placeholder="e.g. 123456789"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Form ID (optional if Page ID set)</label>
+                  <input
+                    type="text"
+                    value={fbImportCreds.formId}
+                    onChange={(e) => setFbImportCreds((c) => ({ ...c, formId: e.target.value }))}
+                    placeholder="Leadgen form ID"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assign to</label>
+                <input
+                  type="text"
+                  value={fbImportCreds.assignedTo}
+                  onChange={(e) => setFbImportCreds((c) => ({ ...c, assignedTo: e.target.value }))}
+                  placeholder={currentUser?.name || "Sales Executive 1"}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleImportFromFacebook}
+                disabled={adsImporting}
+                className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {adsImporting ? "Importing..." : "Import from Facebook Lead Ads"}
+              </button>
+            </div>
+          )}
+
+          {adsImportPlatform === "google" && (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">Use OAuth 2.0 credentials and Google Ads API developer token. Customer ID format: 123-456-7890.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Client ID *</label>
+                  <input
+                    type="text"
+                    value={googleImportCreds.clientId}
+                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, clientId: e.target.value }))}
+                    placeholder="xxx.apps.googleusercontent.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Client Secret *</label>
+                  <input
+                    type="password"
+                    value={googleImportCreds.clientSecret}
+                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, clientSecret: e.target.value }))}
+                    placeholder="GOCSPX-..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Refresh Token *</label>
+                <input
+                  type="password"
+                  value={googleImportCreds.refreshToken}
+                  onChange={(e) => setGoogleImportCreds((c) => ({ ...c, refreshToken: e.target.value }))}
+                  placeholder="1//..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer ID (Google Ads) *</label>
+                  <input
+                    type="text"
+                    value={googleImportCreds.customerId}
+                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, customerId: e.target.value }))}
+                    placeholder="123-456-7890"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Developer Token *</label>
+                  <input
+                    type="text"
+                    value={googleImportCreds.developerToken}
+                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, developerToken: e.target.value }))}
+                    placeholder="From API Center"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assign to</label>
+                <input
+                  type="text"
+                  value={googleImportCreds.assignedTo}
+                  onChange={(e) => setGoogleImportCreds((c) => ({ ...c, assignedTo: e.target.value }))}
+                  placeholder={currentUser?.name || "Sales Executive 1"}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleImportFromGoogleAds}
+                disabled={adsImporting}
+                className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {adsImporting ? "Importing..." : "Import from Google Ads"}
+              </button>
+            </div>
+          )}
         </div>
       </Modal>
 
