@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import dynamic from "next/dynamic";
+import Script from "next/script";
 import "./globals.css";
-
-const ChatbotWidgetWrapper = dynamic(
-  () => import("@/components/ChatbotWidgetWrapper"),
-  { ssr: false }
-);
 
 export const metadata: Metadata = {
   title: "KAS CRM - Elevator Management System",
@@ -56,7 +51,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {children}
-        <ChatbotWidgetWrapper />
       </body>
     </html>
   );

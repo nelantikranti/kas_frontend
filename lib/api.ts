@@ -119,8 +119,6 @@ export interface Lead {
   lastContact: string;
 
   notes: string;
-  groupId?: string | null;
-  groupName?: string | null;
   contactReport?: {
     contactConfirmation: {
       successful: boolean;
@@ -369,8 +367,7 @@ export interface AMCContract {
 
 // Leads API
 export const leadsAPI = {
-  getAll: (groupId?: string | null) =>
-    fetchAPI(`/leads${groupId ? `?groupId=${encodeURIComponent(groupId)}` : ""}`),
+  getAll: () => fetchAPI("/leads"),
   getById: (id: string) => fetchAPI(`/leads/${id}`),
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
@@ -481,51 +478,6 @@ export const usersAPI = {
   create: (data: any) => fetchAPI("/users", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) => fetchAPI(`/users/${id}`, { method: "DELETE" }),
-};
-
-// Groups API
-export const groupsAPI = {
-  getAll: (search?: string) => fetchAPI(`/groups${search ? `?search=${encodeURIComponent(search)}` : ""}`),
-  getById: (id: string) => fetchAPI(`/groups/${id}`),
-  create: (data: { groupName: string; addedBy?: string; assignedTeam?: string[] }) =>
-    fetchAPI("/groups", { method: "POST", body: JSON.stringify(data) }),
-  update: (id: string, data: { groupName?: string; assignedTeam?: string[]; totalLeads?: number }) =>
-    fetchAPI(`/groups/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-  toggle: (id: string, isSelected: boolean) =>
-    fetchAPI(`/groups/${id}/toggle`, { method: "PUT", body: JSON.stringify({ isSelected }) }),
-  copy: (id: string) => fetchAPI(`/groups/${id}/copy`, { method: "POST" }),
-  delete: (id: string) => fetchAPI(`/groups/${id}`, { method: "DELETE" }),
-};
-
-// Pipelines (Leads Pipelines) API
-export interface PipelineListItem {
-  id: string;
-  pipelineName: string;
-  groupName: string | null;
-  groupId: string | null;
-  leads: number;
-  assignedTeam: { id: string; name: string }[];
-  created: string;
-}
-
-export const pipelinesAPI = {
-  getAll: (params?: { page?: number; limit?: number; search?: string }) => {
-    const q = new URLSearchParams();
-    if (params?.page != null) q.set("page", String(params.page));
-    if (params?.limit != null) q.set("limit", String(params.limit));
-    if (params?.search?.trim()) q.set("search", params.search.trim());
-    const qs = q.toString();
-    return fetchAPI(`/pipelines${qs ? `?${qs}` : ""}`) as Promise<{
-      data: PipelineListItem[];
-      pagination: { page: number; limit: number; total: number; totalPages: number };
-    }>;
-  },
-  getById: (id: string) => fetchAPI(`/pipelines/${id}`) as Promise<PipelineListItem>,
-  create: (data: { pipelineName: string; groupId?: string | null; addedBy?: string }) =>
-    fetchAPI("/pipelines", { method: "POST", body: JSON.stringify(data) }) as Promise<PipelineListItem>,
-  update: (id: string, data: { pipelineName?: string; groupId?: string | null }) =>
-    fetchAPI(`/pipelines/${id}`, { method: "PUT", body: JSON.stringify(data) }) as Promise<PipelineListItem>,
-  delete: (id: string) => fetchAPI(`/pipelines/${id}`, { method: "DELETE" }),
 };
 
 // Dashboard API

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { leadsAPI, projectsAPI, healthAPI, usersAPI, groupsAPI, type Lead } from "@/lib/api";
+import { leadsAPI, projectsAPI, healthAPI, usersAPI, type Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import ContactReportModal from "@/components/ContactReportModal";
@@ -115,7 +114,6 @@ const getStageColor = (stage: Lead["stage"]) => {
 
 export default function LeadsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [leadList, setLeadList] = useState<Lead[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -146,8 +144,6 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string; permissions: string[] } | null>(null);
   const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
-  const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -270,7 +266,6 @@ export default function LeadsPage() {
     value: "",
     assignedTo: "Sales Executive 1",
     notes: "",
-    groupId: "",
   });
 
   useEffect(() => {
@@ -294,27 +289,7 @@ export default function LeadsPage() {
     };
 
     loadUser();
-    // If coming from Groups page with a pre-selected groupId in URL, use it as initial filter
-    const initialGroupId = searchParams.get("groupId") || "";
-    if (initialGroupId) {
-      setSelectedGroupId(initialGroupId);
-      loadLeads(initialGroupId);
-    } else {
-      loadLeads();
-    }
-
-    const loadGroups = async () => {
-      try {
-        const data = await groupsAPI.getAll();
-        const list = Array.isArray(data) ? data : [];
-        setGroups(list.map((g: any) => ({ id: g.id, groupName: g.groupName })));
-      } catch (error) {
-        console.error("Failed to load groups:", error);
-        setGroups([]);
-      }
-    };
-
-    loadGroups();
+    loadLeads();
 
     // Listen for storage changes (when user logs in/out in another tab)
     const handleStorageChange = (e: StorageEvent) => {
@@ -448,11 +423,10 @@ export default function LeadsPage() {
     checkBackendConnection();
   }, []);
 
-  const loadLeads = async (groupId?: string) => {
+  const loadLeads = async () => {
     try {
       setLoading(true);
-      const filterGroupId = groupId !== undefined ? groupId : selectedGroupId;
-      const leads = await leadsAPI.getAll(filterGroupId || undefined);
+      const leads = await leadsAPI.getAll();
       // Normalize MongoDB _id to id for consistency
       const normalizedLeads = leads.map((lead: any) => {
         const leadId = lead._id?.toString() || lead.id || "";
@@ -1419,7 +1393,7 @@ NEXT ACTION:
     }
 
     try {
-      const leadData: any = {
+      const leadData = {
         name: newLead.name,
         company: newLead.projectLocation, // Using project location as company for now
         email: newLead.email,
@@ -1430,10 +1404,6 @@ NEXT ACTION:
         assignedTo: newLead.assignedTo,
         notes: newLead.remarks,
       };
-
-      if (newLead.groupId) {
-        leadData.groupId = newLead.groupId;
-      }
 
       const createdLead = await leadsAPI.create(leadData);
       setLeadList([...leadList, createdLead]);
@@ -1455,7 +1425,6 @@ NEXT ACTION:
         value: "",
         assignedTo: "Sales Executive 1",
         notes: "",
-        groupId: "",
       });
     } catch (error: any) {
       console.error("Failed to create lead:", error);
@@ -1718,22 +1687,6 @@ NEXT ACTION:
               className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
             />
           </div>
-          <select
-            value={selectedGroupId}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSelectedGroupId(v);
-              loadLeads(v || undefined);
-            }}
-            className="w-full sm:w-48 md:w-56 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-          >
-            <option value="">All Groups</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.groupName}
-              </option>
-            ))}
-          </select>
           <input
             type="file"
             ref={fileInputRef}
@@ -1767,7 +1720,7 @@ NEXT ACTION:
       </div>
 
       {/* Search Results Info */}
-      {(searchTerm || selectedGroupId) && (
+      {searchTerm && (
         <div className={`mb-4 text-sm rounded-lg px-4 py-2 inline-block ${filteredLeads.length > 0
           ? "bg-green-50 border border-green-200 text-gray-600"
           : "bg-red-50 border border-red-200 text-red-600"
@@ -1775,18 +1728,13 @@ NEXT ACTION:
           {filteredLeads.length > 0 ? (
             <>
               Showing <span className="font-semibold text-green-700">{filteredLeads.length}</span> of <span className="font-semibold">{leadList.length}</span> leads
-              {selectedGroupId && (
-                <span className="ml-2">• Group: <span className="font-semibold">{groups.find((g) => g.id === selectedGroupId)?.groupName ?? "—"}</span></span>
-              )}
               {searchTerm && (
                 <span className="ml-2">• Search: "<span className="font-semibold">{searchTerm}</span>"</span>
               )}
             </>
           ) : (
             <>
-              {selectedGroupId && !searchTerm
-                ? "No leads assigned to this group"
-                : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
+              No leads found matching "<span className="font-semibold">{searchTerm}</span>"
             </>
           )}
         </div>
@@ -1968,9 +1916,6 @@ NEXT ACTION:
                   Source
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Group
-                </th>
-                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stage
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2018,9 +1963,6 @@ NEXT ACTION:
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {lead.source}
                     </td>
-                <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                  {lead.groupName || "-"}
-                </td>
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
                       <div className="relative min-w-[140px] sm:min-w-[160px] lg:min-w-[180px] max-w-full">
                         <select
@@ -2179,23 +2121,6 @@ NEXT ACTION:
                     {indianStates.map((state) => (
                       <option key={state} value={state}>
                         {state}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Group
-                  </label>
-                  <select
-                    value={newLead.groupId}
-                    onChange={(e) => setNewLead({ ...newLead, groupId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Group</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.groupName}
                       </option>
                     ))}
                   </select>
