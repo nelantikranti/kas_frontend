@@ -1782,7 +1782,7 @@ NEXT ACTION:
 
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Leads Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Leads</h1>
           <p className="text-sm sm:text-base text-gray-600">Track and manage all your sales leads</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
