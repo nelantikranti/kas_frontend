@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { projectsAPI, Project, ProjectStage } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Timeline from "@/components/Timeline";
@@ -71,6 +71,9 @@ export default function ProjectsPage() {
   const [editExpenseFormInAddModal, setEditExpenseFormInAddModal] = useState({ amount: "", description: "" });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [uploadingStage, setUploadingStage] = useState<string | null>(null);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [newProject, setNewProject] = useState({
     projectName: "",
     customerName: "",
@@ -145,6 +148,78 @@ export default function ProjectsPage() {
     } catch (error) {
       console.error("Failed to update project stage:", error);
       toast.error("Failed to update project stage. Please try again.");
+    }
+  };
+
+  const handleDocumentUpload = async (stage: string, files: FileList | File[] | null) => {
+    if (!files || files.length === 0 || !selectedProject) return;
+
+    const fileArray = Array.from(files);
+    setUploadingStage(stage);
+    try {
+      for (const file of fileArray) {
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} exceeds 10MB limit. Skipping.`);
+          continue;
+        }
+
+        const uploaded = await projectsAPI.uploadDocument(selectedProject.id, stage, file) as any;
+
+        const newDoc = {
+          id: uploaded.id,
+          stage,
+          fileName: file.name,
+          fileType: file.type || "application/octet-stream",
+          fileSize: file.size,
+          fileUrl: uploaded.fileUrl,
+          uploadedDate: uploaded.uploadedDate || new Date().toISOString().split("T")[0],
+        };
+
+        setSelectedProject((prev) => prev ? { ...prev, documents: [...(prev.documents || []), newDoc] } : prev);
+        setProjectList((prev) =>
+          prev.map((p) => p.id !== selectedProject.id ? p : { ...p, documents: [...(p.documents || []), newDoc] })
+        );
+        toast.success(`${file.name} uploaded successfully`);
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Failed to upload document. Please try again.");
+    } finally {
+      setUploadingStage(null);
+    }
+  };
+
+  const handleDocumentDelete = async (docId: string) => {
+    if (!selectedProject || !docId) return;
+    setDeletingDocId(docId);
+    try {
+      await projectsAPI.deleteDocument(selectedProject.id, docId);
+      setSelectedProject((prev) => {
+        if (!prev) return prev;
+        return { ...prev, documents: (prev.documents || []).filter((d: any) => d.id !== docId) };
+      });
+      setProjectList((prev) =>
+        prev.map((p) => {
+          if (p.id !== selectedProject.id) return p;
+          return { ...p, documents: (p.documents || []).filter((d: any) => d.id !== docId) };
+        })
+      );
+      toast.success("Document deleted");
+    } catch (error) {
+      console.error("Delete document failed:", error);
+      toast.error("Failed to delete document.");
+    } finally {
+      setDeletingDocId(null);
+    }
+  };
+
+  const handleDocumentDownload = async (docId: string, fileName: string) => {
+    if (!selectedProject) return;
+    try {
+      await projectsAPI.downloadDocument(selectedProject.id, docId, fileName);
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast.error("Failed to download document.");
     }
   };
 
@@ -758,49 +833,90 @@ export default function ProjectsPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Documents by Stage</h3>
               
-              {projectStages.map((stage) => (
-                <div key={stage} className="mb-4 p-4 border-2 border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{stage}</h4>
-                    {selectedProject.currentStage === stage && (
-                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                        Current Stage
-                      </span>
+              {projectStages.map((stage) => {
+                const stageDocs = (selectedProject.documents || []).filter((d: any) => d.stage === stage);
+                const isUploading = uploadingStage === stage;
+                return (
+                  <div key={stage} className="mb-4 p-4 border-2 border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">{stage}</h4>
+                      {selectedProject.currentStage === stage && (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                          Current Stage
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${isUploading ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-green-400 cursor-pointer"}`}
+                      onClick={() => {
+                        if (!isUploading) fileInputRefs.current[stage]?.click();
+                      }}
+                    >
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.dwg"
+                        style={{ display: "none" }}
+                        ref={(el) => { fileInputRefs.current[stage] = el; }}
+                        onChange={(e) => {
+                          const input = e.target;
+                          // Copy files into an array before clearing the input
+                          const files = input.files ? Array.from(input.files) : [];
+                          input.value = "";
+                          if (files.length > 0) handleDocumentUpload(stage, files as any);
+                        }}
+                      />
+                      <div className="flex flex-col items-center gap-2 pointer-events-none">
+                        <IoCloudUpload className={`w-6 h-6 ${isUploading ? "text-green-500 animate-pulse" : "text-gray-400"}`} />
+                        <span className="text-sm text-gray-600">
+                          {isUploading ? "Uploading..." : `Click to upload documents for ${stage}`}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          PDF, DOC, DWG, JPG, PNG (Max 10MB)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Uploaded Documents List */}
+                    {stageDocs.length > 0 ? (
+                      <ul className="mt-3 space-y-2">
+                        {stageDocs.map((doc: any) => (
+                          <li key={doc.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <IoDocumentText className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <span className="text-sm text-gray-700 truncate">{doc.fileName}</span>
+                              <span className="text-xs text-gray-400 flex-shrink-0">
+                                {doc.fileSize ? `(${(doc.fileSize / 1024).toFixed(1)} KB)` : ""}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <button
+                                onClick={() => handleDocumentDownload(doc.id, doc.fileName)}
+                                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                                title="Download"
+                              >
+                                Download
+                              </button>
+                              <button
+                                onClick={() => handleDocumentDelete(doc.id)}
+                                disabled={deletingDocId === doc.id}
+                                className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                                title="Delete"
+                              >
+                                {deletingDocId === doc.id ? "..." : "Delete"}
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="mt-2 text-xs text-gray-500">
+                        No documents uploaded yet for this stage
+                      </div>
                     )}
                   </div>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.dwg"
-                      className="hidden"
-                      id={`upload-${stage}`}
-                    />
-                    <label
-                      htmlFor={`upload-${stage}`}
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
-                      <IoCloudUpload className="w-6 h-6 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        Upload drawings, approvals, or documents for {stage}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        PDF, DOC, DWG, JPG, PNG (Max 10MB)
-                      </span>
-                    </label>
-                  </div>
-                  {/* Document List (placeholder) */}
-                  <div className="mt-2 text-xs text-gray-500">
-                    No documents uploaded yet for this stage
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-4 border-t">
-              <p className="text-xs text-gray-500 text-center">
-                Document upload functionality will be connected to backend storage
-              </p>
+                );
+              })}
             </div>
           </div>
         )}

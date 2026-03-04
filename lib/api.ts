@@ -313,11 +313,14 @@ export interface Project {
   amcOffered?: boolean;
   amcLinked?: string; // AMC Contract ID
 
-  // 8. Documents
+  // 8. Documents (stage-based)
   documents?: Array<{
-    type: "Purchase Order" | "Drawings" | "Test Certificates" | "Handover Documents" | "Photos" | "Videos";
+    id?: string;
+    stage: string;
     fileName: string;
-    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+    fileUrl?: string;
     uploadedDate: string;
   }>;
 
@@ -520,6 +523,40 @@ export const projectsAPI = {
     fetchAPI(`/projects/${projectId}/expenses/${expenseId}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteExpense: (projectId: string, expenseId: string) =>
     fetchAPI(`/projects/${projectId}/expenses/${expenseId}`, { method: "DELETE" }),
+  uploadDocument: async (projectId: string, stage: string, file: File) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("stage", stage);
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || "Upload failed");
+    }
+    return response.json();
+  },
+  deleteDocument: (projectId: string, docId: string) =>
+    fetchAPI(`/projects/${projectId}/documents/${docId}`, { method: "DELETE" }),
+  downloadDocument: async (projectId: string, docId: string, fileName: string) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents/${docId}/download`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!response.ok) throw new Error("Download failed");
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
 };
 
 // AMC API
