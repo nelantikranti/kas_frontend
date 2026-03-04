@@ -375,11 +375,10 @@ export const leadsAPI = {
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) => fetchAPI(`/leads/${id}`, { method: "DELETE" }),
-  /** Import leads from Facebook Lead Ads. Requires accessToken; provide either formId or pageId. */
+  /** Import leads from Facebook Lead Ads. Requires accessToken and pageId. */
   importFromFacebook: (data: {
     accessToken: string;
-    pageId?: string;
-    formId?: string;
+    pageId: string;
     assignedTo?: string;
     groupId?: string | null;
   }) =>
@@ -389,21 +388,49 @@ export const leadsAPI = {
       errors?: string[];
       message: string;
     }>,
-  /** Import leads from Google Ads lead form submissions. Requires OAuth and developer token. */
-  importFromGoogleAds: (data: {
-    clientId: string;
-    clientSecret: string;
-    refreshToken: string;
-    customerId: string;
-    developerToken: string;
-    assignedTo?: string;
-    groupId?: string | null;
-  }) =>
-    fetchAPI("/leads/import/google-ads", { method: "POST", body: JSON.stringify(data) }) as Promise<{
+  /** Sync leads from Facebook using credentials stored in backend Settings. Uses GET with query params. */
+  syncFacebook: (data: { assignedTo: string; groupId?: string | null }) =>
+    fetchAPI(
+      `/leads/sync/facebook?assignedTo=${encodeURIComponent(
+        data.assignedTo
+      )}${data.groupId ? `&groupId=${encodeURIComponent(data.groupId)}` : ""}`
+    ) as Promise<{
       imported: number;
       total?: number;
       errors?: string[];
       message: string;
+    }>,
+};
+
+// Settings API (integrations stored on backend)
+export const settingsAPI = {
+  getFacebookLeadAds: () =>
+    fetchAPI("/settings/facebook-lead-ads") as Promise<{
+      configured: boolean;
+      pageId: string;
+    }>,
+  updateFacebookLeadAds: (data: { accessToken: string; pageId: string }) =>
+    fetchAPI("/settings/facebook-lead-ads", { method: "PUT", body: JSON.stringify(data) }) as Promise<{
+      success: boolean;
+      message: string;
+      configured: boolean;
+      pageId: string;
+    }>,
+  getGoogleAds: () =>
+    fetchAPI("/settings/google-ads") as Promise<{
+      configured: boolean;
+      webhookUrl: string;
+      secretSet: boolean;
+    }>,
+  updateGoogleAds: (data: {
+    webhookUrl: string;
+    webhookSecret: string;
+  }) =>
+    fetchAPI("/settings/google-ads", { method: "PUT", body: JSON.stringify(data) }) as Promise<{
+      success: boolean;
+      message: string;
+      configured: boolean;
+      webhookUrl: string;
     }>,
 };
 

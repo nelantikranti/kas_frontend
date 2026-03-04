@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { IoSave, IoNotifications, IoLockClosed, IoColorPalette } from "react-icons/io5";
+import { useState, useEffect } from "react";
+import { IoSave, IoNotifications, IoColorPalette } from "react-icons/io5";
+import { IoLogoFacebook, IoLogoGoogle } from "react-icons/io5";
 import { toast } from "@/components/Toast";
+import { settingsAPI } from "@/lib/api";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -18,8 +20,114 @@ export default function SettingsPage() {
     theme: "light",
   });
 
+  const [fbLeadCreds, setFbLeadCreds] = useState({ accessToken: "", pageId: "" });
+  const [fbLoading, setFbLoading] = useState(true);
+  const [fbSaving, setFbSaving] = useState(false);
+
+  const [googleAdsWebhook, setGoogleAdsWebhook] = useState({
+    webhookUrl: "",
+    webhookSecret: "",
+  });
+  const [googleAdsLoading, setGoogleAdsLoading] = useState(true);
+  const [googleAdsSaving, setGoogleAdsSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setFbLoading(true);
+      try {
+        const res = await settingsAPI.getFacebookLeadAds();
+        if (!cancelled && res) {
+          setFbLeadCreds((c) => ({
+            ...c,
+            pageId: res.pageId || "",
+          }));
+        }
+      } catch {
+        if (!cancelled) {
+          setFbLeadCreds((c) => ({ ...c, pageId: "" }));
+        }
+      } finally {
+        if (!cancelled) setFbLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setGoogleAdsLoading(true);
+      try {
+        const res = await settingsAPI.getGoogleAds();
+        if (!cancelled && res) {
+          setGoogleAdsWebhook({
+            webhookUrl: res.webhookUrl || "",
+            webhookSecret: "",
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setGoogleAdsWebhook({ webhookUrl: "", webhookSecret: "" });
+        }
+      } finally {
+        if (!cancelled) setGoogleAdsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const handleSave = () => {
     toast.success("Settings saved successfully!");
+  };
+
+  const handleSaveFacebookCreds = async () => {
+    if (!fbLeadCreds.pageId.trim()) {
+      toast.error("Page ID is required.");
+      return;
+    }
+    if (!fbLeadCreds.accessToken.trim()) {
+      toast.error("Access Token is required for Facebook Lead Ads. Enter token to save or update.");
+      return;
+    }
+    setFbSaving(true);
+    try {
+      await settingsAPI.updateFacebookLeadAds({
+        accessToken: fbLeadCreds.accessToken.trim(),
+        pageId: fbLeadCreds.pageId.trim(),
+      });
+      toast.success("Facebook Lead Ads credentials saved on the server. Leads will sync automatically; use Sync Facebook on the Leads page if needed.");
+      setFbLeadCreds((c) => ({ ...c, accessToken: "" }));
+    } catch (e: any) {
+      toast.error(e.message || "Failed to save credentials.");
+    } finally {
+      setFbSaving(false);
+    }
+  };
+
+  const handleSaveGoogleAdsCreds = async () => {
+    const { webhookUrl, webhookSecret } = googleAdsWebhook;
+    if (!webhookUrl.trim()) {
+      toast.error("Webhook URL is required for Google Ads.");
+      return;
+    }
+    if (!webhookSecret.trim()) {
+      toast.error("Webhook secret key is required for Google Ads.");
+      return;
+    }
+    setGoogleAdsSaving(true);
+    try {
+      await settingsAPI.updateGoogleAds({
+        webhookUrl: webhookUrl.trim(),
+        webhookSecret: webhookSecret.trim(),
+      });
+      toast.success("Google Ads webhook settings saved. Configure this URL and secret in your Google Ads lead form.");
+      setGoogleAdsWebhook((c) => ({ ...c, webhookSecret: "" }));
+    } catch (e: any) {
+      toast.error(e.message || "Failed to save credentials.");
+    } finally {
+      setGoogleAdsSaving(false);
+    }
   };
 
   return (
@@ -144,6 +252,101 @@ export default function SettingsPage() {
                 className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
               />
             </label>
+          </div>
+        </div>
+
+        {/* Facebook Lead Ads Integration */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <IoLogoFacebook className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+            Facebook Lead Ads Integration
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Set your Facebook credentials here. Leads from Facebook Lead Ads will sync automatically to the CRM. If sync fails due to a technical error, use <strong>Sync Facebook</strong> on the Leads page.
+          </p>
+          <div className="space-y-3 sm:space-y-4">
+            {fbLoading ? (
+              <p className="text-sm text-gray-500">Loading saved settings...</p>
+            ) : null}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Access Token *</label>
+              <input
+                type="password"
+                value={fbLeadCreds.accessToken}
+                onChange={(e) => setFbLeadCreds((c) => ({ ...c, accessToken: e.target.value }))}
+                placeholder="User or Page token. Needs leads_retrieval; if User token, also pages_show_list (we use Page token for lead forms)."
+                className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">Token is stored on the backend only and never shown again after save.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Page ID *</label>
+              <input
+                type="text"
+                value={fbLeadCreds.pageId}
+                onChange={(e) => setFbLeadCreds((c) => ({ ...c, pageId: e.target.value }))}
+                placeholder="e.g. 123456789"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">Leads are fetched from all leadgen forms on this Facebook Page.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveFacebookCreds}
+              disabled={fbSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              <IoSave className="w-4 h-4" />
+              {fbSaving ? "Saving..." : "Save Facebook credentials"}
+            </button>
+          </div>
+        </div>
+
+        {/* Google Ads Integration via Webhook */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <IoLogoGoogle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+            Google Ads Integration
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Configure a secure webhook URL and secret for Google Ads lead forms. Google Ads will POST lead data directly to your CRM using this webhook; no OAuth or API credentials are stored.
+          </p>
+          <div className="space-y-3 sm:space-y-4">
+            {googleAdsLoading ? (
+              <p className="text-sm text-gray-500">Loading saved settings...</p>
+            ) : null}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Webhook URL *</label>
+              <input
+                type="text"
+                value={googleAdsWebhook.webhookUrl}
+                onChange={(e) => setGoogleAdsWebhook((c) => ({ ...c, webhookUrl: e.target.value }))}
+                placeholder="e.g. https://your-backend-domain/api/leads/webhook/google-ads?lead_key=YOUR_SECRET"
+                className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Webhook Secret Key *</label>
+              <input
+                type="password"
+                value={googleAdsWebhook.webhookSecret}
+                onChange={(e) => setGoogleAdsWebhook((c) => ({ ...c, webhookSecret: e.target.value }))}
+                placeholder="Secret key used as lead_key in Google Ads webhook settings"
+                className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This secret is stored on the backend only and should match the <code>lead_key</code> you configure in Google Ads.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveGoogleAdsCreds}
+              disabled={googleAdsSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              <IoSave className="w-4 h-4" />
+              {googleAdsSaving ? "Saving..." : "Save Google Ads credentials"}
+            </button>
           </div>
         </div>
 

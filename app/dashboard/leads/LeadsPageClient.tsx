@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { leadsAPI, projectsAPI, healthAPI, usersAPI, groupsAPI, type Lead } from "@/lib/api";
+import { leadsAPI, projectsAPI, healthAPI, usersAPI, groupsAPI, settingsAPI, type Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import ContactReportModal from "@/components/ContactReportModal";
 import { toast } from "@/components/Toast";
-import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload, IoMegaphone } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload, IoRefresh } from "react-icons/io5";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
@@ -136,14 +136,9 @@ export default function LeadsPage() {
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [isAdsImportModalOpen, setIsAdsImportModalOpen] = useState(false);
-  const [adsImportPlatform, setAdsImportPlatform] = useState<"facebook" | "google">("facebook");
-  const [adsImporting, setAdsImporting] = useState(false);
-  const [fbImportCreds, setFbImportCreds] = useState({ accessToken: "", pageId: "", formId: "", assignedTo: "" });
-  const [googleImportCreds, setGoogleImportCreds] = useState({
-    clientId: "", clientSecret: "", refreshToken: "", customerId: "", developerToken: "", assignedTo: "",
-  });
+  const [syncingFacebook, setSyncingFacebook] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fbSyncParamsRef = useRef<{ assignedTo: string; groupId: string | null }>({ assignedTo: "Sales Executive 1", groupId: null });
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -155,6 +150,8 @@ export default function LeadsPage() {
   const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>("");
+  const [facebookConfigured, setFacebookConfigured] = useState(false);
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -453,6 +450,20 @@ export default function LeadsPage() {
       }
     };
     checkBackendConnection();
+  }, []);
+
+  // Load whether Facebook Lead Ads is configured (credentials stored on backend)
+  const refreshFacebookConfigured = async () => {
+    try {
+      const res = await settingsAPI.getFacebookLeadAds();
+      setFacebookConfigured(!!res?.configured);
+    } catch {
+      setFacebookConfigured(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshFacebookConfigured();
   }, []);
 
   const loadLeads = async (groupId?: string) => {
@@ -1621,64 +1632,65 @@ NEXT ACTION:
     }
   };
 
-  const handleImportFromFacebook = async () => {
-    if (!fbImportCreds.accessToken.trim()) {
-      toast.error("Access Token is required.");
-      return;
-    }
-    if (!fbImportCreds.pageId.trim() && !fbImportCreds.formId.trim()) {
-      toast.error("Provide either Page ID or Form ID.");
-      return;
-    }
-    setAdsImporting(true);
+  fbSyncParamsRef.current = {
+    assignedTo: isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1"),
+    groupId: selectedGroupId || null,
+  };
+
+  const syncFacebookSilent = async () => {
+    if (!facebookConfigured) return;
+    console.log("[Leads] Fetching leads from Facebook...");
+    const { assignedTo, groupId } = fbSyncParamsRef.current;
     try {
-      const res = await leadsAPI.importFromFacebook({
-        accessToken: fbImportCreds.accessToken.trim(),
-        pageId: fbImportCreds.pageId.trim() || undefined,
-        formId: fbImportCreds.formId.trim() || undefined,
-        assignedTo: fbImportCreds.assignedTo.trim() || (isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1")),
-        groupId: selectedGroupId || null,
-      });
-      toast.success(res.message || `Imported ${res.imported} lead(s) from Facebook Ads.`);
-      if (res.imported > 0) await loadLeads();
-      if (res.errors?.length) toast.error(res.errors.slice(0, 2).join(" "));
-      setIsAdsImportModalOpen(false);
-      setFbImportCreds({ accessToken: "", pageId: "", formId: "", assignedTo: "" });
-    } catch (e: any) {
-      toast.error(e.message || "Facebook import failed.");
-    } finally {
-      setAdsImporting(false);
+      const res = await leadsAPI.syncFacebook({ assignedTo, groupId: groupId ?? undefined });
+      if (res.imported > 0) {
+        console.log(`[Leads] Fetched ${res.imported} lead(s) from Facebook. Leads are fetching from Facebook.`);
+        await loadLeads();
+      } else {
+        console.log("[Leads] No new leads from Facebook this sync.", res.total != null ? `(Total checked: ${res.total})` : "");
+      }
+    } catch (e) {
+      console.warn("[Leads] Facebook sync failed (background):", e);
     }
   };
 
-  const handleImportFromGoogleAds = async () => {
-    const { clientId, clientSecret, refreshToken, customerId, developerToken, assignedTo } = googleImportCreds;
-    if (!clientId.trim() || !clientSecret.trim() || !refreshToken.trim() || !customerId.trim() || !developerToken.trim()) {
-      toast.error("All Google Ads credentials are required.");
+  const handleSyncFacebook = async () => {
+    if (!facebookConfigured) {
+      toast.error("Configure Facebook credentials in Settings to sync leads.");
       return;
     }
-    setAdsImporting(true);
+    console.log("[Leads] Syncing leads from Facebook (manual)...");
+    setSyncingFacebook(true);
     try {
-      const res = await leadsAPI.importFromGoogleAds({
-        clientId: clientId.trim(),
-        clientSecret: clientSecret.trim(),
-        refreshToken: refreshToken.trim(),
-        customerId: customerId.trim(),
-        developerToken: developerToken.trim(),
-        assignedTo: assignedTo.trim() || (isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1")),
+      const res = await leadsAPI.syncFacebook({
+        assignedTo: isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1"),
         groupId: selectedGroupId || null,
       });
-      toast.success(res.message || `Imported ${res.imported} lead(s) from Google Ads.`);
+      console.log(`[Leads] Leads are fetching from Facebook. Synced ${res.imported} lead(s).`);
+      toast.success(res.message || `Synced ${res.imported} lead(s) from Facebook Lead Ads.`);
       if (res.imported > 0) await loadLeads();
       if (res.errors?.length) toast.error(res.errors.slice(0, 2).join(" "));
-      setIsAdsImportModalOpen(false);
-      setGoogleImportCreds({ clientId: "", clientSecret: "", refreshToken: "", customerId: "", developerToken: "", assignedTo: "" });
     } catch (e: any) {
-      toast.error(e.message || "Google Ads import failed.");
+      console.warn("[Leads] Facebook sync failed:", e?.message || e);
+      toast.error(e.message || "Facebook sync failed. Check credentials in Settings.");
     } finally {
-      setAdsImporting(false);
+      setSyncingFacebook(false);
     }
   };
+
+
+  // Auto-sync Facebook leads periodically when configured (credentials stored on backend)
+  useEffect(() => {
+    if (!facebookConfigured) return;
+    const t1 = setTimeout(() => syncFacebookSilent(), 10000);
+    const t2 = setInterval(syncFacebookSilent, 5 * 60 * 1000);
+    return () => {
+      clearTimeout(t1);
+      clearInterval(t2);
+    };
+  }, [facebookConfigured]);
+
+  // Google Ads leads now come via webhook, no periodic sync needed
 
   const filteredLeads = leadList.filter(lead => {
     // Admin sees all leads (including all imported leads with assigned person's name)
@@ -1819,15 +1831,16 @@ NEXT ACTION:
             {isImporting ? "Importing..." : "Import Excel"}
           </button>
           <button
-            onClick={() => setIsAdsImportModalOpen(true)}
-            disabled={backendConnected === false || adsImporting}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false || adsImporting
+            onClick={handleSyncFacebook}
+            disabled={backendConnected === false || syncingFacebook || !facebookConfigured}
+            title="Sync leads from Facebook Lead Ads (configure in Settings)"
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false || syncingFacebook || !facebookConfigured
               ? "bg-gray-400 text-gray-200 cursor-not-allowed"
               : "bg-indigo-600 text-white hover:bg-indigo-700"
               }`}
           >
-            <IoMegaphone className="w-4 h-4 sm:w-5 sm:h-5" />
-            {adsImporting ? "Importing..." : "Import from Ads"}
+            <IoRefresh className="w-4 h-4 sm:w-5 sm:h-5" />
+            {syncingFacebook ? "Syncing..." : "Sync Facebook"}
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -1843,8 +1856,8 @@ NEXT ACTION:
         </div>
       </div>
 
-      {/* Search Results Info */}
-      {(searchTerm || selectedGroupId) && (
+      {/* Search / Filter Results Info */}
+      {(searchTerm || selectedGroupId || selectedSourceFilter) && (
         <div className={`mb-4 text-sm rounded-lg px-4 py-2 inline-block ${filteredLeads.length > 0
           ? "bg-green-50 border border-green-200 text-gray-600"
           : "bg-red-50 border border-red-200 text-red-600"
@@ -1852,6 +1865,9 @@ NEXT ACTION:
           {filteredLeads.length > 0 ? (
             <>
               Showing <span className="font-semibold text-green-700">{filteredLeads.length}</span> of <span className="font-semibold">{leadList.length}</span> leads
+              {selectedSourceFilter && (
+                <span className="ml-2">• Source: <span className="font-semibold">{selectedSourceFilter}</span></span>
+              )}
               {selectedGroupId && (
                 <span className="ml-2">• Group: <span className="font-semibold">{groups.find((g) => g.id === selectedGroupId)?.groupName ?? "—"}</span></span>
               )}
@@ -1861,9 +1877,11 @@ NEXT ACTION:
             </>
           ) : (
             <>
-              {selectedGroupId && !searchTerm
-                ? "No leads assigned to this group"
-                : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
+              {selectedSourceFilter && !selectedGroupId && !searchTerm
+                ? `No leads from ${selectedSourceFilter}`
+                : selectedGroupId && !searchTerm && !selectedSourceFilter
+                  ? "No leads assigned to this group"
+                  : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
             </>
           )}
         </div>
@@ -1937,7 +1955,11 @@ NEXT ACTION:
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Source</p>
-                    <p className="text-gray-900">{lead.source}</p>
+                    {(lead.source || "").toLowerCase().includes("facebook") ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">{lead.source}</span>
+                    ) : (
+                      <p className="text-gray-900">{lead.source}</p>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Value</p>
@@ -6006,176 +6028,6 @@ NEXT ACTION:
               </div>
             )}
           </div>
-        </div>
-      </Modal>
-
-      {/* Import from Ads (Facebook / Google Ads) Modal */}
-      <Modal
-        isOpen={isAdsImportModalOpen}
-        onClose={() => {
-          if (!adsImporting) {
-            setIsAdsImportModalOpen(false);
-            setAdsImportPlatform("facebook");
-          }
-        }}
-        title="Import leads from Ads"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div className="flex border-b border-gray-200">
-            <button
-              type="button"
-              onClick={() => setAdsImportPlatform("facebook")}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${adsImportPlatform === "facebook"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"}`}
-            >
-              Facebook Lead Ads
-            </button>
-            <button
-              type="button"
-              onClick={() => setAdsImportPlatform("google")}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${adsImportPlatform === "google"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"}`}
-            >
-              Google Ads
-            </button>
-          </div>
-
-          {adsImportPlatform === "facebook" && (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">Use a Page or User access token with <strong>leads_retrieval</strong> permission. Provide either Page ID (to fetch all forms) or Form ID (single form).</p>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Access Token *</label>
-                <input
-                  type="password"
-                  value={fbImportCreds.accessToken}
-                  onChange={(e) => setFbImportCreds((c) => ({ ...c, accessToken: e.target.value }))}
-                  placeholder="EAAxxxx..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Page ID</label>
-                  <input
-                    type="text"
-                    value={fbImportCreds.pageId}
-                    onChange={(e) => setFbImportCreds((c) => ({ ...c, pageId: e.target.value }))}
-                    placeholder="e.g. 123456789"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Form ID (optional if Page ID set)</label>
-                  <input
-                    type="text"
-                    value={fbImportCreds.formId}
-                    onChange={(e) => setFbImportCreds((c) => ({ ...c, formId: e.target.value }))}
-                    placeholder="Leadgen form ID"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assign to</label>
-                <input
-                  type="text"
-                  value={fbImportCreds.assignedTo}
-                  onChange={(e) => setFbImportCreds((c) => ({ ...c, assignedTo: e.target.value }))}
-                  placeholder={currentUser?.name || "Sales Executive 1"}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleImportFromFacebook}
-                disabled={adsImporting}
-                className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {adsImporting ? "Importing..." : "Import from Facebook Lead Ads"}
-              </button>
-            </div>
-          )}
-
-          {adsImportPlatform === "google" && (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">Use OAuth 2.0 credentials and Google Ads API developer token. Customer ID format: 123-456-7890.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Client ID *</label>
-                  <input
-                    type="text"
-                    value={googleImportCreds.clientId}
-                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, clientId: e.target.value }))}
-                    placeholder="xxx.apps.googleusercontent.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Client Secret *</label>
-                  <input
-                    type="password"
-                    value={googleImportCreds.clientSecret}
-                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, clientSecret: e.target.value }))}
-                    placeholder="GOCSPX-..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Refresh Token *</label>
-                <input
-                  type="password"
-                  value={googleImportCreds.refreshToken}
-                  onChange={(e) => setGoogleImportCreds((c) => ({ ...c, refreshToken: e.target.value }))}
-                  placeholder="1//..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer ID (Google Ads) *</label>
-                  <input
-                    type="text"
-                    value={googleImportCreds.customerId}
-                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, customerId: e.target.value }))}
-                    placeholder="123-456-7890"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Developer Token *</label>
-                  <input
-                    type="text"
-                    value={googleImportCreds.developerToken}
-                    onChange={(e) => setGoogleImportCreds((c) => ({ ...c, developerToken: e.target.value }))}
-                    placeholder="From API Center"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assign to</label>
-                <input
-                  type="text"
-                  value={googleImportCreds.assignedTo}
-                  onChange={(e) => setGoogleImportCreds((c) => ({ ...c, assignedTo: e.target.value }))}
-                  placeholder={currentUser?.name || "Sales Executive 1"}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleImportFromGoogleAds}
-                disabled={adsImporting}
-                className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {adsImporting ? "Importing..." : "Import from Google Ads"}
-              </button>
-            </div>
-          )}
         </div>
       </Modal>
 
