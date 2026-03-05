@@ -155,7 +155,7 @@ export default function LeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const leadsPerPage = 20;
+  const [leadsPerPage, setLeadsPerPage] = useState(20);
   const [facebookConfigured, setFacebookConfigured] = useState(false);
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
@@ -559,6 +559,18 @@ export default function LeadsPage() {
     loadLeads({ page: 1, source: selectedSourceFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSourceFilter]);
+
+  // Reload when page size changes (reset to page 1)
+  const pageSizeInitialMount = useRef(true);
+  useEffect(() => {
+    if (pageSizeInitialMount.current) {
+      pageSizeInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+    loadLeads({ page: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leadsPerPage]);
 
   // Define stage progression rules - Progressive unlock system
   const getAvailableStages = (currentStage: Lead["stage"]): Lead["stage"][] => {
@@ -1578,62 +1590,85 @@ NEXT ACTION:
             return;
           }
 
-          // Fetch all existing phones from CRM for duplicate checking
-          let existingPhones = new Set<string>();
+          // --- Parse all rows first ---
+          type ParsedRow = {
+            rowIndex: number;
+            name: string;
+            company: string;
+            email: string;
+            phone: string;
+            source: string;
+            stage: string;
+            value: number;
+          };
+
+          const parsedRows: ParsedRow[] = [];
+          let parseErrorCount = 0;
+          const parseErrors: string[] = [];
+
+          for (let i = 0; i < (jsonData as any[]).length; i++) {
+            const row = (jsonData as any[])[i];
+            const rowIndex = i + 1;
+
+            const name = (row['Name'] || row['name'] || row['Name / Company'] || row['Lead Name'] || row['Customer Name'] || '').toString().trim();
+            const company = (row['Company'] || row['company'] || row['Name / Company'] || row['Organization'] || '').toString().trim();
+            const email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim();
+            let phone = (row['Phone'] || row['phone'] || row['Phone Number'] || row['Mobile'] || row['mobile'] || row['Contact Number'] || row['Contact'] || '').toString().trim().replace(/\D/g, '');
+            if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
+            if (phone.length === 13 && phone.startsWith('091')) phone = phone.slice(3);
+            const source = (row['Source'] || row['source'] || '').toString().trim();
+            const stage = (row['Stage'] || row['stage'] || '').toString().trim();
+            const value = parseFloat(row['Value'] || row['value'] || row['Lead Value'] || 0) || 0;
+
+            if (!name) {
+              parseErrors.push(`Row ${rowIndex}: Name is required`);
+              parseErrorCount++;
+              continue;
+            }
+            if (!phone || phone.length !== 10) {
+              parseErrors.push(`Row ${rowIndex}: Valid 10-digit phone number is required`);
+              parseErrorCount++;
+              continue;
+            }
+
+            parsedRows.push({ rowIndex, name, company, email, phone, source, stage, value });
+          }
+
+          // --- Check for duplicates against CRM in one batch request ---
+          const allPhones = parsedRows.map(r => r.phone);
+          const allEmails = parsedRows.map(r => r.email).filter(Boolean);
+
+          let duplicatePhones = new Set<string>();
+          let duplicateEmails = new Set<string>();
+
           try {
-            const phonesData = await leadsAPI.getPhones();
-            existingPhones = new Set(phonesData.phones.map((p: string) => p.trim()));
+            const dupResult = await leadsAPI.checkDuplicates({ phones: allPhones, emails: allEmails });
+            duplicatePhones = new Set(dupResult.duplicatePhones);
+            duplicateEmails = new Set(dupResult.duplicateEmails);
           } catch {
-            // If we can't fetch phones, proceed without duplicate check
+            // If check fails, continue import without blocking (fail open)
           }
 
           let successCount = 0;
-          let errorCount = 0;
           let duplicateCount = 0;
-          const errors: string[] = [];
-          const duplicates: string[] = [];
+          let errorCount = parseErrorCount;
+          const errors: string[] = [...parseErrors];
+          const duplicateMessages: string[] = [];
 
-          for (const row of jsonData as any[]) {
+          for (const row of parsedRows) {
+            const isDuplicatePhone = duplicatePhones.has(row.phone);
+            const isDuplicateEmail = row.email ? duplicateEmails.has(row.email) : false;
+
+            if (isDuplicatePhone || isDuplicateEmail) {
+              duplicateCount++;
+              const reason = isDuplicatePhone
+                ? `phone ${row.phone} already exists`
+                : `email ${row.email} already exists`;
+              duplicateMessages.push(`Row ${row.rowIndex} (${row.name}): Lead is duplicate — ${reason}`);
+              continue;
+            }
+
             try {
-              // Map Excel columns to lead data - try multiple column name variations
-              const name = (row['Name'] || row['name'] || row['Name / Company'] || row['Lead Name'] || row['Customer Name'] || '').toString().trim();
-              const company = (row['Company'] || row['company'] || row['Name / Company'] || row['Organization'] || '').toString().trim();
-              
-              // Try multiple email column variations — keep blank if not present
-              const email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim();
-              
-              // Try multiple phone column variations; strip non-digits then remove leading country code (e.g. +91)
-              let phone = (row['Phone'] || row['phone'] || row['Phone Number'] || row['Mobile'] || row['mobile'] || row['Contact Number'] || row['Contact'] || '').toString().trim().replace(/\D/g, '');
-              if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
-              if (phone.length === 13 && phone.startsWith('091')) phone = phone.slice(3);
-
-              const source = (row['Source'] || row['source'] || '').toString().trim();
-              const stage = (row['Stage'] || row['stage'] || '').toString().trim();
-              const value = parseFloat(row['Value'] || row['value'] || row['Lead Value'] || 0) || 0;
-
-              // Validation
-              if (!name) {
-                errors.push(`Row ${successCount + errorCount + duplicateCount + 1}: Name is required`);
-                errorCount++;
-                continue;
-              }
-
-              if (!phone || phone.length !== 10) {
-                errors.push(`Row ${successCount + errorCount + duplicateCount + 1}: Valid 10-digit phone number is required`);
-                errorCount++;
-                continue;
-              }
-
-              // Duplicate check: skip if phone already exists in CRM
-              if (existingPhones.has(phone)) {
-                duplicateCount++;
-                duplicates.push(`${name} (${phone})`);
-                continue;
-              }
-
-              // Assign imported leads based on user role
-              // If admin imports, mark as Unassigned so admin can assign later
-              // If non-admin imports, assign to current user so they can see their imported data
               let assignedTo: string;
               if (isAdmin()) {
                 assignedTo = 'Unassigned';
@@ -1642,38 +1677,43 @@ NEXT ACTION:
               }
 
               const leadData = {
-                name,
-                email,
-                phone,
-                source: source || 'Website',
-                stage: (stage || 'New Lead') as Lead["stage"],
-                value: value,
-                assignedTo: assignedTo,
+                name: row.name,
+                company: row.company,
+                email: row.email,
+                phone: row.phone,
+                source: row.source || 'Website',
+                stage: (row.stage || 'New Lead') as Lead["stage"],
+                value: row.value,
+                assignedTo,
                 notes: '',
               };
 
               await leadsAPI.create(leadData);
-              // Track newly added phones so same-file duplicates are also caught
-              existingPhones.add(phone);
               successCount++;
             } catch (error: any) {
-              const rowNum = successCount + errorCount + duplicateCount + 1;
               errorCount++;
-              errors.push(`Row ${rowNum}: ${error.message || 'Failed to import'}`);
+              errors.push(`Row ${row.rowIndex}: ${error.message || 'Failed to import'}`);
             }
           }
 
           if (successCount > 0) {
             toast.success(`Successfully imported ${successCount} lead(s)`);
-            await loadLeads({ page: 1 }); // Reload leads from first page after import
+            await loadLeads({ page: 1 });
           }
 
           if (duplicateCount > 0) {
-            toast.error(`${duplicateCount} lead(s) skipped — already exist in CRM: ${duplicates.slice(0, 3).join(', ')}${duplicates.length > 3 ? ` and ${duplicates.length - 3} more` : ''}`);
+            toast.error(
+              `${duplicateCount} duplicate lead(s) skipped — already exist in CRM. ${duplicateMessages.slice(0, 2).join('; ')}${duplicateMessages.length > 2 ? '...' : ''}`,
+              7000
+            );
           }
 
           if (errorCount > 0) {
             toast.error(`Failed to import ${errorCount} lead(s). ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`);
+          }
+
+          if (successCount === 0 && duplicateCount === 0 && errorCount === 0) {
+            toast.error("No leads were imported.");
           }
 
           setIsImportModalOpen(false);
@@ -1769,12 +1809,30 @@ NEXT ACTION:
 
   // Google Ads leads now come via webhook, no periodic sync needed
 
-  // Backend handles search, source, group filtering + pagination.
-  // Any user with leads:view permission can see all leads on the current page.
-  const filteredLeads = leadList.filter(() => {
-    if (isAdmin()) return true;
+  // Backend handles search, source, and group filtering + pagination.
+  // Client-side only applies role-based visibility filtering.
+  const filteredLeads = leadList.filter(lead => {
+    const userIsAdmin = isAdmin();
+    if (userIsAdmin) return true;
+
     const userPermissions = currentUser?.permissions || [];
-    return can(PERMISSIONS.LEADS_VIEW, userPermissions);
+
+    // Users with LEADS_VIEW can see all leads
+    if (can(PERMISSIONS.LEADS_VIEW, userPermissions)) return true;
+
+    // Users with LEADS_EDIT or LEADS_CREATE see unassigned leads + their own
+    const canAssignLeads = can(PERMISSIONS.LEADS_EDIT, userPermissions) ||
+                          can(PERMISSIONS.LEADS_CREATE, userPermissions);
+
+    if (canAssignLeads && currentUser) {
+      const isUnassigned = !lead.assignedTo ||
+                          lead.assignedTo === "" ||
+                          lead.assignedTo === "Sales Executive 1" ||
+                          lead.assignedTo === currentUser.name;
+      return isUnassigned;
+    }
+
+    return !!currentUser && lead.assignedTo === currentUser.name;
   });
 
   if (loading) {
@@ -1887,15 +1945,20 @@ NEXT ACTION:
         </div>
       </div>
 
-      {/* Search / Filter Results Info */}
-      {(searchTerm || selectedGroupId || selectedSourceFilter) && (
-        <div className={`mb-4 text-sm rounded-lg px-4 py-2 inline-block ${totalLeads > 0
-          ? "bg-green-50 border border-green-200 text-gray-600"
-          : "bg-red-50 border border-red-200 text-red-600"
-          }`}>
+      {/* Results Info & Rows Per Page */}
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className={`text-sm rounded-lg px-4 py-2 inline-block ${
+          totalLeads > 0
+            ? "bg-green-50 border border-green-200 text-gray-600"
+            : "bg-gray-50 border border-gray-200 text-gray-500"
+        }`}>
           {totalLeads > 0 ? (
             <>
-              Showing <span className="font-semibold text-green-700">{filteredLeads.length}</span> of <span className="font-semibold">{totalLeads}</span> leads
+              Showing{" "}
+              <span className="font-semibold text-green-700">
+                {Math.min((currentPage - 1) * leadsPerPage + 1, totalLeads)}–{Math.min(currentPage * leadsPerPage, totalLeads)}
+              </span>{" "}
+              of <span className="font-semibold">{totalLeads}</span> leads
               {selectedSourceFilter && (
                 <span className="ml-2">• Source: <span className="font-semibold">{selectedSourceFilter}</span></span>
               )}
@@ -1903,7 +1966,7 @@ NEXT ACTION:
                 <span className="ml-2">• Group: <span className="font-semibold">{groups.find((g) => g.id === selectedGroupId)?.groupName ?? "—"}</span></span>
               )}
               {searchTerm && (
-                <span className="ml-2">• Search: "<span className="font-semibold">{searchTerm}</span>"</span>
+                <span className="ml-2">• Search: &ldquo;<span className="font-semibold">{searchTerm}</span>&rdquo;</span>
               )}
             </>
           ) : (
@@ -1916,7 +1979,21 @@ NEXT ACTION:
             </>
           )}
         </div>
-      )}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <label htmlFor="leadsPerPage" className="whitespace-nowrap">Rows per page:</label>
+          <select
+            id="leadsPerPage"
+            value={leadsPerPage}
+            onChange={(e) => setLeadsPerPage(Number(e.target.value))}
+            className="px-2 py-1 border border-gray-300 rounded-md bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
 
       {/* Assign Lead & Delete All Buttons */}
       {selectedLeadIds.size > 0 && (
@@ -2237,69 +2314,73 @@ NEXT ACTION:
       </div>
 
       {/* Pagination Controls */}
-      {totalPages > 1 && (
+      {totalLeads > 0 && (
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-sm text-gray-600">
             Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
-            <span className="ml-2 text-gray-400">({totalLeads} total leads)</span>
+            <span className="ml-2 text-gray-400">
+              ({Math.min((currentPage - 1) * leadsPerPage + 1, totalLeads)}–{Math.min(currentPage * leadsPerPage, totalLeads)} of {totalLeads})
+            </span>
           </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              className="px-2 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="First page"
-            >
-              «
-            </button>
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Prev
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum: number;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                    currentPage === pageNum
-                      ? "bg-blue-600 text-white border-blue-600 font-semibold"
-                      : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-            </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="px-2 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Last page"
-            >
-              »
-            </button>
-          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="px-2 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="First page"
+              >
+                «
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Prev
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                      currentPage === pageNum
+                        ? "bg-blue-600 text-white border-blue-600 font-semibold"
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="px-2 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="Last page"
+              >
+                »
+              </button>
+            </div>
+          )}
         </div>
       )}
 

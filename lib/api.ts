@@ -393,6 +393,12 @@ export const leadsAPI = {
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) => fetchAPI(`/leads/${id}`, { method: "DELETE" }),
+  /** Check which phones/emails already exist in the CRM. Returns sets of duplicate values. */
+  checkDuplicates: (data: { phones: string[]; emails: string[] }) =>
+    fetchAPI("/leads/check-duplicates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }) as Promise<{ duplicatePhones: string[]; duplicateEmails: string[] }>,
   /** Import leads from Facebook Lead Ads. Requires accessToken and pageId. */
   importFromFacebook: (data: {
     accessToken: string;
@@ -418,9 +424,6 @@ export const leadsAPI = {
       errors?: string[];
       message: string;
     }>,
-  /** Fetch all existing lead phone numbers and emails for duplicate checking before import. */
-  getPhones: () =>
-    fetchAPI("/leads/phones") as Promise<{ phones: string[]; emails: string[] }>,
 };
 
 // Settings API (integrations stored on backend)
