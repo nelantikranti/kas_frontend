@@ -534,8 +534,15 @@ export const projectsAPI = {
       body: formData,
     });
     if (!response.ok) {
-      const err = await response.text();
-      throw new Error(err || "Upload failed");
+      const errText = await response.text();
+      let errorMessage = "Upload failed";
+      try {
+        const errData = JSON.parse(errText);
+        errorMessage = errData.details || errData.error || errText || "Upload failed";
+      } catch {
+        if (errText) errorMessage = errText;
+      }
+      throw new Error(errorMessage);
     }
     return response.json();
   },
@@ -556,6 +563,17 @@ export const projectsAPI = {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  },
+  fetchDocumentBlob: async (projectId: string, docId: string): Promise<{ blobUrl: string; mimeType: string }> => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents/${docId}/view`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!response.ok) throw new Error("Failed to load document");
+    const mimeType = response.headers.get("Content-Type") || "application/octet-stream";
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    return { blobUrl, mimeType };
   },
 };
 

@@ -68,9 +68,8 @@ const allNavItems: NavItem[] = [
 // Helper function to get filtered nav items based on user permissions
 const getNavItems = (userRole: string | null, userPermissions: string[] = []): NavItem[] => {
   
-  // Filter by permissions
-  // Only Superadmin bypasses permissions; everyone else (including Admin) is filtered by permissions
-  if (userRole === "Superadmin") {
+  // Filter by permissions — Admin has access to all nav items
+  if (userRole === "Admin") {
     return allNavItems;
   }
   return allNavItems.filter(item => {
