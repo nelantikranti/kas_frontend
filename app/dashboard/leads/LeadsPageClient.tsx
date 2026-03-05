@@ -139,6 +139,7 @@ export default function LeadsPage() {
   const [syncingFacebook, setSyncingFacebook] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fbSyncParamsRef = useRef<{ assignedTo: string; groupId: string | null }>({ assignedTo: "Sales Executive 1", groupId: null });
+  const isInitialMount = useRef(true);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -151,6 +152,10 @@ export default function LeadsPage() {
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const leadsPerPage = 20;
   const [facebookConfigured, setFacebookConfigured] = useState(false);
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
@@ -302,9 +307,9 @@ export default function LeadsPage() {
     const initialGroupId = searchParams.get("groupId") || "";
     if (initialGroupId) {
       setSelectedGroupId(initialGroupId);
-      loadLeads(initialGroupId);
+      loadLeads({ groupId: initialGroupId, page: 1 });
     } else {
-      loadLeads();
+      loadLeads({ page: 1 });
     }
 
     const loadGroups = async () => {
@@ -324,7 +329,7 @@ export default function LeadsPage() {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'user') {
         loadUser();
-        loadLeads(); // Reload leads when user changes
+        loadLeads({ page: 1 }); // Reload leads when user changes
       }
     };
 
@@ -383,7 +388,7 @@ export default function LeadsPage() {
       });
 
       await Promise.all(updates);
-      await loadLeads();
+      await loadLeads({ page: currentPage });
       setSelectedLeadIds(new Set());
       setIsAssignModalOpen(false);
       setUserSearchTerm("");
@@ -466,13 +471,26 @@ export default function LeadsPage() {
     refreshFacebookConfigured();
   }, []);
 
-  const loadLeads = async (groupId?: string) => {
+  const loadLeads = async (opts?: { groupId?: string; page?: number; search?: string; source?: string }) => {
     try {
       setLoading(true);
-      const filterGroupId = groupId !== undefined ? groupId : selectedGroupId;
-      const leads = await leadsAPI.getAll(filterGroupId || undefined);
-      // Normalize MongoDB _id to id for consistency
-      const normalizedLeads = leads.map((lead: any) => {
+      const filterGroupId = opts?.groupId !== undefined ? opts.groupId : selectedGroupId;
+      const page = opts?.page !== undefined ? opts.page : currentPage;
+      const search = opts?.search !== undefined ? opts.search : searchTerm;
+      const source = opts?.source !== undefined ? opts.source : selectedSourceFilter;
+
+      const response = await leadsAPI.getAll({
+        groupId: filterGroupId || null,
+        page,
+        limit: leadsPerPage,
+        search: search || undefined,
+        source: source || undefined,
+      });
+
+      const { leads: rawLeads, total, totalPages: tp } = response as any;
+      const leadsArray = Array.isArray(rawLeads) ? rawLeads : [];
+
+      const normalizedLeads = leadsArray.map((lead: any) => {
         const leadId = lead._id?.toString() || lead.id || "";
         if (!leadId) {
           console.warn("Lead missing ID:", lead);
@@ -480,16 +498,17 @@ export default function LeadsPage() {
         return {
           ...lead,
           id: leadId,
-          _id: lead._id, // Keep _id for reference
+          _id: lead._id,
         };
       });
       setLeadList(normalizedLeads);
+      setTotalLeads(typeof total === "number" ? total : 0);
+      setTotalPages(typeof tp === "number" ? tp : 1);
       setBackendConnected(true);
     } catch (error: any) {
       console.error("Failed to load leads:", error);
       setBackendConnected(false);
 
-      // Show connection error if applicable
       const errorMessage = error?.message || "";
       if (errorMessage.includes("ERR_CONNECTION_REFUSED") ||
         errorMessage.includes("Failed to fetch") ||
@@ -503,6 +522,43 @@ export default function LeadsPage() {
       setLoading(false);
     }
   };
+
+  // Reload leads when page changes (skip initial mount — handled by the main useEffect)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    loadLeads({ page: currentPage });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  // Debounced reload when search term changes (reset to page 1)
+  const searchInitialMount = useRef(true);
+  useEffect(() => {
+    if (searchInitialMount.current) {
+      searchInitialMount.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+      loadLeads({ page: 1, search: searchTerm });
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Reload when source filter changes (reset to page 1)
+  const sourceInitialMount = useRef(true);
+  useEffect(() => {
+    if (sourceInitialMount.current) {
+      sourceInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+    loadLeads({ page: 1, source: selectedSourceFilter });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSourceFilter]);
 
   // Define stage progression rules - Progressive unlock system
   const getAvailableStages = (currentStage: Lead["stage"]): Lead["stage"][] => {
@@ -1363,10 +1419,13 @@ NEXT ACTION:
 
     try {
       await leadsAPI.delete(leadToDelete.id);
-      setLeadList(leadList.filter(lead => lead.id !== leadToDelete.id));
       toast.success("Lead deleted successfully");
       setIsDeleteModalOpen(false);
       setLeadToDelete(null);
+      // If this was the last lead on the current page, go to previous page
+      const newPage = leadList.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+      setCurrentPage(newPage);
+      await loadLeads({ page: newPage });
     } catch (error) {
       console.error("Failed to delete lead:", error);
       toast.error("Failed to delete lead. Please try again.");
@@ -1384,7 +1443,7 @@ NEXT ACTION:
       });
 
       await Promise.all(deletePromises);
-      await loadLeads();
+      await loadLeads({ page: currentPage });
       setSelectedLeadIds(new Set());
       setIsBulkDeleteModalOpen(false);
       toast.success(`Successfully deleted ${count} lead(s)`);
@@ -1505,8 +1564,8 @@ NEXT ACTION:
         try {
           // Dynamically import xlsx only when needed (inside the callback)
           const XLSXModule = await import("xlsx");
-          // xlsx exports as a namespace, access it directly
-          const XLSX = XLSXModule;
+          // Next.js dynamic import wraps the module; xlsx functions live on .default
+          const XLSX = (XLSXModule as any).default ?? XLSXModule;
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -1514,13 +1573,25 @@ NEXT ACTION:
 
           if (jsonData.length === 0) {
             toast.error("Excel file is empty or invalid format.");
+            if (fileInputRef.current) fileInputRef.current.value = '';
             setIsImporting(false);
             return;
           }
 
+          // Fetch all existing phones from CRM for duplicate checking
+          let existingPhones = new Set<string>();
+          try {
+            const phonesData = await leadsAPI.getPhones();
+            existingPhones = new Set(phonesData.phones.map((p: string) => p.trim()));
+          } catch {
+            // If we can't fetch phones, proceed without duplicate check
+          }
+
           let successCount = 0;
           let errorCount = 0;
+          let duplicateCount = 0;
           const errors: string[] = [];
+          const duplicates: string[] = [];
 
           for (const row of jsonData as any[]) {
             try {
@@ -1528,71 +1599,77 @@ NEXT ACTION:
               const name = (row['Name'] || row['name'] || row['Name / Company'] || row['Lead Name'] || row['Customer Name'] || '').toString().trim();
               const company = (row['Company'] || row['company'] || row['Name / Company'] || row['Organization'] || '').toString().trim();
               
-              // Try multiple email column variations
-              let email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim();
+              // Try multiple email column variations — keep blank if not present
+              const email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim();
               
-              // Try multiple phone column variations
+              // Try multiple phone column variations; strip non-digits then remove leading country code (e.g. +91)
               let phone = (row['Phone'] || row['phone'] || row['Phone Number'] || row['Mobile'] || row['mobile'] || row['Contact Number'] || row['Contact'] || '').toString().trim().replace(/\D/g, '');
-              
-              const source = (row['Source'] || row['source'] || 'Website').toString().trim();
-              const stage = (row['Stage'] || row['stage'] || 'New Lead').toString().trim();
+              if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
+              if (phone.length === 13 && phone.startsWith('091')) phone = phone.slice(3);
+
+              const source = (row['Source'] || row['source'] || '').toString().trim();
+              const stage = (row['Stage'] || row['stage'] || '').toString().trim();
               const value = parseFloat(row['Value'] || row['value'] || row['Lead Value'] || 0) || 0;
 
               // Validation
               if (!name) {
-                errors.push(`Row ${successCount + errorCount + 1}: Name is required`);
+                errors.push(`Row ${successCount + errorCount + duplicateCount + 1}: Name is required`);
                 errorCount++;
                 continue;
               }
 
               if (!phone || phone.length !== 10) {
-                errors.push(`Row ${successCount + errorCount + 1}: Valid 10-digit phone number is required`);
+                errors.push(`Row ${successCount + errorCount + duplicateCount + 1}: Valid 10-digit phone number is required`);
                 errorCount++;
                 continue;
               }
 
-              // Make email optional - generate default if missing
-              if (!email || !email.includes('@')) {
-                // Generate a default email if missing
-                const sanitizedName = name.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
-                email = `${sanitizedName}@imported.lead`;
+              // Duplicate check: skip if phone already exists in CRM
+              if (existingPhones.has(phone)) {
+                duplicateCount++;
+                duplicates.push(`${name} (${phone})`);
+                continue;
               }
 
               // Assign imported leads based on user role
-              // If admin imports, keep leads unassigned so admin can assign them later
+              // If admin imports, mark as Unassigned so admin can assign later
               // If non-admin imports, assign to current user so they can see their imported data
               let assignedTo: string;
               if (isAdmin()) {
-                // Admin imports - keep unassigned so admin can assign to someone later
-                assignedTo = 'Sales Executive 1'; // Default unassigned value
+                assignedTo = 'Unassigned';
               } else {
-                // Non-admin imports - assign to current user
-                assignedTo = currentUser?.name || 'Sales Executive 1';
+                assignedTo = currentUser?.name || 'Unassigned';
               }
 
               const leadData = {
                 name,
-                company: company || name,
                 email,
                 phone,
                 source: source || 'Website',
                 stage: (stage || 'New Lead') as Lead["stage"],
-                value: value * 100000, // Convert Lakhs to actual value
+                value: value,
                 assignedTo: assignedTo,
                 notes: '',
               };
 
               await leadsAPI.create(leadData);
+              // Track newly added phones so same-file duplicates are also caught
+              existingPhones.add(phone);
               successCount++;
             } catch (error: any) {
+              const rowNum = successCount + errorCount + duplicateCount + 1;
               errorCount++;
-              errors.push(`Row ${successCount + errorCount}: ${error.message || 'Failed to import'}`);
+              errors.push(`Row ${rowNum}: ${error.message || 'Failed to import'}`);
             }
           }
 
           if (successCount > 0) {
             toast.success(`Successfully imported ${successCount} lead(s)`);
-            await loadLeads(); // Reload leads
+            await loadLeads({ page: 1 }); // Reload leads from first page after import
+          }
+
+          if (duplicateCount > 0) {
+            toast.error(`${duplicateCount} lead(s) skipped — already exist in CRM: ${duplicates.slice(0, 3).join(', ')}${duplicates.length > 3 ? ` and ${duplicates.length - 3} more` : ''}`);
           }
 
           if (errorCount > 0) {
@@ -1645,7 +1722,7 @@ NEXT ACTION:
       const res = await leadsAPI.syncFacebook({ assignedTo, groupId: groupId ?? undefined });
       if (res.imported > 0) {
         console.log(`[Leads] Fetched ${res.imported} lead(s) from Facebook. Leads are fetching from Facebook.`);
-        await loadLeads();
+        await loadLeads({ page: 1 });
       } else {
         console.log("[Leads] No new leads from Facebook this sync.", res.total != null ? `(Total checked: ${res.total})` : "");
       }
@@ -1668,7 +1745,7 @@ NEXT ACTION:
       });
       console.log(`[Leads] Leads are fetching from Facebook. Synced ${res.imported} lead(s).`);
       toast.success(res.message || `Synced ${res.imported} lead(s) from Facebook Lead Ads.`);
-      if (res.imported > 0) await loadLeads();
+      if (res.imported > 0) await loadLeads({ page: 1 });
       if (res.errors?.length) toast.error(res.errors.slice(0, 2).join(" "));
     } catch (e: any) {
       console.warn("[Leads] Facebook sync failed:", e?.message || e);
@@ -1692,59 +1769,12 @@ NEXT ACTION:
 
   // Google Ads leads now come via webhook, no periodic sync needed
 
-  const filteredLeads = leadList.filter(lead => {
-    // Admin sees all leads (including all imported leads with assigned person's name)
-    const userIsAdmin = isAdmin();
-    if (userIsAdmin) {
-      // Admin can see all leads regardless of who imported or assigned them
-      // Search filter for admin
-      const matchesSearch = !searchTerm ||
-        lead.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone.includes(searchTerm) ||
-        lead.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.stage.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.assignedTo.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch;
-    }
-
-    // Check if user has permission to assign leads (leads:edit or leads:create)
+  // Backend handles search, source, group filtering + pagination.
+  // Any user with leads:view permission can see all leads on the current page.
+  const filteredLeads = leadList.filter(() => {
+    if (isAdmin()) return true;
     const userPermissions = currentUser?.permissions || [];
-    const canAssignLeads = can(PERMISSIONS.LEADS_EDIT, userPermissions) || 
-                          can(PERMISSIONS.LEADS_CREATE, userPermissions);
-
-    // If user has assign permission, show only unassigned leads OR leads assigned to them
-    if (canAssignLeads && currentUser) {
-      // Show unassigned leads (empty or default) OR leads assigned to current user
-      const isUnassigned = !lead.assignedTo || 
-                          lead.assignedTo === "" || 
-                          lead.assignedTo === "Sales Executive 1" || // Default unassigned value
-                          lead.assignedTo === currentUser.name;
-      
-      if (!isUnassigned) {
-        return false;
-      }
-    } else {
-      // Regular users see only leads assigned to them
-      if (!currentUser || lead.assignedTo !== currentUser.name) {
-        return false;
-      }
-    }
-
-    // Search filter
-    const matchesSearch = !searchTerm ||
-      lead.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.phone.includes(searchTerm) ||
-      lead.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.stage.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.assignedTo.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesSearch;
+    return can(PERMISSIONS.LEADS_VIEW, userPermissions);
   });
 
   if (loading) {
@@ -1801,7 +1831,8 @@ NEXT ACTION:
             onChange={(e) => {
               const v = e.target.value;
               setSelectedGroupId(v);
-              loadLeads(v || undefined);
+              setCurrentPage(1);
+              loadLeads({ groupId: v || undefined, page: 1 });
             }}
             className="w-full sm:w-48 md:w-56 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
           >
@@ -1858,13 +1889,13 @@ NEXT ACTION:
 
       {/* Search / Filter Results Info */}
       {(searchTerm || selectedGroupId || selectedSourceFilter) && (
-        <div className={`mb-4 text-sm rounded-lg px-4 py-2 inline-block ${filteredLeads.length > 0
+        <div className={`mb-4 text-sm rounded-lg px-4 py-2 inline-block ${totalLeads > 0
           ? "bg-green-50 border border-green-200 text-gray-600"
           : "bg-red-50 border border-red-200 text-red-600"
           }`}>
-          {filteredLeads.length > 0 ? (
+          {totalLeads > 0 ? (
             <>
-              Showing <span className="font-semibold text-green-700">{filteredLeads.length}</span> of <span className="font-semibold">{leadList.length}</span> leads
+              Showing <span className="font-semibold text-green-700">{filteredLeads.length}</span> of <span className="font-semibold">{totalLeads}</span> leads
               {selectedSourceFilter && (
                 <span className="ml-2">• Source: <span className="font-semibold">{selectedSourceFilter}</span></span>
               )}
@@ -2204,6 +2235,73 @@ NEXT ACTION:
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-sm text-gray-600">
+            Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+            <span className="ml-2 text-gray-400">({totalLeads} total leads)</span>
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="px-2 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="First page"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Prev
+            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                    currentPage === pageNum
+                      ? "bg-blue-600 text-white border-blue-600 font-semibold"
+                      : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-2 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Last page"
+            >
+              »
+            </button>
+          </div>
+        </div>
+      )}
 
       <Modal
         isOpen={isModalOpen}

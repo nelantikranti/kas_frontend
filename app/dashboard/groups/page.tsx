@@ -170,8 +170,8 @@ export default function GroupsPage() {
     setViewGroupLeads([]);
     setViewGroupLeadsLoading(true);
     try {
-      const leads = await leadsAPI.getAll(group.id);
-      const list = Array.isArray(leads) ? leads : [];
+      const response = await leadsAPI.getAll({ groupId: group.id, limit: 1000 });
+      const list = Array.isArray((response as any)?.leads) ? (response as any).leads : [];
       setViewGroupLeads(list.map((l: any) => ({ id: l.id || l.leadId || l._id?.toString(), name: l.name || "—", email: l.email || "—", stage: l.stage })));
     } catch (err) {
       console.error("Failed to load leads for group:", err);

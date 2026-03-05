@@ -372,8 +372,23 @@ export interface AMCContract {
 
 // Leads API
 export const leadsAPI = {
-  getAll: (groupId?: string | null) =>
-    fetchAPI(`/leads${groupId ? `?groupId=${encodeURIComponent(groupId)}` : ""}`),
+  getAll: (params?: {
+    groupId?: string | null;
+    page?: number;
+    limit?: number;
+    search?: string;
+    source?: string;
+  }) => {
+    const p = params || {};
+    const qs = new URLSearchParams();
+    if (p.groupId) qs.set("groupId", p.groupId);
+    if (p.page) qs.set("page", String(p.page));
+    if (p.limit) qs.set("limit", String(p.limit));
+    if (p.search) qs.set("search", p.search);
+    if (p.source) qs.set("source", p.source);
+    const query = qs.toString();
+    return fetchAPI(`/leads${query ? `?${query}` : ""}`);
+  },
   getById: (id: string) => fetchAPI(`/leads/${id}`),
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
@@ -403,6 +418,9 @@ export const leadsAPI = {
       errors?: string[];
       message: string;
     }>,
+  /** Fetch all existing lead phone numbers and emails for duplicate checking before import. */
+  getPhones: () =>
+    fetchAPI("/leads/phones") as Promise<{ phones: string[]; emails: string[] }>,
 };
 
 // Settings API (integrations stored on backend)

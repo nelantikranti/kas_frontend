@@ -80,8 +80,8 @@ export default function QuotationsPage() {
 
   const loadLeads = async () => {
     try {
-      const leadsData = await leadsAPI.getAll();
-      setLeads(leadsData);
+      const response = await leadsAPI.getAll({ limit: 1000 });
+      setLeads(Array.isArray((response as any)?.leads) ? (response as any).leads : []);
     } catch (error) {
       console.error("Failed to load leads:", error);
     }
