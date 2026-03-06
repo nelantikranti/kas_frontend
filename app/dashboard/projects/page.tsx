@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { projectsAPI, Project, ProjectStage } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import Timeline from "@/components/Timeline";
 import Modal from "@/components/Modal";
-import { IoAdd, IoSearch, IoDocumentText, IoCloudUpload, IoCheckmarkCircle, IoCloseCircle, IoTime, IoStatsChart, IoBuild, IoConstruct, IoClipboard, IoShieldCheckmark, IoCube, IoCalendar, IoWallet, IoTrendingUp, IoTrendingDown, IoCreate, IoTrash, IoDownload, IoEye, IoTrashOutline, IoClose } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCloudUpload, IoCheckmarkCircle, IoCloseCircle, IoTime, IoStatsChart, IoBuild, IoConstruct, IoClipboard, IoShieldCheckmark, IoCube, IoCalendar, IoWallet, IoTrendingUp, IoTrendingDown, IoCreate, IoTrash } from "react-icons/io5";
 import { toast } from "@/components/Toast";
 import ProjectLineGraph from "@/components/ProjectLineGraph";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
@@ -35,76 +35,6 @@ const stageConfig = [
   { stage: "Installation in Progress", icon: IoClipboard, color: "bg-green-500", bgColor: "bg-green-50", textColor: "text-green-700", borderColor: "border-green-200", phase: "Installation" },
   { stage: "Testing & Final Handover", icon: IoShieldCheckmark, color: "bg-green-500", bgColor: "bg-green-50", textColor: "text-green-700", borderColor: "border-green-200", phase: "Installation" },
 ];
-
-// Document viewer sub-component: fetches document via authenticated fetch (no token in URL)
-function DocViewerContent({
-  viewingDoc,
-  blobUrl,
-  loading,
-  onBlobReady,
-  onLoadingChange,
-}: {
-  viewingDoc: { projectId: string; docId: string; fileName: string; fileType: string };
-  blobUrl: string | null;
-  loading: boolean;
-  onBlobReady: (url: string) => void;
-  onLoadingChange: (v: boolean) => void;
-}) {
-  useEffect(() => {
-    let revoked = false;
-    onLoadingChange(true);
-    projectsAPI.fetchDocumentBlob(viewingDoc.projectId, viewingDoc.docId)
-      .then(({ blobUrl: url }) => {
-        if (!revoked) onBlobReady(url);
-      })
-      .catch(() => {
-        if (!revoked) onBlobReady("");
-      })
-      .finally(() => {
-        if (!revoked) onLoadingChange(false);
-      });
-    return () => { revoked = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewingDoc.projectId, viewingDoc.docId]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center gap-3 text-gray-500 p-8">
-        <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm">Loading document…</p>
-      </div>
-    );
-  }
-  if (!blobUrl) {
-    return (
-      <div className="flex flex-col items-center gap-3 text-red-500 p-8">
-        <IoDocumentText className="w-12 h-12 text-red-300" />
-        <p className="text-sm">Failed to load document.</p>
-      </div>
-    );
-  }
-  const isImage = viewingDoc.fileType?.startsWith("image/") || /\.(jpe?g|png)$/i.test(viewingDoc.fileName);
-  const isPdf = viewingDoc.fileType === "application/pdf" || viewingDoc.fileName.toLowerCase().endsWith(".pdf");
-  if (isImage) {
-    return <img src={blobUrl} alt={viewingDoc.fileName} className="max-w-full max-h-full object-contain" />;
-  }
-  if (isPdf) {
-    return <iframe src={blobUrl} title={viewingDoc.fileName} className="w-full h-full border-0" />;
-  }
-  return (
-    <div className="flex flex-col items-center gap-4 text-gray-500 p-8">
-      <IoDocumentText className="w-16 h-16 text-gray-300" />
-      <p className="text-sm text-center">Preview not available for this file type.</p>
-      <a
-        href={blobUrl}
-        download={viewingDoc.fileName}
-        className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Download file
-      </a>
-    </div>
-  );
-}
 
 export default function ProjectsPage() {
   const userPermissions = getUserPermissions();
@@ -141,13 +71,6 @@ export default function ProjectsPage() {
   const [editExpenseFormInAddModal, setEditExpenseFormInAddModal] = useState({ amount: "", description: "" });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [uploadingStage, setUploadingStage] = useState<string | null>(null);
-  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
-  const [confirmDeleteDocId, setConfirmDeleteDocId] = useState<string | null>(null);
-  const [viewingDoc, setViewingDoc] = useState<{ projectId: string; docId: string; fileName: string; fileType: string } | null>(null);
-  const [viewingDocBlobUrl, setViewingDocBlobUrl] = useState<string | null>(null);
-  const [viewingDocLoading, setViewingDocLoading] = useState(false);
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [newProject, setNewProject] = useState({
     projectName: "",
     customerName: "",
@@ -222,78 +145,6 @@ export default function ProjectsPage() {
     } catch (error) {
       console.error("Failed to update project stage:", error);
       toast.error("Failed to update project stage. Please try again.");
-    }
-  };
-
-  const handleDocumentUpload = async (stage: string, files: FileList | File[] | null) => {
-    if (!files || files.length === 0 || !selectedProject) return;
-
-    const fileArray = Array.from(files);
-    setUploadingStage(stage);
-    try {
-      for (const file of fileArray) {
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error(`${file.name} exceeds 10MB limit. Skipping.`);
-          continue;
-        }
-
-        const uploaded = await projectsAPI.uploadDocument(selectedProject.id, stage, file) as any;
-
-        const newDoc = {
-          id: uploaded.id,
-          stage: uploaded.stage || stage,
-          fileName: uploaded.fileName || file.name,
-          fileType: uploaded.fileType || file.type || "application/octet-stream",
-          fileSize: uploaded.fileSize || file.size,
-          fileUrl: uploaded.fileUrl,
-          uploadedDate: uploaded.uploadedDate || new Date().toISOString().split("T")[0],
-        };
-
-        setSelectedProject((prev) => prev ? { ...prev, documents: [...(prev.documents || []), newDoc] } : prev);
-        setProjectList((prev) =>
-          prev.map((p) => p.id !== selectedProject.id ? p : { ...p, documents: [...(p.documents || []), newDoc] })
-        );
-        toast.success(`${file.name} uploaded successfully`);
-      }
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("Failed to upload document. Please try again.");
-    } finally {
-      setUploadingStage(null);
-    }
-  };
-
-  const handleDocumentDelete = async (docId: string) => {
-    if (!selectedProject || !docId) return;
-    setDeletingDocId(docId);
-    try {
-      await projectsAPI.deleteDocument(selectedProject.id, docId);
-      setSelectedProject((prev) => {
-        if (!prev) return prev;
-        return { ...prev, documents: (prev.documents || []).filter((d: any) => d.id !== docId) };
-      });
-      setProjectList((prev) =>
-        prev.map((p) => {
-          if (p.id !== selectedProject.id) return p;
-          return { ...p, documents: (p.documents || []).filter((d: any) => d.id !== docId) };
-        })
-      );
-      toast.success("Document deleted");
-    } catch (error) {
-      console.error("Delete document failed:", error);
-      toast.error("Failed to delete document.");
-    } finally {
-      setDeletingDocId(null);
-    }
-  };
-
-  const handleDocumentDownload = async (docId: string, fileName: string) => {
-    if (!selectedProject) return;
-    try {
-      await projectsAPI.downloadDocument(selectedProject.id, docId, fileName);
-    } catch (error) {
-      console.error("Download failed:", error);
-      toast.error("Failed to download document.");
     }
   };
 
@@ -907,172 +758,53 @@ export default function ProjectsPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Documents by Stage</h3>
               
-              {projectStages.map((stage) => {
-                const stageDocs = (selectedProject.documents || []).filter((d: any) => d.stage === stage);
-                const isUploading = uploadingStage === stage;
-                return (
-                  <div key={stage} className="mb-4 p-4 border-2 border-gray-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">{stage}</h4>
-                      {selectedProject.currentStage === stage && (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                          Current Stage
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${isUploading ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-green-400 cursor-pointer"}`}
-                      onClick={() => {
-                        if (!isUploading) fileInputRefs.current[stage]?.click();
-                      }}
-                    >
-                      <input
-                        type="file"
-                        multiple
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.dwg"
-                        style={{ display: "none" }}
-                        ref={(el) => { fileInputRefs.current[stage] = el; }}
-                        onChange={(e) => {
-                          const input = e.target;
-                          // Copy files into an array before clearing the input
-                          const files = input.files ? Array.from(input.files) : [];
-                          input.value = "";
-                          if (files.length > 0) handleDocumentUpload(stage, files as any);
-                        }}
-                      />
-                      <div className="flex flex-col items-center gap-2 pointer-events-none">
-                        <IoCloudUpload className={`w-6 h-6 ${isUploading ? "text-green-500 animate-pulse" : "text-gray-400"}`} />
-                        <span className="text-sm text-gray-600">
-                          {isUploading ? "Uploading..." : `Click to upload documents for ${stage}`}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          PDF, DOC, DWG, JPG, PNG (Max 10MB)
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Uploaded Documents List */}
-                    {stageDocs.length > 0 ? (
-                      <ul className="mt-3 space-y-2">
-                        {stageDocs.map((doc: any) => (
-                          <li key={doc.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <IoDocumentText className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-sm text-gray-700 truncate">{doc.fileName}</span>
-                              <span className="text-xs text-gray-400 flex-shrink-0">
-                                {doc.fileSize ? `(${(doc.fileSize / 1024).toFixed(1)} KB)` : ""}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <button
-                                onClick={() => setViewingDoc({ projectId: selectedProject.id, docId: doc.id, fileName: doc.fileName, fileType: doc.fileType })}
-                                className="p-1.5 rounded-md text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-colors"
-                                title="View"
-                              >
-                                <IoEye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDocumentDownload(doc.id, doc.fileName)}
-                                className="p-1.5 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
-                                title="Download"
-                              >
-                                <IoDownload className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteDocId(doc.id)}
-                                disabled={deletingDocId === doc.id}
-                                className="p-1.5 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors disabled:opacity-50"
-                                title="Delete"
-                              >
-                                {deletingDocId === doc.id
-                                  ? <span className="text-xs">...</span>
-                                  : <IoTrashOutline className="w-4 h-4" />
-                                }
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="mt-2 text-xs text-gray-500">
-                        No documents uploaded yet for this stage
-                      </div>
+              {projectStages.map((stage) => (
+                <div key={stage} className="mb-4 p-4 border-2 border-gray-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">{stage}</h4>
+                    {selectedProject.currentStage === stage && (
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                        Current Stage
+                      </span>
                     )}
                   </div>
-                );
-              })}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.dwg"
+                      className="hidden"
+                      id={`upload-${stage}`}
+                    />
+                    <label
+                      htmlFor={`upload-${stage}`}
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <IoCloudUpload className="w-6 h-6 text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        Upload drawings, approvals, or documents for {stage}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        PDF, DOC, DWG, JPG, PNG (Max 10MB)
+                      </span>
+                    </label>
+                  </div>
+                  {/* Document List (placeholder) */}
+                  <div className="mt-2 text-xs text-gray-500">
+                    No documents uploaded yet for this stage
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t">
+              <p className="text-xs text-gray-500 text-center">
+                Document upload functionality will be connected to backend storage
+              </p>
             </div>
           </div>
         )}
       </Modal>
-
-      {/* Document Delete Confirmation Dialog */}
-      {confirmDeleteDocId && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Document</h3>
-            <p className="text-sm text-gray-600 mb-6">Are you sure you want to permanently delete this document? This action cannot be undone.</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setConfirmDeleteDocId(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  const id = confirmDeleteDocId;
-                  setConfirmDeleteDocId(null);
-                  handleDocumentDelete(id);
-                }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Document Viewer Modal */}
-      {viewingDoc && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70" onClick={() => {
-          if (viewingDocBlobUrl) URL.revokeObjectURL(viewingDocBlobUrl);
-          setViewingDoc(null);
-          setViewingDocBlobUrl(null);
-        }}>
-          <div className="relative bg-white rounded-xl shadow-2xl w-[90vw] max-w-4xl h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b bg-gray-50">
-              <div className="flex items-center gap-2 min-w-0">
-                <IoDocumentText className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-semibold text-gray-800 truncate">{viewingDoc.fileName}</span>
-              </div>
-              <button
-                onClick={() => {
-                  if (viewingDocBlobUrl) URL.revokeObjectURL(viewingDocBlobUrl);
-                  setViewingDoc(null);
-                  setViewingDocBlobUrl(null);
-                }}
-                className="p-1.5 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-200 transition-colors"
-                title="Close"
-              >
-                <IoClose className="w-5 h-5" />
-              </button>
-            </div>
-            {/* Content */}
-            <div className="flex-1 overflow-auto bg-gray-100 flex items-center justify-center">
-              <DocViewerContent
-                viewingDoc={viewingDoc}
-                blobUrl={viewingDocBlobUrl}
-                loading={viewingDocLoading}
-                onBlobReady={(url) => setViewingDocBlobUrl(url)}
-                onLoadingChange={(v) => setViewingDocLoading(v)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Add Expense Modal */}
       <Modal

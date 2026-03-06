@@ -313,14 +313,11 @@ export interface Project {
   amcOffered?: boolean;
   amcLinked?: string; // AMC Contract ID
 
-  // 8. Documents (stage-based)
+  // 8. Documents
   documents?: Array<{
-    id?: string;
-    stage: string;
+    type: "Purchase Order" | "Drawings" | "Test Certificates" | "Handover Documents" | "Photos" | "Videos";
     fileName: string;
-    fileType: string;
-    fileSize: number;
-    fileUrl?: string;
+    fileUrl: string;
     uploadedDate: string;
   }>;
 
@@ -372,90 +369,12 @@ export interface AMCContract {
 
 // Leads API
 export const leadsAPI = {
-  getAll: (params?: {
-    groupId?: string | null;
-    page?: number;
-    limit?: number;
-    search?: string;
-    source?: string;
-  }) => {
-    const p = params || {};
-    const qs = new URLSearchParams();
-    if (p.groupId) qs.set("groupId", p.groupId);
-    if (p.page) qs.set("page", String(p.page));
-    if (p.limit) qs.set("limit", String(p.limit));
-    if (p.search) qs.set("search", p.search);
-    if (p.source) qs.set("source", p.source);
-    const query = qs.toString();
-    return fetchAPI(`/leads${query ? `?${query}` : ""}`);
-  },
+  getAll: (groupId?: string | null) =>
+    fetchAPI(`/leads${groupId ? `?groupId=${encodeURIComponent(groupId)}` : ""}`),
   getById: (id: string) => fetchAPI(`/leads/${id}`),
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) => fetchAPI(`/leads/${id}`, { method: "DELETE" }),
-  /** Check which phones/emails already exist in the CRM. Returns sets of duplicate values. */
-  checkDuplicates: (data: { phones: string[]; emails: string[] }) =>
-    fetchAPI("/leads/check-duplicates", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }) as Promise<{ duplicatePhones: string[]; duplicateEmails: string[] }>,
-  /** Import leads from Facebook Lead Ads. Requires accessToken and pageId. */
-  importFromFacebook: (data: {
-    accessToken: string;
-    pageId: string;
-    assignedTo?: string;
-    groupId?: string | null;
-  }) =>
-    fetchAPI("/leads/import/facebook", { method: "POST", body: JSON.stringify(data) }) as Promise<{
-      imported: number;
-      total?: number;
-      errors?: string[];
-      message: string;
-    }>,
-  /** Sync leads from Facebook using credentials stored in backend Settings. Uses GET with query params. */
-  syncFacebook: (data: { assignedTo: string; groupId?: string | null }) =>
-    fetchAPI(
-      `/leads/sync/facebook?assignedTo=${encodeURIComponent(
-        data.assignedTo
-      )}${data.groupId ? `&groupId=${encodeURIComponent(data.groupId)}` : ""}`
-    ) as Promise<{
-      imported: number;
-      total?: number;
-      errors?: string[];
-      message: string;
-    }>,
-};
-
-// Settings API (integrations stored on backend)
-export const settingsAPI = {
-  getFacebookLeadAds: () =>
-    fetchAPI("/settings/facebook-lead-ads") as Promise<{
-      configured: boolean;
-      pageId: string;
-    }>,
-  updateFacebookLeadAds: (data: { accessToken: string; pageId: string }) =>
-    fetchAPI("/settings/facebook-lead-ads", { method: "PUT", body: JSON.stringify(data) }) as Promise<{
-      success: boolean;
-      message: string;
-      configured: boolean;
-      pageId: string;
-    }>,
-  getGoogleAds: () =>
-    fetchAPI("/settings/google-ads") as Promise<{
-      configured: boolean;
-      webhookUrl: string;
-      secretSet: boolean;
-    }>,
-  updateGoogleAds: (data: {
-    webhookUrl: string;
-    webhookSecret: string;
-  }) =>
-    fetchAPI("/settings/google-ads", { method: "PUT", body: JSON.stringify(data) }) as Promise<{
-      success: boolean;
-      message: string;
-      configured: boolean;
-      webhookUrl: string;
-    }>,
 };
 
 // Blogs API
@@ -544,58 +463,6 @@ export const projectsAPI = {
     fetchAPI(`/projects/${projectId}/expenses/${expenseId}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteExpense: (projectId: string, expenseId: string) =>
     fetchAPI(`/projects/${projectId}/expenses/${expenseId}`, { method: "DELETE" }),
-  uploadDocument: async (projectId: string, stage: string, file: File) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("stage", stage);
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents`, {
-      method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    });
-    if (!response.ok) {
-      const errText = await response.text();
-      let errorMessage = "Upload failed";
-      try {
-        const errData = JSON.parse(errText);
-        errorMessage = errData.details || errData.error || errText || "Upload failed";
-      } catch {
-        if (errText) errorMessage = errText;
-      }
-      throw new Error(errorMessage);
-    }
-    return response.json();
-  },
-  deleteDocument: (projectId: string, docId: string) =>
-    fetchAPI(`/projects/${projectId}/documents/${docId}`, { method: "DELETE" }),
-  downloadDocument: async (projectId: string, docId: string, fileName: string) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents/${docId}/download`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!response.ok) throw new Error("Download failed");
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  },
-  fetchDocumentBlob: async (projectId: string, docId: string): Promise<{ blobUrl: string; mimeType: string }> => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents/${docId}/view`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!response.ok) throw new Error("Failed to load document");
-    const mimeType = response.headers.get("Content-Type") || "application/octet-stream";
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    return { blobUrl, mimeType };
-  },
 };
 
 // AMC API

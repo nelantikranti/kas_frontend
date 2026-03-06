@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Navigation from "@/components/Navigation";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -24,13 +24,16 @@ export default function LoginPage() {
 
     try {
       let apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      // Clean up the URL - fix common typos
       apiUrl = apiUrl.trim().replace(/\/+$/, '');
+      // Fix http// or https// to http:// or https://
       apiUrl = apiUrl.replace(/^http\/\//, 'http://').replace(/^https\/\//, 'https://');
+      // Ensure it starts with http:// or https://
       if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
         apiUrl = `http://${apiUrl}`;
       }
       const loginUrl = `${apiUrl}/auth/login`;
-
+      
       const response = await fetch(loginUrl, {
         method: "POST",
         headers: {
@@ -44,12 +47,17 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Login failed" }));
-        setError(errorData.error || "Login failed. Please check your credentials and try again.");
+        if (response.status === 401) {
+          setError(errorData.error || "Invalid email or password. Please check your credentials and try again.");
+        } else {
+          setError(errorData.error || "Login failed. Please try again.");
+        }
         setIsSubmitting(false);
         return;
       }
 
       const data = await response.json();
+
       if (data.token && data.user) {
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
@@ -60,7 +68,16 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
+      if (error.message?.includes("fetch") || 
+          error.message?.includes("network") || 
+          error.message?.includes("Failed to fetch") ||
+          error.name === "TypeError" ||
+          error.message?.includes("ERR_CONNECTION_REFUSED") ||
+          error.message?.includes("ECONNREFUSED")) {
+        setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
+      } else {
+        setError(error.message || "Login failed. Please try again.");
+      }
       setIsSubmitting(false);
     }
   };
@@ -68,20 +85,23 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
       <Navigation />
-
-      <section className="py-12 sm:py-16 md:py-24 relative overflow-hidden flex items-center justify-center min-h-[calc(100vh-80px)]">
-        <Image
-          src="/premium_home.jpg"
-          alt="Login Background"
-          fill
-          priority
-          className="object-cover z-0 brightness-75 blur-[2px] transition-transform duration-[10s] hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-transparent to-slate-900/80 z-0"></div>
-
+      
+      {/* Login Section */}
+      <section className="py-12 sm:py-16 md:py-20 relative overflow-hidden">
+        {/* Background Gradient Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-200/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-300/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+        
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="max-w-md mx-auto">
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-8 border border-green-100/50 reveal reveal-fade-up">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-8 border border-green-100/50"
+            >
               <div className="text-center mb-6 sm:mb-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <IoLogIn className="w-8 h-8 text-white" />
@@ -166,18 +186,20 @@ export default function LoginPage() {
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
                   Don't have an account?{" "}
-                  <Link
-                    href="/signup"
+                  <Link 
+                    href="/signup" 
                     className="font-medium bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent hover:from-green-700 hover:to-green-800 transition-all"
                   >
                     Sign up
                   </Link>
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
+
+      {/* Footer intentionally omitted on login page for a clean auth UX */}
     </div>
   );
 }

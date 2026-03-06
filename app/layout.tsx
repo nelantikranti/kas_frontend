@@ -1,20 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import dynamic from "next/dynamic";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: '--font-jakarta',
-});
 
 const ChatbotWidgetWrapper = dynamic(
   () => import("@/components/ChatbotWidgetWrapper"),
-  { ssr: false }
-);
-
-const AnimationInitializer = dynamic(
-  () => import("@/lib/hooks/AnimationInitializer"),
   { ssr: false }
 );
 
@@ -57,7 +46,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
       </head>
-      <body className={`${jakarta.className} antialiased`}>
+      <body className="antialiased">
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-WSNJBCZP"
@@ -67,7 +56,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {children}
-        <AnimationInitializer />
         <ChatbotWidgetWrapper />
       </body>
     </html>

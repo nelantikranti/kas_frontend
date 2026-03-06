@@ -49,7 +49,6 @@ export default function PipelinesPage() {
   const [editPipelineName, setEditPipelineName] = useState("");
   const [newGroupId, setNewGroupId] = useState<string>("");
   const [editGroupId, setEditGroupId] = useState<string>("");
-  const [editAssignedTeam, setEditAssignedTeam] = useState<string[]>([]);
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
@@ -176,28 +175,25 @@ export default function PipelinesPage() {
   const canDelete = can(PERMISSIONS.PIPELINES_DELETE, userPermissions);
 
   return (
-    <div className="min-w-0 w-full">
-      {/* Header: stack on mobile so title doesn't truncate, row on sm+ */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 shrink-0 min-w-0">
-          Leads Pipelines
-        </h1>
-        <div className="flex flex-col sm:flex-row flex-1 gap-3 sm:gap-4 sm:justify-end sm:items-center min-w-0 w-full sm:w-auto">
-          <div className="relative w-full min-w-0 sm:min-w-[180px] md:min-w-[220px] sm:max-w-md">
-            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
+    <div>
+      <div className="flex flex-row flex-wrap items-center gap-3 sm:gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 shrink-0">Leads Pipelines</h1>
+        <div className="flex flex-1 justify-end gap-3 sm:gap-4 items-center min-w-0">
+          <div className="relative min-w-[180px] sm:min-w-[220px] max-w-md w-full sm:w-auto">
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search here..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white placeholder-gray-500"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white placeholder-gray-500"
               aria-label="Search pipelines"
             />
           </div>
           {canCreate && (
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-medium shadow-sm shrink-0 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-medium shadow-sm shrink-0"
             >
               <IoAdd className="w-5 h-5" />
               Add Pipeline
@@ -206,28 +202,27 @@ export default function PipelinesPage() {
         </div>
       </div>
 
-      {/* Desktop: table (md and up) */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
+          <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Pipeline Name
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Group Name
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Leads
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Assign Team
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
@@ -254,16 +249,16 @@ export default function PipelinesPage() {
                     key={row.id}
                     className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/70 hover:bg-gray-100/70"}
                   >
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                       {row.pipelineName}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {row.groupName ?? "—"}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {row.leads}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center -space-x-2">
                         {(row.assignedTeam || []).slice(0, 3).map((u) => (
                           <div
@@ -286,10 +281,10 @@ export default function PipelinesPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {formatCreated(row.created)}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         {canEdit && (
                           <AnimatedEditButton
@@ -315,11 +310,11 @@ export default function PipelinesPage() {
         </div>
 
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-end gap-2 px-3 sm:px-4 py-3 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200 bg-gray-50">
             <button
               onClick={() => setPagination((p) => ({ ...p, page: Math.max(1, p.page - 1) }))}
               disabled={pagination.page <= 1}
-              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-h-[44px] sm:min-h-0"
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Prev
             </button>
@@ -331,99 +326,7 @@ export default function PipelinesPage() {
                 setPagination((p) => ({ ...p, page: Math.min(p.totalPages, p.page + 1) }))
               }
               disabled={pagination.page >= pagination.totalPages}
-              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-h-[44px] sm:min-h-0"
-            >
-              Next
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Mobile/Tablet: card layout (below md) */}
-      <div className="md:hidden bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center gap-2 px-4 py-12 text-gray-500">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-green-600 border-t-transparent" />
-            <span className="text-sm">Loading pipelines...</span>
-          </div>
-        ) : data.length === 0 ? (
-          <div className="px-4 py-12 text-center text-gray-500 text-sm">No pipelines found</div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {data.map((row, idx) => (
-              <li
-                key={row.id}
-                className={`p-4 sm:p-4 hover:bg-gray-50/50 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
-              >
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{row.pipelineName}</p>
-                      <p className="text-xs text-gray-600 mt-0.5">{row.groupName ?? "—"}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {row.leads} leads · {formatCreated(row.created)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {canEdit && (
-                        <AnimatedEditButton
-                          onClick={() => handleEditPipeline(row)}
-                          size="sm"
-                          title="Edit"
-                        />
-                      )}
-                      {canDelete && (
-                        <AnimatedDeleteButton
-                          onClick={() => handleDeleteClick(row)}
-                          size="sm"
-                          title="Delete"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center -space-x-2 flex-wrap gap-y-1">
-                    {(row.assignedTeam || []).slice(0, 3).map((u) => (
-                      <div
-                        key={u.id}
-                        className="w-7 h-7 rounded-full bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center text-white text-xs font-semibold border-2 border-white ring-1 ring-gray-200"
-                        title={u.name}
-                      >
-                        {getInitials(u.name)}
-                      </div>
-                    ))}
-                    {row.assignedTeam && row.assignedTeam.length > 3 && (
-                      <span className="ml-1 text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                        +{row.assignedTeam.length - 3}
-                      </span>
-                    )}
-                    {(!row.assignedTeam || row.assignedTeam.length === 0) && (
-                      <span className="text-xs text-gray-400">No team</span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-center sm:justify-end gap-2 px-3 py-3 border-t border-gray-200 bg-gray-50">
-            <button
-              onClick={() => setPagination((p) => ({ ...p, page: Math.max(1, p.page - 1) }))}
-              disabled={pagination.page <= 1}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-            >
-              Prev
-            </button>
-            <span className="px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg">
-              {pagination.page} / {pagination.totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setPagination((p) => ({ ...p, page: Math.min(p.totalPages, p.page + 1) }))
-              }
-              disabled={pagination.page >= pagination.totalPages}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>

@@ -5,7 +5,7 @@ import React, { useState } from "react";
 interface AnimatedDeleteButtonProps {
   onClick?: () => void;
   className?: string;
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg";
   title?: string;
 }
 
@@ -18,14 +18,12 @@ export default function AnimatedDeleteButton({
   const [isHovered, setIsHovered] = useState(false);
 
   const sizeClasses = {
-    xs: "w-[28px] h-[28px]",
     sm: "w-[40px] h-[40px]",
     md: "w-[55px] h-[55px]",
     lg: "w-[70px] h-[70px]",
   };
 
   const iconSizes = {
-    xs: { bottom: "w-[7px]", top: "w-[9px]", garbage: "w-[7px]" },
     sm: { bottom: "w-[10px]", top: "w-[12px]", garbage: "w-[10px]" },
     md: { bottom: "w-[15px]", top: "w-[17px]", garbage: "w-[14px]" },
     lg: { bottom: "w-[20px]", top: "w-[22px]", garbage: "w-[18px]" },
@@ -44,14 +42,14 @@ export default function AnimatedDeleteButton({
         group
         flex flex-col items-center justify-center
         ${sizeClasses[size]}
-        rounded-lg
-        bg-transparent
+        rounded-full
+        bg-[rgb(255,95,95)]
         cursor-pointer
-        border-none
+        border-2 border-[rgb(255,201,201)]
         transition-all duration-300
         relative
         overflow-hidden
-        hover:bg-red-50
+        hover:bg-red-600
         active:scale-90
         ${className}
       `}
@@ -63,8 +61,8 @@ export default function AnimatedDeleteButton({
         viewBox="0 0 39 7"
         className={`${iconSizes[size].top} z-[2] transition-transform duration-300 origin-right ${isHovered ? "rotate-45" : ""}`}
       >
-        <line strokeWidth={4} stroke="rgb(239,68,68)" y2={5} x2={39} y1={5} />
-        <line strokeWidth={3} stroke="rgb(239,68,68)" y2="1.5" x2="26.0357" y1="1.5" x1={12} />
+        <line strokeWidth={4} stroke="white" y2={5} x2={39} y1={5} />
+        <line strokeWidth={3} stroke="white" y2="1.5" x2="26.0357" y1="1.5" x1={12} />
       </svg>
       
       {/* Bin Bottom */}
@@ -79,11 +77,11 @@ export default function AnimatedDeleteButton({
         </mask>
         <path
           mask={`url(#${maskId})`}
-          fill="rgb(239,68,68)"
+          fill="white"
           d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
         />
-        <path strokeWidth={4} stroke="rgb(239,68,68)" d="M12 6L12 29" />
-        <path strokeWidth={4} stroke="rgb(239,68,68)" d="M21 6V29" />
+        <path strokeWidth={4} stroke="white" d="M12 6L12 29" />
+        <path strokeWidth={4} stroke="white" d="M21 6V29" />
       </svg>
       
       {/* Garbage Animation */}
@@ -100,7 +98,7 @@ export default function AnimatedDeleteButton({
         `}
       >
         <path
-          fill="rgb(239,68,68)"
+          fill="white"
           d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z"
         />
       </svg>

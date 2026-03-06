@@ -226,25 +226,24 @@ export default function GroupsPage() {
   const canDelete = can(PERMISSIONS.GROUPS_DELETE, userPermissions);
 
   return (
-    <div className="min-w-0 w-full">
-      {/* Header: stack on mobile, row on sm+ */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 shrink-0">Groups</h1>
-        <div className="flex flex-col sm:flex-row flex-1 gap-3 sm:gap-4 sm:justify-end sm:items-center min-w-0 w-full sm:w-auto">
-          <div className="relative w-full min-w-0 sm:min-w-[180px] md:min-w-[220px] sm:max-w-md">
-            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
+    <div>
+      <div className="flex flex-row flex-wrap items-center gap-3 sm:gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 shrink-0">Groups</h1>
+        <div className="flex flex-1 justify-end gap-3 sm:gap-4 items-center min-w-0">
+          <div className="relative min-w-[180px] sm:min-w-[220px] max-w-md w-full sm:w-auto">
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search here..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white placeholder-gray-500"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white placeholder-gray-500"
               aria-label="Search groups"
             />
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-medium shadow-sm shrink-0 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-medium shadow-sm shrink-0"
           >
             <IoAdd className="w-5 h-5" />
             Add Group
@@ -252,34 +251,33 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      {/* Desktop: table (md and up) */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px]">
+          <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Select
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
                   Icon
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Group Name
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total Leads
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Added By
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Assign Team
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
@@ -303,7 +301,7 @@ export default function GroupsPage() {
               ) : (
                 groups.map((group) => (
                   <tr key={group.id} className="hover:bg-gray-50">
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <button
                         onClick={() => handleToggle(group)}
                         className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
@@ -319,7 +317,7 @@ export default function GroupsPage() {
                         />
                       </button>
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600">
                         <svg
                           className="w-5 h-5"
@@ -331,7 +329,7 @@ export default function GroupsPage() {
                         </svg>
                       </div>
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                       <button
                         type="button"
                         onClick={() => router.push(`/dashboard/leads?groupId=${group.id}`)}
@@ -341,16 +339,16 @@ export default function GroupsPage() {
                         {group.groupName}
                       </button>
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {group.totalLeads}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {formatCreated(group.created)}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {group.addedBy?.name ?? "—"}
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center -space-x-2">
                         {(group.assignedTeam || []).slice(0, 3).map((u) => (
                           <div
@@ -371,7 +369,7 @@ export default function GroupsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleViewGroup(group)}
@@ -409,127 +407,6 @@ export default function GroupsPage() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Mobile/Tablet: card layout (below md) */}
-      <div className="md:hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center gap-2 px-4 py-12 text-gray-500 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-green-600 border-t-transparent" />
-            <span className="text-sm">Loading groups...</span>
-          </div>
-        ) : groups.length === 0 ? (
-          <div className="px-4 py-12 text-center text-gray-500 text-sm bg-white rounded-xl border border-gray-200 shadow-sm">
-            No groups found
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-3 sm:gap-4">
-            {groups.map((group) => (
-              <li
-                key={group.id}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden"
-              >
-                <div className="p-4 sm:p-5 flex flex-col gap-4">
-                  {/* Row 1: Toggle + Icon + Name & meta + Actions */}
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <button
-                        onClick={() => handleToggle(group)}
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                          group.isSelected ? "bg-green-600" : "bg-gray-200"
-                        }`}
-                        role="switch"
-                        aria-checked={group.isSelected}
-                        aria-label={group.isSelected ? "Deselect group" : "Select group"}
-                      >
-                        <span
-                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
-                            group.isSelected ? "translate-x-5" : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                      <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 flex-shrink-0">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                          <path d="M12 4.5a3 3 0 11-6 0 3 3 0 016 0zM6 10.5a3 3 0 00-3 3v3h6v-3a3 3 0 00-3-3H6zM18 10.5a3 3 0 00-3 3v3h6v-3a3 3 0 00-3-3h-3z" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <button
-                          type="button"
-                          onClick={() => router.push(`/dashboard/leads?groupId=${group.id}`)}
-                          className="text-sm font-semibold text-gray-900 hover:text-green-700 hover:underline text-left block w-full break-words line-clamp-2"
-                          title={group.groupName}
-                        >
-                          {group.groupName}
-                        </button>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {group.totalLeads} leads · {formatCreated(group.created)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleViewGroup(group)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors touch-manipulation"
-                        title="View"
-                        aria-label="View group"
-                      >
-                        <IoEye className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleCopy(group)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
-                        title="Copy"
-                        aria-label="Copy group"
-                      >
-                        <IoCopyOutline className="w-5 h-5" />
-                      </button>
-                      {canEdit && (
-                        <AnimatedEditButton
-                          onClick={() => handleEditGroup(group)}
-                          size="sm"
-                          title="Edit"
-                        />
-                      )}
-                      {canDelete && (
-                        <AnimatedDeleteButton
-                          onClick={() => handleDeleteClick(group)}
-                          size="sm"
-                          title="Delete"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  {/* Row 2: By + Assigned team */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-gray-100 pt-3">
-                    <span className="text-xs text-gray-500 shrink-0">
-                      By {group.addedBy?.name ?? "—"}
-                    </span>
-                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                      {(group.assignedTeam || []).slice(0, 5).map((u) => (
-                        <div
-                          key={u.id}
-                          className="w-7 h-7 rounded-full bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center text-white text-xs font-semibold border-2 border-white shadow-sm flex-shrink-0"
-                          title={u.name}
-                        >
-                          {getInitials(u.name)}
-                        </div>
-                      ))}
-                      {group.assignedTeam && group.assignedTeam.length > 5 && (
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                          +{group.assignedTeam.length - 5}
-                        </span>
-                      )}
-                      {(!group.assignedTeam || group.assignedTeam.length === 0) && (
-                        <span className="text-xs text-gray-400">No team</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
 
       {/* Add Group Modal */}

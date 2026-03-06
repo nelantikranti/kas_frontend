@@ -14,7 +14,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Sales Executive" | "Service Engineer" | "Project Manager" | "Accounts" | "Manager" | "Technician" | "Accountant";
+  role: "Superadmin" | "Admin" | "Sales Executive" | "Service Engineer" | "Project Manager" | "Accounts" | "Manager" | "Technician" | "Accountant";
   status: "Active" | "Inactive" | "Pending";
   lastLogin: string;
   password?: string; // Password field for admin view
@@ -25,6 +25,7 @@ interface User {
 // Role-based permissions
 const getRolePermissions = (role: User["role"]) => {
   switch (role) {
+    case "Superadmin":
     case "Admin":
       return {
         canViewLeads: true,
@@ -172,7 +173,7 @@ export default function UsersPage() {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
         
         // Fetch with passwords if admin
-        const isAdmin = currentUserRole === "Admin";
+        const isAdmin = currentUserRole === "Admin" || currentUserRole === "Superadmin";
         const url = isAdmin 
           ? `${apiUrl}/users?includePasswords=true`
           : undefined;
@@ -271,7 +272,7 @@ export default function UsersPage() {
       toast.success("User created successfully");
       
       // Refresh users list to get password
-      if (currentUserRole === "Admin") {
+      if (currentUserRole === "Admin" || currentUserRole === "Superadmin") {
         const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/users?includePasswords=true`;
         const fetchedUsers = await fetch(url).then(res => res.json());
         const usersWithPermissions = fetchedUsers.map((user: User) => ({
@@ -437,8 +438,8 @@ export default function UsersPage() {
   const handleUpdateUser = async () => {
     if (!editingUser) return;
     
-    // Only Admin can change roles
-    if (editUser.role !== editingUser.role && currentUserRole !== "Admin") {
+    // Only Superadmin or Admin can change roles
+    if (editUser.role !== editingUser.role && currentUserRole !== "Admin" && currentUserRole !== "Superadmin") {
       toast.error("Only administrators can change user roles.");
       return;
     }
@@ -466,8 +467,8 @@ export default function UsersPage() {
         status: editUser.status,
       };
       
-      // Only include role if Admin is changing someone else's role
-      if (currentUserRole === "Admin" && editingUser.id !== currentUserId && editUser.role) {
+      // Only include role if Superadmin/Admin is changing someone else's role
+      if ((currentUserRole === "Admin" || currentUserRole === "Superadmin") && editingUser.id !== currentUserId && editUser.role) {
         updateData.role = editUser.role;
       }
       
@@ -558,9 +559,9 @@ export default function UsersPage() {
   };
 
   const handleDeleteClick = (user: User) => {
-    // Prevent deletion of Admin user
-    if (user.role === "Admin") {
-      toast.error("Admin cannot be deleted.");
+    // Prevent deletion of Superadmin and Admin users
+    if (user.role === "Superadmin" || user.role === "Admin") {
+      toast.error("Superadmin and Admin users cannot be deleted.");
       return;
     }
     setUserToDelete(user);
@@ -712,7 +713,7 @@ export default function UsersPage() {
       </div>
 
       {/* Pending Signup Requests Section - Only for Admin */}
-      {currentUserRole === "Admin" && (
+      {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
         <div className={`mb-6 ${pendingUsers.length > 0 ? "bg-yellow-50 border-2 border-yellow-200" : "bg-gray-50 border-2 border-gray-200"} rounded-lg p-4`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -814,7 +815,7 @@ export default function UsersPage() {
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Email</p>
                   <p className="text-gray-900 truncate">{user.email}</p>
-                  {currentUserRole === "Admin" && (
+                  {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
                     <>
                       <p className="text-xs text-gray-500 mb-1 mt-2">Password</p>
                       <p className="text-gray-900 truncate font-mono text-xs">{user.password || "Not set"}</p>
@@ -849,7 +850,7 @@ export default function UsersPage() {
                   title="Edit User"
                   className="flex-shrink-0"
                 />
-                {currentUserRole === "Admin" && (
+                {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
                   <button 
                     onClick={() => handleOpenPermissions(user)}
                     className="flex-1 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
@@ -859,7 +860,7 @@ export default function UsersPage() {
                     Permissions
                   </button>
                 )}
-                {user.role !== "Admin" && (
+                {user.role !== "Admin" && user.role !== "Superadmin" && (
                   <AnimatedDeleteButton
                     onClick={() => handleDeleteClick(user)}
                     size="sm"
@@ -932,7 +933,7 @@ export default function UsersPage() {
                   <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px]">
                     <div>
                       <div className="truncate">{user.email}</div>
-                      {currentUserRole === "Admin" && (
+                      {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
                         <div className="text-xs text-gray-600 font-mono mt-1 truncate">
                           {user.password || "Not set"}
                         </div>
@@ -967,7 +968,7 @@ export default function UsersPage() {
                         size="sm"
                         title="Edit User"
                       />
-                      {currentUserRole === "Admin" && (
+                      {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
                         <button 
                           onClick={() => handleOpenPermissions(user)}
                           className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
@@ -976,7 +977,7 @@ export default function UsersPage() {
                           <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       )}
-                      {user.role !== "Admin" && (
+                      {user.role !== "Admin" && user.role !== "Superadmin" && (
                         <AnimatedDeleteButton
                           onClick={() => handleDeleteClick(user)}
                           size="sm"
@@ -1046,6 +1047,8 @@ export default function UsersPage() {
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
               style={{ color: '#111827', backgroundColor: '#ffffff' }}
             >
+              <option value="Superadmin" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Superadmin</option>
+              <option value="Admin" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Admin</option>
               <option value="Sales Executive" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Sales Executive</option>
               <option value="Manager" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Manager</option>
               <option value="Service Engineer" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Service Engineer</option>
@@ -1233,7 +1236,7 @@ export default function UsersPage() {
                   </div>
                   Role & Status
                 </h4>
-                {currentUserRole === "Admin" && (
+                {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
                   <button
                     type="button"
                     onClick={() => setShowPermissionsSection(!showPermissionsSection)}
@@ -1255,8 +1258,9 @@ export default function UsersPage() {
               value={editUser.role}
               onChange={(e) => setEditUser({ ...editUser, role: e.target.value as User["role"] })}
                     className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 font-medium"
-                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || currentUserRole !== "Admin"}
+                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || (currentUserRole !== "Admin" && currentUserRole !== "Superadmin")}
             >
+                    <option value="Superadmin">Superadmin</option>
                     <option value="Admin">Admin</option>
                     <option value="Sales Executive">Sales Executive</option>
                     <option value="Manager">Manager</option>
@@ -1268,7 +1272,7 @@ export default function UsersPage() {
             {editingUser && editingUser.id === currentUserId && (
               <p className="text-sm text-red-600 mt-1">You cannot change your own role</p>
             )}
-            {currentUserRole !== "Admin" && (
+            {currentUserRole !== "Admin" && currentUserRole !== "Superadmin" && (
               <p className="text-sm text-red-600 mt-1">Only administrators can change user roles</p>
             )}
           </div>
@@ -1290,7 +1294,7 @@ export default function UsersPage() {
             </div>
 
             {/* Permissions Section - Only for Admin */}
-            {currentUserRole === "Admin" && showPermissionsSection && (
+            {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && showPermissionsSection && (
               <div className="bg-white rounded-lg border-2 border-gray-100 p-5">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                   <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -1567,7 +1571,7 @@ export default function UsersPage() {
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Email Address</label>
                   <p className="text-sm text-gray-900 font-medium break-words">{viewingUser.email}</p>
                 </div>
-                {currentUserRole === "Admin" && (
+                {(currentUserRole === "Admin" || currentUserRole === "Superadmin") && (
                   <div className="bg-gray-50 rounded-lg p-3">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Password</label>
                     <p className="text-sm text-gray-900 font-mono break-words">

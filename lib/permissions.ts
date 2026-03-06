@@ -14,8 +14,6 @@ export const PERMISSIONS = {
   PROJECTS_EDIT: "projects:edit",
   PROJECTS_DELETE: "projects:delete",
   PROJECTS_ASSIGN: "projects:assign",
-  DOCUMENT_UPLOAD: "document:upload",
-  DOCUMENT_DELETE: "document:delete",
   EXPENSE_VIEW: "expense:view",
   EXPENSE_EDIT: "expense:edit",
   EXPENSE_ADD: "expense:add",
@@ -46,17 +44,30 @@ export const PERMISSIONS = {
   PIPELINES_DELETE: "pipelines:delete",
 } as const;
 
-// All permission values (Admin gets this list)
+// All permission values (Superadmin gets this list)
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS) as string[];
 
-// Check if user has permission (Admin always has access)
+// Superadmin has no permission checks (full access); everyone else is checked
+export const isSuperadmin = (): boolean => {
+  if (typeof window === "undefined") return false;
+  try {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      return user?.role?.toLowerCase?.() === "superadmin";
+    }
+  } catch {}
+  return false;
+};
+
+// Check if user has permission (Superadmin always has access)
 export const can = (permission: string, userPermissions: string[] = []): boolean => {
-  if (isAdmin()) return true;
+  if (isSuperadmin()) return true;
   if (!userPermissions || userPermissions.length === 0) return false;
   return userPermissions.includes(permission);
 };
 
-// Get user permissions from localStorage (Admin always gets all permissions)
+// Get user permissions from localStorage (Superadmin always gets all permissions)
 export const getUserPermissions = (): string[] => {
   if (typeof window === 'undefined') return [];
   
@@ -64,7 +75,7 @@ export const getUserPermissions = (): string[] => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      if (user?.role === "Admin") return ALL_PERMISSIONS;
+      if (user?.role?.toLowerCase?.() === "superadmin") return ALL_PERMISSIONS;
       return user.permissions || [];
     }
   } catch (e) {
@@ -74,19 +85,20 @@ export const getUserPermissions = (): string[] => {
   return [];
 };
 
-// Check if user is Admin
+// Check if user is admin (Superadmin or Admin - for admin-only actions)
 export const isAdmin = (): boolean => {
   if (typeof window === "undefined") return false;
   try {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      return user?.role === "Admin";
+      return user?.role === "Superadmin" || user?.role === "Admin";
     }
   } catch (e) {
     console.error("Failed to parse user role");
   }
   return false;
+  
 };
 
 // Permission groups for UI
@@ -122,8 +134,6 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.PROJECTS_EDIT, label: "Projects Edit" },
       { key: PERMISSIONS.PROJECTS_DELETE, label: "Projects Delete" },
       { key: PERMISSIONS.PROJECTS_ASSIGN, label: "Projects Assign" },
-      { key: PERMISSIONS.DOCUMENT_UPLOAD, label: "Document Upload" },
-      { key: PERMISSIONS.DOCUMENT_DELETE, label: "Document Delete" },
       { key: PERMISSIONS.EXPENSE_VIEW, label: "Expense View" },
       { key: PERMISSIONS.EXPENSE_EDIT, label: "Expense Edit" },
       { key: PERMISSIONS.EXPENSE_ADD, label: "Add Expense" },
