@@ -1,8 +1,14 @@
 "use client";
 
+<<<<<<< HEAD
 import Image from "next/image";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+=======
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { motion } from "framer-motion";
+>>>>>>> origin/main
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -11,6 +17,7 @@ import {
   IoLocation,
   IoTime,
 } from "react-icons/io5";
+<<<<<<< HEAD
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -20,17 +27,36 @@ export default function ContactPage() {
   // Validation helper functions
   const handlePhoneChange = (value: string, setFormDataFn: any, formDataObj: any) => {
     const cleaned = value.replace(/\D/g, '');
+=======
+
+export default function ContactPage() {
+  const router = useRouter();
+  
+  // Validation helper functions
+  const handlePhoneChange = (value: string, setFormDataFn: any, formDataObj: any) => {
+    // Remove all non-digit characters
+    const cleaned = value.replace(/\D/g, '');
+    // Allow only up to 10 digits
+>>>>>>> origin/main
     if (cleaned.length <= 10) {
       setFormDataFn({ ...formDataObj, phone: cleaned });
     }
   };
 
   const handleTextChange = (field: string, value: string, setFormDataFn: any, formDataObj: any) => {
+<<<<<<< HEAD
+=======
+    // Allow only letters, spaces, and common punctuation for names
+>>>>>>> origin/main
     const cleaned = value.replace(/[^a-zA-Z\s\.\-'']/g, '');
     setFormDataFn({ ...formDataObj, [field]: cleaned });
   };
 
   const validatePhone = (phone: string): boolean => {
+<<<<<<< HEAD
+=======
+    // Must be exactly 10 digits
+>>>>>>> origin/main
     return /^\d{10}$/.test(phone);
   };
 
@@ -38,7 +64,10 @@ export default function ContactPage() {
     name: "",
     email: "",
     phone: "",
+<<<<<<< HEAD
     service: "",
+=======
+>>>>>>> origin/main
     subject: "",
     message: "",
   });
@@ -52,6 +81,10 @@ export default function ContactPage() {
     setSubmitStatus(null);
     setErrorMessage("");
 
+<<<<<<< HEAD
+=======
+    // Validation
+>>>>>>> origin/main
     if (/\d/.test(formData.name)) {
       setErrorMessage("Name should only contain letters and spaces.");
       setIsSubmitting(false);
@@ -79,16 +112,33 @@ export default function ContactPage() {
       const data = await response.json();
 
       if (response.ok) {
+<<<<<<< HEAD
         setFormData({ name: "", email: "", phone: "", service: "", subject: "", message: "" });
+=======
+        setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+        // Redirect to thank you page
+>>>>>>> origin/main
         router.push("/thank-you");
       } else {
         setSubmitStatus("error");
         setErrorMessage(data.error || "Failed to send message. Please try again.");
+<<<<<<< HEAD
+=======
+        console.error("Submission error:", data.error || "Unknown error");
+>>>>>>> origin/main
       }
     } catch (error: any) {
       console.error("Failed to submit contact form:", error);
       setSubmitStatus("error");
+<<<<<<< HEAD
       setErrorMessage("Failed to send message. Please try again.");
+=======
+      if (error.message?.includes("fetch") || error.name === "TypeError") {
+        setErrorMessage("Cannot connect to server. Please ensure the backend server is running on port 5000.");
+      } else {
+        setErrorMessage("Failed to send message. Please try again.");
+      }
+>>>>>>> origin/main
     } finally {
       setIsSubmitting(false);
     }
@@ -97,6 +147,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-green-50">
       <Navigation />
+<<<<<<< HEAD
 
       {/* Hero Section */}
       <section className="relative min-h-[75vh] flex items-center justify-center overflow-hidden bg-slate-900">
@@ -141,11 +192,31 @@ export default function ContactPage() {
                 </Link>
               </motion.div>
             </div>
+=======
+      
+      {/* Hero Section */}
+      <section className="relative pt-28 sm:pt-32 md:pt-36 lg:pt-44 pb-20 sm:pb-28 md:pb-32 lg:pb-40 bg-cover bg-center bg-no-repeat text-white" 
+        style={{
+          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/Contact.jpg')",
+        }}>
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6">Contact Us</h1>
+            <p className="text-base sm:text-lg md:text-xl text-white">
+              Get in touch with our team - we're here to help
+            </p>
+>>>>>>> origin/main
           </motion.div>
         </div>
       </section>
 
       {/* Contact Section */}
+<<<<<<< HEAD
       <section className="section-padding">
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 content-gap">
@@ -286,6 +357,170 @@ export default function ContactPage() {
                 ))}
               </div>
             </div>
+=======
+      <section className="py-12 sm:py-16 md:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12">
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {submitStatus === "error" && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                    <p className="font-semibold mb-1">Failed to send message</p>
+                    <p className="text-sm">{errorMessage || "Please check if the backend server is running and MongoDB is connected. Try again later."}</p>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => handleTextChange('name', e.target.value, setFormData, formData)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter your name (text only)"
+                    pattern="[A-Za-z\s\.\-\'']+"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter your email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => handlePhoneChange(e.target.value, setFormData, formData)}
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter 10 digit phone number"
+                  />
+                  {formData.phone && formData.phone.length !== 10 && (
+                    <p className="text-xs text-red-600 mt-1">Phone number must be exactly 10 digits</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subject *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter subject"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Message *
+                  </label>
+                  <textarea
+                    required
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    rows={6}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter your message"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </button>
+              </form>
+            </motion.div>
+
+            {/* Contact Information */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                We're here to answer your questions and help you find the perfect elevator solution
+                for your needs. Reach out to us through any of the following channels.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <IoCall className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
+                    <p className="text-gray-600">+91 8019219911</p>
+                    <p className="text-sm text-gray-500">Mon - Sat, 9:00 AM - 6:00 PM</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <IoMail className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                    <p className="text-gray-600">assist@kashomeelevators.com</p>
+                    <p className="text-sm text-gray-500">We'll respond within 24 hours</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <IoLocation className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Office Address</h3>
+                    <p className="text-gray-600">
+                      KAS Home Elevators<br />
+                      India
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <IoTime className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Business Hours</h3>
+                    <p className="text-gray-600">
+                      Monday - Saturday: 9:00 AM - 6:00 PM<br />
+                      Sunday: Closed
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+>>>>>>> origin/main
           </div>
         </div>
       </section>
@@ -294,3 +529,9 @@ export default function ContactPage() {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> origin/main

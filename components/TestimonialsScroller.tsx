@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import Image from "next/image";
+=======
+>>>>>>> origin/main
 import { testimonialsAPI } from "@/lib/api";
 import { IoChatbubbles } from "react-icons/io5";
 
@@ -103,6 +106,7 @@ export default function TestimonialsScroller() {
                     role="group"
                   >
                     <div className="flex items-start gap-3 mb-3">
+<<<<<<< HEAD
                       <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 relative">
                         {t.image ? (
                           <Image
@@ -115,6 +119,15 @@ export default function TestimonialsScroller() {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-500 font-semibold">
                             {String(t.customerName || "U").slice(0, 2).toUpperCase()}
+=======
+                      <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
+                        {t.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={t.image} alt={t.customerName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-500 font-semibold">
+                            {String(t.customerName || "U").slice(0,2).toUpperCase()}
+>>>>>>> origin/main
                           </div>
                         )}
                       </div>

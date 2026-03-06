@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+<<<<<<< HEAD
 import Image from "next/image";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -8,6 +9,14 @@ import Link from "next/link";
 import { IoCalendar, IoPerson, IoArrowBack } from "react-icons/io5";
 import { blogsAPI, Blog } from "@/lib/api";
 import { motion } from "framer-motion";
+=======
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { IoCalendar, IoPerson, IoArrowBack } from "react-icons/io5";
+import { blogsAPI, Blog } from "@/lib/api";
+>>>>>>> origin/main
 
 export default function BlogDetailPage({ params }: { params: { id: string } }) {
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -59,15 +68,23 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
     );
   }
 
+<<<<<<< HEAD
   const blogDate = blog.createdAt ? new Date(blog.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
+=======
+  const blogDate = blog.createdAt ? new Date(blog.createdAt).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+>>>>>>> origin/main
   }) : 'Unknown date';
 
   return (
     <div className="min-h-screen bg-green-50">
       <Navigation />
+<<<<<<< HEAD
 
       <section className="relative py-12 sm:py-20 md:py-24 overflow-hidden bg-slate-900">
         <Image
@@ -130,6 +147,40 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 </div>
               </div>
+=======
+      
+      {/* Hero Section */}
+      <section className="relative py-12 sm:py-16 md:py-20 bg-gradient-to-r from-green-700 via-green-600 to-green-700 text-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Link
+              href="/blogs"
+              className="inline-flex items-center gap-2 text-green-200 hover:text-white mb-6 transition-colors"
+            >
+              <IoArrowBack className="w-5 h-5" />
+              <span>Back to Blogs</span>
+            </Link>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{blog.title}</h1>
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-green-50">
+              <div className="flex items-center gap-2">
+                <IoPerson className="w-5 h-5" />
+                <span>{blog.author}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <IoCalendar className="w-5 h-5" />
+                <span>{blogDate}</span>
+              </div>
+              <span className="px-3 py-1 bg-green-500 rounded-full text-sm">
+                {blog.category}
+              </span>
+              <span className="px-3 py-1 bg-green-400 rounded-full text-sm">
+                {blog.views} views
+              </span>
+>>>>>>> origin/main
             </div>
           </motion.div>
         </div>
@@ -139,6 +190,7 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
       <section className="py-12 sm:py-16 md:py-20 bg-green-50">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto">
+<<<<<<< HEAD
             <div className="relative h-96 rounded-2xl overflow-hidden mb-8 reveal reveal-fade-up">
               <Image
                 src={blog.image}
@@ -150,12 +202,35 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
             </div>
             <div className="reveal reveal-fade-up" style={{ transitionDelay: '0.2s' }}>
               <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
+=======
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="relative h-96 rounded-2xl overflow-hidden mb-8"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url('${blog.image}')` }}
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="prose prose-lg max-w-none"
+            >
+              <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+>>>>>>> origin/main
                 {blog.content.split('\n').map((paragraph, index) => (
                   <p key={index} className="mb-4">
                     {paragraph}
                   </p>
                 ))}
               </div>
+<<<<<<< HEAD
             </div>
           </div>
         </div>
@@ -183,6 +258,9 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
             >
               View All Services
             </Link>
+=======
+            </motion.div>
+>>>>>>> origin/main
           </div>
         </div>
       </section>

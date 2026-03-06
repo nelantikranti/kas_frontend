@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+<<<<<<< HEAD
 import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+=======
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { motion } from "framer-motion";
+import Link from "next/link";
+>>>>>>> origin/main
 import {
   IoCheckmarkCircle,
   IoArrowForward,
@@ -15,7 +22,10 @@ import {
   IoDocumentText,
   IoConstruct,
 } from "react-icons/io5";
+<<<<<<< HEAD
 import { motion } from "framer-motion";
+=======
+>>>>>>> origin/main
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +53,11 @@ export default function ServicesPage() {
         body: JSON.stringify(formData),
       });
 
+<<<<<<< HEAD
+=======
+      const data = await response.json();
+
+>>>>>>> origin/main
       if (response.ok) {
         setSubmitStatus("success");
         setFormData({ name: "", email: "", phone: "", message: "" });
@@ -72,7 +87,11 @@ export default function ServicesPage() {
         "Quality assurance",
         "Post-installation support",
       ],
+<<<<<<< HEAD
       color: "text-green-700 bg-green-100",
+=======
+      color: "text-gray-600 bg-gray-100",
+>>>>>>> origin/main
       showLearnMore: true,
     },
     {
@@ -85,7 +104,11 @@ export default function ServicesPage() {
         "24/7 support",
         "Priority service",
       ],
+<<<<<<< HEAD
       color: "text-emerald-700 bg-emerald-100",
+=======
+      color: "text-gray-600 bg-gray-100",
+>>>>>>> origin/main
       showLearnMore: true,
     },
     {
@@ -98,7 +121,11 @@ export default function ServicesPage() {
         "Expert technicians",
         "Genuine parts",
       ],
+<<<<<<< HEAD
       color: "text-red-700 bg-red-100",
+=======
+      color: "text-red-600 bg-red-50",
+>>>>>>> origin/main
       showLearnMore: true,
     },
     {
@@ -111,7 +138,11 @@ export default function ServicesPage() {
         "Enhanced safety",
         "Extended lifespan",
       ],
+<<<<<<< HEAD
       color: "text-purple-700 bg-purple-100",
+=======
+      color: "text-purple-600 bg-purple-50",
+>>>>>>> origin/main
       showLearnMore: true,
     },
     {
@@ -124,7 +155,11 @@ export default function ServicesPage() {
         "Code compliance",
         "Cost optimization",
       ],
+<<<<<<< HEAD
       color: "text-orange-700 bg-orange-100",
+=======
+      color: "text-orange-600 bg-orange-50",
+>>>>>>> origin/main
       showLearnMore: true,
     },
     {
@@ -137,7 +172,11 @@ export default function ServicesPage() {
         "Competitive pricing",
         "Quality guarantee",
       ],
+<<<<<<< HEAD
       color: "text-blue-700 bg-blue-100",
+=======
+      color: "text-blue-600 bg-blue-50",
+>>>>>>> origin/main
       showLearnMore: true,
     },
   ];
@@ -170,6 +209,7 @@ export default function ServicesPage() {
       <Navigation />
 
       {/* Hero Section */}
+<<<<<<< HEAD
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-900">
         <Image
           src="/maintainance_main.jpg"
@@ -222,11 +262,47 @@ export default function ServicesPage() {
                 </motion.div>
               </div>
             </motion.div>
+=======
+      <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900">
+        {/* Background Image/Video */}
+        <div className="absolute inset-0 w-full h-full">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('/premium_home.jpg')",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-900/40"></div>
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 sm:mb-6 drop-shadow-2xl"
+              style={{ textShadow: "0 4px 20px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.5)" }}
+            >
+              Our Services
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="text-lg sm:text-xl md:text-2xl text-white font-light drop-shadow-lg"
+              style={{ textShadow: "0 2px 15px rgba(0, 0, 0, 0.5), 0 1px 5px rgba(0, 0, 0, 0.4)" }}
+            >
+              Comprehensive elevator solutions from installation to maintenance
+            </motion.p>
+>>>>>>> origin/main
           </div>
         </div>
       </section>
 
       {/* Services Grid Section */}
+<<<<<<< HEAD
       <section className="section-padding bg-white">
         <div className="section-container">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 content-gap">
@@ -262,12 +338,62 @@ export default function ServicesPage() {
                   </Link>
                 )}
               </div>
+=======
+      <section className="py-16 sm:py-20 md:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-2"
+              >
+                {/* Icon */}
+                <div className={`w-20 h-20 ${service.color} rounded-full flex items-center justify-center mb-6`}>
+                  {service.icon}
+                </div>
+
+                {/* Title */}
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                  {service.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-gray-600 leading-relaxed mb-6 text-base sm:text-lg">
+                  {service.description}
+                </p>
+
+                {/* Bullet Points */}
+                <ul className="space-y-2 mb-6">
+                  {service.points.map((point, pointIndex) => (
+                    <li key={pointIndex} className="flex items-start gap-2 text-gray-700">
+                      <IoCheckmarkCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm sm:text-base">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Learn More Link */}
+                {service.showLearnMore && (
+                  <Link
+                    href="#contact"
+                    className="inline-flex items-center text-green-600 font-semibold hover:text-green-700 transition-colors text-sm sm:text-base"
+                  >
+                    Learn More <IoArrowForward className="ml-2" />
+                  </Link>
+                )}
+              </motion.div>
+>>>>>>> origin/main
             ))}
           </div>
         </div>
       </section>
 
       {/* Annual Maintenance Contract Section */}
+<<<<<<< HEAD
       <section className="py-24 sm:py-32 bg-slate-50 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 rounded-full blur-[120px]"></div>
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -317,11 +443,70 @@ export default function ServicesPage() {
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-2 text-center">Uptime Guaranteed</span>
               </div>
             </div>
+=======
+      <section className="py-16 sm:py-20 md:py-24 bg-green-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 sm:mb-8">
+                Annual Maintenance Contract
+              </h2>
+              <p className="text-gray-700 leading-relaxed text-base sm:text-lg mb-6">
+                Our AMC services ensure your elevators operate at peak performance throughout the year. We offer comprehensive maintenance packages tailored to your specific needs.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Monthly scheduled inspections and maintenance",
+                  "Priority emergency response (24/7)",
+                  "Replacement of consumables and minor parts",
+                  "Lubrication and cleaning services",
+                  "Compliance with safety regulations",
+                ].map((item, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    className="flex items-start gap-3 text-gray-700"
+                  >
+                    <IoCheckmarkCircle className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-base sm:text-lg">{item}</span>
+                  </motion.li>
+                ))}
+              </ul>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-8 py-4 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900 transition-all transform hover:scale-105 shadow-lg"
+              >
+                Get AMC Quote
+              </button>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="relative h-[400px] sm:h-[500px] md:h-[600px] rounded-2xl overflow-hidden shadow-2xl"
+            >
+              <img
+                src="/maintainance_main.jpg"
+                alt="Elevator maintenance"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+>>>>>>> origin/main
           </div>
         </div>
       </section>
 
       {/* Service Process Section */}
+<<<<<<< HEAD
       <section id="process" className="py-24 sm:py-32 bg-white">
         <div className="container mx-auto px-4 sm:px-6 text-center">
           <div className="max-w-4xl mx-auto mb-20 reveal reveal-fade-up">
@@ -350,12 +535,57 @@ export default function ServicesPage() {
                   {step.description}
                 </p>
               </div>
+=======
+      <section className="py-16 sm:py-20 md:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-6">
+              Our Service Process
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+              A systematic approach to ensure quality and customer satisfaction
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+            {processSteps.map((step, index) => (
+              <motion.div
+                key={step.number}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.15, duration: 0.6 }}
+                className="text-center"
+              >
+                {/* Step Number Circle */}
+                <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <span className="text-white text-2xl font-bold">{step.number}</span>
+                </div>
+                
+                {/* Step Title */}
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                  {step.title}
+                </h3>
+                
+                {/* Step Description */}
+                <p className="text-gray-600 leading-relaxed text-base sm:text-lg">
+                  {step.description}
+                </p>
+              </motion.div>
+>>>>>>> origin/main
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
+<<<<<<< HEAD
       <section id="contact" className="relative py-24 sm:py-32 bg-slate-900 text-white overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-green-500/10 rounded-full blur-[120px]"></div>
@@ -387,10 +617,52 @@ export default function ServicesPage() {
         </div>
       </section>
 
+=======
+      <section id="contact" className="relative py-16 sm:py-20 md:py-24 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 text-white overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 sm:mb-8 px-4">
+              Need Professional Elevator Services?
+            </h2>
+            <p className="text-lg sm:text-xl md:text-2xl text-slate-200 mb-10 sm:mb-12 max-w-3xl mx-auto px-4 font-light leading-relaxed">
+              Contact us today to discuss your requirements and get a customized service plan.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6">
+              <Link
+                href="/contact"
+                className="px-8 py-4 bg-slate-700 text-white font-semibold rounded-lg hover:bg-slate-600 transition-all transform hover:scale-105 shadow-lg w-full sm:w-auto"
+              >
+                Contact Us
+              </Link>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-slate-900 transition-all transform hover:scale-105 w-full sm:w-auto"
+              >
+                Request Service
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+>>>>>>> origin/main
       <Footer />
 
       {/* AMC Quote Modal */}
       {isModalOpen && (
+<<<<<<< HEAD
         <div className="fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-4 backdrop-blur-xl">
           <div className="premium-card !p-0 max-w-lg w-full max-h-[95vh] overflow-y-auto reveal reveal-fade-in relative shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]">
             <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 px-10 py-8 flex items-center justify-between z-20">
@@ -398,11 +670,22 @@ export default function ServicesPage() {
                 <h2 className="text-3xl font-black text-slate-900 italic tracking-tight">Request Quote</h2>
                 <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">Maintenance & Support</p>
               </div>
+=======
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">Get AMC Quote</h2>
+>>>>>>> origin/main
               <button
                 onClick={() => {
                   setIsModalOpen(false);
                   setSubmitStatus(null);
                 }}
+<<<<<<< HEAD
                 className="w-12 h-12 bg-slate-100 hover:bg-slate-200 rounded-2xl flex items-center justify-center transition-all duration-300 group"
               >
                 <span className="text-3xl text-slate-400 group-hover:text-slate-900 transition-colors">&times;</span>
@@ -480,8 +763,105 @@ export default function ServicesPage() {
               </button>
             </form>
           </div>
+=======
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <span className="text-2xl text-gray-500">&times;</span>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {submitStatus === "success" && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
+                  <div className="flex items-center gap-2">
+                    <IoCheckmarkCircle className="w-5 h-5" />
+                    <span>Request submitted successfully! We'll contact you soon.</span>
+                  </div>
+                </div>
+              )}
+              {submitStatus === "error" && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                  Failed to submit request. Please try again.
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message
+                </label>
+                <textarea
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Tell us about your requirements..."
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Request"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setSubmitStatus(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </motion.div>
+>>>>>>> origin/main
         </div>
       )}
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main

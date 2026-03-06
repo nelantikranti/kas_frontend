@@ -45,6 +45,7 @@ export default function Footer() {
   };
 
   return (
+<<<<<<< HEAD
     <footer className="bg-slate-900 text-slate-300 py-16 sm:py-24 relative overflow-hidden">
       {/* Background Decoration */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/5 rounded-full blur-[100px]"></div>
@@ -81,10 +82,29 @@ export default function Footer() {
                 </a>
               ))}
             </div>
+=======
+    <footer className="bg-green-100 text-gray-700 py-8 sm:py-12">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-4 sm:mb-5">
+          {/* Company Introduction */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            <div className="mb-4">
+              <Link href="/" className="block">
+                <div className="text-2xl sm:text-3xl font-bold mb-2 hover:opacity-80 transition-opacity cursor-pointer">
+                  <span className="text-green-600">KAS</span>
+                  <span className="text-gray-900"> HOME ELEVATORS</span>
+                </div>
+              </Link>
+            </div>
+            <p className="text-xs sm:text-sm leading-relaxed text-gray-600">
+              We are pleased to introduce ourselves as one of the well known Elevator installation companies in Hyderabad serving to the customers from many years. Our services also include lift repair, lift installation and lift modernization.
+            </p>
+>>>>>>> origin/main
           </div>
 
           {/* Quick Links */}
           <div>
+<<<<<<< HEAD
             <h4 className="text-white font-bold mb-8 text-lg uppercase tracking-widest text-sm">Navigation</h4>
             <ul className="space-y-4">
               {quickLinks.map((link) => (
@@ -96,10 +116,92 @@ export default function Footer() {
                     <span className="w-1.5 h-1.5 bg-slate-700 rounded-full group-hover:bg-green-500 transition-all"></span>
                     {link.label}
                   </Link>
+=======
+            <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Quick Links</h4>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              {quickLinks.map((link) => (
+                <li key={link.href}>
+                  <Link 
+                    href={link.href} 
+                    className="hover:text-green-600 transition-colors"
+                  >
+                    {link.label}
+                </Link>
+              </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Follow Us & Contact */}
+          <div>
+            <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Follow us</h4>
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <a 
+                href={socialMediaLinks.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                aria-label="Facebook"
+              >
+                <IoLogoFacebook className="w-4 h-4 sm:w-5 sm:h-5" />
+              </a>
+              <a 
+                href={socialMediaLinks.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                aria-label="Instagram"
+              >
+                <IoLogoInstagram className="w-4 h-4 sm:w-5 sm:h-5" />
+              </a>
+              <a 
+                href={socialMediaLinks.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                aria-label="LinkedIn"
+              >
+                <IoLogoLinkedin className="w-4 h-4 sm:w-5 sm:h-5" />
+              </a>
+          </div>
+            <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Contact</h4>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li className="flex items-center gap-2">
+                <IoCall className="w-4 h-4 text-green-700" />
+                <a href="tel:+918019219911" className="hover:text-green-600 transition-colors">
+                  +91 8019219911
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <IoMail className="w-4 h-4 text-green-700" />
+                <a href="mailto:assist@kashomeelevators.com" className="hover:text-green-600 transition-colors">
+                  assist@kashomeelevators.com
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Address */}
+          <div>
+            <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Address</h4>
+            <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+              {addresses.map((address, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <IoLocation className="w-3 h-3 sm:w-4 sm:h-4 text-green-700 flex-shrink-0 mt-1" />
+                  <a 
+                    href={address.mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 break-words hover:text-green-600 transition-colors cursor-pointer"
+                  >
+                    {address.text}
+                  </a>
+>>>>>>> origin/main
                 </li>
               ))}
             </ul>
           </div>
+<<<<<<< HEAD
 
           {/* Contact Information */}
           <div>
@@ -161,6 +263,11 @@ export default function Footer() {
             <Link href="/privacy" className="hover:text-green-500 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-green-500 transition-colors">Terms of Service</Link>
           </div>
+=======
+        </div>
+        <div className="border-t border-gray-300 pt-2 sm:pt-3 pb-0 text-center text-xs sm:text-sm text-gray-600">
+          <p>&copy; 2026 KAS Home Elevators. All rights reserved.</p>
+>>>>>>> origin/main
         </div>
       </div>
     </footer>

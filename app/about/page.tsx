@@ -1,17 +1,56 @@
 "use client";
+<<<<<<< HEAD
 import { memo } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+=======
+
+import { memo } from "react";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { motion } from "framer-motion";
+>>>>>>> origin/main
 import {
   IoCheckmarkCircle,
   IoPeople,
   IoFlash,
   IoBuild,
 } from "react-icons/io5";
+<<<<<<< HEAD
 import { motion } from "framer-motion";
+=======
+
+// Animation variants for consistent animations
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 },
+};
+
+const slideInLeft = {
+  initial: { opacity: 0, x: -30 },
+  whileInView: { opacity: 1, x: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.6 },
+};
+
+const slideInRight = {
+  initial: { opacity: 0, x: 30 },
+  whileInView: { opacity: 1, x: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.6 },
+};
+
+const scaleIn = {
+  initial: { opacity: 0, scale: 0.9 },
+  whileInView: { opacity: 1, scale: 1 },
+  viewport: { once: true },
+  transition: { duration: 0.6 },
+};
+>>>>>>> origin/main
 
 // Data constants
 const coreValues = [
@@ -71,6 +110,7 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-green-50">
       <Navigation />
+<<<<<<< HEAD
 
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-slate-900">
@@ -124,11 +164,83 @@ function AboutPage() {
                   </Link>
                 </motion.div>
               </div>
+=======
+      
+      {/* Hero Section - About Us with Elevator Shaft Background */}
+      <section
+        className="relative pt-28 sm:pt-32 md:pt-36 lg:pt-44 pb-20 sm:pb-28 md:pb-32 lg:pb-40 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/about.jpg')",
+        }}
+      >
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <motion.div
+            {...fadeInUp}
+            className="text-center"
+          >
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4">
+              About Us
+            </h1>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Company Introduction Section */}
+      <section className="py-12 sm:py-16 md:py-20 bg-green-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
+            <motion.div {...slideInLeft}>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
+                Kas Home Elevator
+              </h2>
+              <p className="text-gray-600 mb-4 sm:mb-6 leading-relaxed text-base sm:text-lg">
+                KAS Home Elevators is a trusted name in home mobility solutions, dedicated to making every home accessible, stylish, and comfortable. With years of industry expertise, we specialize in designing, installing, and maintaining premium elevators and stair lifts that combine advanced technology, safety, and aesthetic appeal.
+              </p>
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our range of products includes:</h3>
+                <ul className="space-y-3">
+                  {products.map((product, index) => (
+                    <motion.li
+                      key={product.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1, duration: 0.5 }}
+                      className="flex items-start gap-3"
+                    >
+                      <IoCheckmarkCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                      <div>
+                        <span className="font-semibold text-gray-900">{product.name}</span>
+                        <span className="text-gray-600"> — {product.description}</span>
+                      </div>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>    
+              <p className="text-gray-600 leading-relaxed text-lg">
+                At KAS, we understand that an elevator is more than a convenience it's an investment in safety, comfort, and lifestyle. From consultation and installation to maintenance and repairs, our skilled team ensures a seamless experience at every stage. By combining innovation, craftsmanship, and customer care, we don't just lift you between floors — we elevate the way you live.
+              </p>
+            </motion.div>
+            <motion.div
+              {...slideInRight}
+              className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-2xl"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: "url('about_home.jpg')",
+                }}
+                role="img"
+                aria-label="Modern home elevator installation"
+              />
+>>>>>>> origin/main
             </motion.div>
           </div>
         </div>
       </section>
 
+<<<<<<< HEAD
       {/* Company Introduction Section */}
       <section id="company" className="py-24 sm:py-32 bg-white">
         <div className="container mx-auto px-4 sm:px-6">
@@ -209,12 +321,46 @@ function AboutPage() {
                 <h3 className="text-2xl font-black text-slate-900 mb-4">{value.title}</h3>
                 <p className="text-slate-600 leading-relaxed text-lg font-light">{value.description}</p>
               </div>
+=======
+      {/* Our Values Section */}
+      <section id="values" className="py-12 sm:py-16 md:py-20 bg-green-100 scroll-mt-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Our Values
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {coreValues.map((value, index) => (
+              <motion.div
+                key={value.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+                className="p-8 rounded-2xl bg-green-50 border border-green-100/50 hover:shadow-xl transition-all duration-300"
+              >
+                <div className={`w-16 h-16 ${value.color} rounded-xl flex items-center justify-center mb-6`}>
+                  {value.icon}
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">{value.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{value.description}</p>
+              </motion.div>
+>>>>>>> origin/main
             ))}
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
+<<<<<<< HEAD
       <section className="py-16 sm:py-20 md:py-24 bg-slate-900 overflow-hidden relative">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-500 rounded-full blur-[120px]"></div>
@@ -230,12 +376,27 @@ function AboutPage() {
                   {stat.label}
                 </div>
               </div>
+=======
+      <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 text-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 text-center">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                {...scaleIn}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+              >
+                <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
+                <div className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-200">{stat.label}</div>
+              </motion.div>
+>>>>>>> origin/main
             ))}
           </div>
         </div>
       </section>
 
       {/* Mission & Vision */}
+<<<<<<< HEAD
       <section id="vision-mission" className="section-padding bg-white scroll-mt-20">
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 content-gap">
@@ -276,6 +437,41 @@ function AboutPage() {
                 Book a Site Evaluation
               </Link>
             </div>
+=======
+      <section id="vision-mission" className="py-12 sm:py-16 md:py-20 bg-green-50 scroll-mt-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="p-8 rounded-2xl bg-slate-50 border border-slate-200"
+            >
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h3>
+              <p className="text-gray-600 leading-relaxed">
+                To provide world-class elevator solutions that enhance the quality of life for our
+                customers. We strive to deliver innovative, safe, and reliable vertical transportation
+                systems that exceed expectations while maintaining the highest standards of service
+                and professionalism.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="p-8 rounded-2xl bg-green-50 border border-green-200"
+            >
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Our Vision</h3>
+              <p className="text-gray-600 leading-relaxed">
+                To become India's most trusted and innovative elevator solutions provider, recognized
+                for excellence in engineering, customer service, and sustainable practices. We envision
+                a future where every building has access to safe, efficient, and smart vertical
+                transportation.
+              </p>
+            </motion.div>
+>>>>>>> origin/main
           </div>
         </div>
       </section>
