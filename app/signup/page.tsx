@@ -1,8 +1,14 @@
 "use client";
+<<<<<<< HEAD
+import Image from "next/image";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+=======
 
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+>>>>>>> origin/main
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -25,24 +31,35 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+<<<<<<< HEAD
+  const handlePhoneChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+=======
   // Validation helper functions
   const handlePhoneChange = (value: string) => {
     // Remove all non-digit characters
     const cleaned = value.replace(/\D/g, '');
     // Allow only up to 10 digits
+>>>>>>> origin/main
     if (cleaned.length <= 10) {
       setFormData({ ...formData, phone: cleaned });
     }
   };
 
   const handleTextChange = (field: 'firstName' | 'lastName', value: string) => {
+<<<<<<< HEAD
+=======
     // Allow only letters, spaces, and common punctuation for names
+>>>>>>> origin/main
     const cleaned = value.replace(/[^a-zA-Z\s\.\-'']/g, '');
     setFormData({ ...formData, [field]: cleaned });
   };
 
   const validatePhone = (phone: string): boolean => {
+<<<<<<< HEAD
+=======
     // Must be exactly 10 digits
+>>>>>>> origin/main
     return /^\d{10}$/.test(phone);
   };
 
@@ -51,7 +68,10 @@ export default function SignupPage() {
     setIsSubmitting(true);
     setError(null);
 
+<<<<<<< HEAD
+=======
     // Validation
+>>>>>>> origin/main
     if (/\d/.test(formData.firstName)) {
       setError("First name should only contain letters and spaces.");
       setIsSubmitting(false);
@@ -105,11 +125,16 @@ export default function SignupPage() {
       }
 
       const data = await response.json();
+<<<<<<< HEAD
+      if (data.message) {
+        setSuccess(true);
+=======
 
       if (data.message) {
         setSuccess(true);
         // Show message that admin approval is needed
         // Redirect to login after 3 seconds
+>>>>>>> origin/main
         setTimeout(() => {
           router.push("/login");
         }, 3000);
@@ -118,17 +143,39 @@ export default function SignupPage() {
       }
     } catch (error: any) {
       console.error("Signup error:", error);
+<<<<<<< HEAD
+      setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
+=======
       if (error.message?.includes("fetch") || error.message?.includes("network")) {
         setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
       } else {
         setError("Failed to create account. Please try again.");
       }
+>>>>>>> origin/main
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
+<<<<<<< HEAD
+    <div className="min-h-screen bg-green-50">
+      <Navigation />
+
+      <section className="py-12 sm:py-16 md:py-24 relative overflow-hidden flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <Image
+          src="/about_home.jpg"
+          alt="Signup Background"
+          fill
+          priority
+          className="object-cover z-0 brightness-75 blur-[2px] transition-transform duration-[10s] hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-transparent to-slate-900/80 z-0"></div>
+
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <div className="max-w-md mx-auto">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-8 border border-green-100/50 reveal reveal-fade-up">
+=======
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
       <Navigation />
       
@@ -148,6 +195,7 @@ export default function SignupPage() {
               transition={{ duration: 0.6 }}
               className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-8 border border-green-100/50"
             >
+>>>>>>> origin/main
               <div className="text-center mb-6 sm:mb-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <IoPerson className="w-8 h-8 text-white" />
@@ -247,9 +295,12 @@ export default function SignupPage() {
                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white/50"
                         placeholder="Enter 10 digit phone number"
                       />
+<<<<<<< HEAD
+=======
                       {formData.phone && formData.phone.length !== 10 && (
                         <p className="text-xs text-red-600 mt-1">Phone number must be exactly 10 digits</p>
                       )}
+>>>>>>> origin/main
                     </div>
                   </div>
 
@@ -296,11 +347,15 @@ export default function SignupPage() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
+<<<<<<< HEAD
+                        {showPassword ? <IoEyeOff className="w-5 h-5" /> : <IoEye className="w-5 h-5" />}
+=======
                         {showPassword ? (
                           <IoEyeOff className="w-5 h-5" />
                         ) : (
                           <IoEye className="w-5 h-5" />
                         )}
+>>>>>>> origin/main
                       </button>
                     </div>
                   </div>
@@ -324,11 +379,15 @@ export default function SignupPage() {
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
+<<<<<<< HEAD
+                        {showConfirmPassword ? <IoEyeOff className="w-5 h-5" /> : <IoEye className="w-5 h-5" />}
+=======
                         {showConfirmPassword ? (
                           <IoEyeOff className="w-5 h-5" />
                         ) : (
                           <IoEye className="w-5 h-5" />
                         )}
+>>>>>>> origin/main
                       </button>
                     </div>
                   </div>
@@ -356,24 +415,39 @@ export default function SignupPage() {
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
                   Already have an account?{" "}
+<<<<<<< HEAD
+                  <Link
+                    href="/login"
+=======
                   <Link 
                     href="/login" 
+>>>>>>> origin/main
                     className="font-medium bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent hover:from-green-700 hover:to-green-800 transition-all"
                   >
                     Sign in
                   </Link>
                 </p>
               </div>
+<<<<<<< HEAD
+            </div>
+          </div>
+        </div>
+      </section>
+=======
             </motion.div>
           </div>
         </div>
       </section>
 
+>>>>>>> origin/main
       <Footer />
     </div>
   );
 }
+<<<<<<< HEAD
+=======
 
 
 
 
+>>>>>>> origin/main
