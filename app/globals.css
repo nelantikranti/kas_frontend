@@ -22,22 +22,22 @@ body {
 
 /* Hide scrollbars but keep scrolling functionality */
 * {
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 *::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari, Opera */
+  display: none; /* Chrome, Safari, Opera */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
+  background: linear-gradient(
+      to bottom,
       transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
@@ -57,30 +57,26 @@ select {
 }
 
 select option:checked {
-  background: linear-gradient(to bottom, #16a34a, #15803d) !important;
-  /* green-600 to green-700 */
+  background: linear-gradient(to bottom, #16a34a, #15803d) !important; /* green-600 to green-700 */
   color: white !important;
   font-weight: 600;
 }
 
 select option:hover {
-  background-color: #22c55e !important;
-  /* green-500 */
+  background-color: #22c55e !important; /* green-500 */
   color: white !important;
 }
 
 /* Select element - always show dark text when closed */
 select {
-  color: #111827 !important;
-  /* gray-900 - always dark text */
+  color: #111827 !important; /* gray-900 - always dark text */
   background-color: white !important;
 }
 
 /* All dropdown options - always visible with dark text */
 select option {
   background-color: #ffffff !important;
-  color: #1f2937 !important;
-  /* gray-800 - dark text for all options */
+  color: #1f2937 !important; /* gray-800 - dark text for all options */
   padding: 8px 12px;
   font-weight: 400;
 }
@@ -95,24 +91,21 @@ select:focus option[selected] {
 
 /* Hover state for options in dropdown */
 select option:hover {
-  background-color: #22c55e !important;
-  /* green-500 */
+  background-color: #22c55e !important; /* green-500 */
   color: white !important;
 }
 
 /* Ensure select element text is always visible (when closed) */
 select:not(:focus),
 select:focus {
-  color: #111827 !important;
-  /* Always dark text in select element itself */
+  color: #111827 !important; /* Always dark text in select element itself */
 }
 
 /* Style the select element itself when focused */
 select:focus {
   border-color: #16a34a;
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
-  color: #111827 !important;
-  /* Keep dark text even when focused */
+  color: #111827 !important; /* Keep dark text even when focused */
 }
 
 /* 3D Animated Icons */
@@ -161,19 +154,15 @@ select:focus {
   0% {
     transform: rotateY(0deg) rotateX(0deg);
   }
-
   25% {
     transform: rotateY(90deg) rotateX(10deg);
   }
-
   50% {
     transform: rotateY(180deg) rotateX(0deg);
   }
-
   75% {
     transform: rotateY(270deg) rotateX(-10deg);
   }
-
   100% {
     transform: rotateY(360deg) rotateX(0deg);
   }
@@ -194,7 +183,6 @@ select:focus {
     transform: translateX(100%);
     opacity: 0;
   }
-
   to {
     transform: translateX(0);
     opacity: 1;
@@ -211,7 +199,6 @@ select:focus {
     transform: translate(-400%, -700%);
     opacity: 0;
   }
-
   to {
     transform: translate(0%, 0%);
     opacity: 1;
@@ -221,3 +208,9 @@ select:focus {
 .garbage-animation {
   animation: throw-garbage 0.4s linear;
 }
+
+
+
+
+
+

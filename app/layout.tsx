@@ -1,31 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import dynamic from "next/dynamic";
-<<<<<<< HEAD
-import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: '--font-jakarta',
-});
-
-=======
-import "./globals.css";
-
->>>>>>> origin/main
 const ChatbotWidgetWrapper = dynamic(
   () => import("@/components/ChatbotWidgetWrapper"),
   { ssr: false }
 );
 
-<<<<<<< HEAD
-const AnimationInitializer = dynamic(
-  () => import("@/lib/hooks/AnimationInitializer"),
-  { ssr: false }
-);
-
-=======
->>>>>>> origin/main
 export const metadata: Metadata = {
   title: "KAS CRM - Elevator Management System",
   description: "Comprehensive CRM for KAS Elevator sales, projects & AMC management",
@@ -65,11 +46,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
       </head>
-<<<<<<< HEAD
-      <body className={`${jakarta.className} antialiased`}>
-=======
       <body className="antialiased">
->>>>>>> origin/main
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-WSNJBCZP"
@@ -79,10 +56,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {children}
-<<<<<<< HEAD
-        <AnimationInitializer />
-=======
->>>>>>> origin/main
         <ChatbotWidgetWrapper />
       </body>
     </html>
