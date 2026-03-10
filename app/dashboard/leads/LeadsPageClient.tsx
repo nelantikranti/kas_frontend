@@ -7,7 +7,7 @@ import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import ContactReportModal from "@/components/ContactReportModal";
 import { toast } from "@/components/Toast";
-import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload, IoRefresh } from "react-icons/io5";
+import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera, IoCloudUpload, IoPerson, IoPersonRemove, IoCall, IoCheckmarkCircle, IoCheckmarkDone, IoMail, IoShieldCheckmark, IoLockClosed, IoCloseCircle, IoChevronDown, IoEye, IoDownload, IoRefresh } from "react-icons/io5";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
@@ -401,6 +401,33 @@ export default function LeadsPage() {
       setAssigning(false);
     }
   };
+
+  const handleUnassignLeads = async () => {
+    if (selectedLeadIds.size === 0) return;
+
+    setAssigning(true);
+    try {
+      const updates = Array.from(selectedLeadIds).map(async (leadId) => {
+        const lead = leadList.find(l => (l.id === leadId) || ((l as any)._id === leadId));
+        if (lead) {
+          await leadsAPI.update(leadId, { assignedTo: "Unassigned" });
+        }
+      });
+
+      await Promise.all(updates);
+      await loadLeads({ page: currentPage });
+      setSelectedLeadIds(new Set());
+      setIsAssignModalOpen(false);
+      setUserSearchTerm("");
+      toast.success(`Successfully unassigned ${selectedLeadIds.size} lead(s).`);
+    } catch (error) {
+      console.error("Failed to unassign leads:", error);
+      toast.error("Failed to unassign leads. Please try again.");
+    } finally {
+      setAssigning(false);
+    }
+  };
+
 
   // Validation helper functions
   const handlePhoneChange = (value: string, setState: (val: any) => void, stateObj: any, field: string) => {
@@ -1985,15 +2012,27 @@ NEXT ACTION:
         </div>
       </div>
 
-      {/* Assign Lead & Delete All Buttons */}
+      {/* Assign, Unassign & Delete All Buttons */}
       {selectedLeadIds.size > 0 && (
-        <div className="mb-4 flex items-center gap-3">
+        <div className="mb-4 flex items-center gap-3 flex-wrap">
           <button
             onClick={() => setIsAssignModalOpen(true)}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
           >
             <IoPerson className="w-4 h-4 sm:w-5 sm:h-5" />
-            Assign Lead ({selectedLeadIds.size})
+            Assign ({selectedLeadIds.size})
+          </button>
+          <button
+            onClick={handleUnassignLeads}
+            disabled={assigning}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {assigning ? (
+              <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+            ) : (
+              <IoPersonRemove className="w-4 h-4 sm:w-5 sm:h-5" />
+            )}
+            Unassign ({selectedLeadIds.size})
           </button>
           <button
             onClick={() => setIsBulkDeleteModalOpen(true)}
@@ -6140,7 +6179,7 @@ NEXT ACTION:
         leadName={leadForContact?.name}
       />
 
-      {/* Assign Lead Modal */}
+      {/* Assign Lead Modal - Admin excluded (admins see all leads) */}
       <Modal
         isOpen={isAssignModalOpen}
         onClose={() => {
@@ -6151,6 +6190,7 @@ NEXT ACTION:
         size="md"
       >
         <div className="space-y-4">
+          <p className="text-sm text-gray-600">Choose a user to assign the selected leads to.</p>
           <div className="relative">
             <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -6163,6 +6203,7 @@ NEXT ACTION:
           </div>
           <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
             {users
+              .filter((user) => user.role !== "Admin")
               .filter((user) =>
                 user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
                 user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
@@ -6187,11 +6228,13 @@ NEXT ACTION:
                   </div>
                 </button>
               ))}
-            {users.filter((user) =>
-              user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-              user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-              user.role.toLowerCase().includes(userSearchTerm.toLowerCase())
-            ).length === 0 && (
+            {users
+              .filter((user) => user.role !== "Admin")
+              .filter((user) =>
+                user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                user.role.toLowerCase().includes(userSearchTerm.toLowerCase())
+              ).length === 0 && (
               <div className="px-4 py-8 text-center text-gray-500">
                 No users found
               </div>
