@@ -2013,7 +2013,17 @@ NEXT ACTION:
       </div>
 
       {/* Assign, Unassign & Delete All Buttons */}
-      {selectedLeadIds.size > 0 && (
+      {selectedLeadIds.size > 0 && (() => {
+        const selectedLeads = leadList.filter((l) => {
+          const id = l.id || (l as any)._id?.toString?.() || "";
+          const idAlt = (l as any)._id != null ? String((l as any)._id) : id;
+          return (id && selectedLeadIds.has(id)) || (idAlt && selectedLeadIds.has(idAlt));
+        });
+        const hasAnyAssigned = selectedLeads.some((l) => {
+          const t = (l.assignedTo || "").trim();
+          return t !== "" && t !== "Unassigned";
+        });
+        return (
         <div className="mb-4 flex items-center gap-3 flex-wrap">
           <button
             onClick={() => setIsAssignModalOpen(true)}
@@ -2024,7 +2034,8 @@ NEXT ACTION:
           </button>
           <button
             onClick={handleUnassignLeads}
-            disabled={assigning}
+            disabled={assigning || !hasAnyAssigned}
+            title={!hasAnyAssigned ? "No selected lead is assigned" : undefined}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {assigning ? (
@@ -2048,7 +2059,8 @@ NEXT ACTION:
             Clear Selection
           </button>
         </div>
-      )}
+        );
+      })()}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
 
