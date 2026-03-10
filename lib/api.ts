@@ -57,7 +57,6 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
 
       try {
         const errorData = JSON.parse(errorText);
-        // Prefer details over error message if available, as it's usually more specific
         if (errorData.details) {
           errorMessage = errorData.details;
         } else if (errorData.error) {
@@ -66,39 +65,32 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
           errorMessage = errorText || errorMessage;
         }
       } catch {
-        // If JSON parse fails, try to extract useful info from text
         if (errorText && errorText.length > 0) {
           errorMessage = errorText.length > 200 ? errorText.substring(0, 200) + "..." : errorText;
         }
       }
 
-      throw new Error(errorMessage);
+      // User-friendly messages for auth/permission; attach status for callers
+      if (response.status === 401) {
+        errorMessage = "Please log in again.";
+      } else if (response.status === 403) {
+        errorMessage = "You don't have access.";
+      }
+
+      const err = new Error(errorMessage) as Error & { status?: number };
+      err.status = response.status;
+      throw err;
     }
 
     return response.json();
   } catch (error: any) {
-    // Handle connection errors
-    if (error.message?.includes('Failed to fetch') || error.message?.includes('ERR_CONNECTION_REFUSED')) {
-      const isLocalhost = typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-      if (isLocalhost) {
-        throw new Error(
-          `Cannot connect to backend API at ${API_BASE_URL}. ` +
-          `Please ensure:\n` +
-          `1. Backend server is running (cd kas_backend && npm run dev)\n` +
-          `2. Backend is running on port 5000\n` +
-          `3. Or set NEXT_PUBLIC_API_URL environment variable to your backend URL`
-        );
-      } else {
-        throw new Error(
-          `Cannot connect to backend API. ` +
-          `Please check:\n` +
-          `1. NEXT_PUBLIC_API_URL is set correctly\n` +
-          `2. Backend server is running and accessible\n` +
-          `3. CORS is configured properly on the backend`
-        );
-      }
+    // Preserve status if already set (e.g. 401/403 from above)
+    if (error.status !== undefined) {
+      throw error;
+    }
+    // Network/connection errors: generic message only (no dev instructions)
+    if (error.message?.includes('Failed to fetch') || error.message?.includes('ERR_CONNECTION_REFUSED') || error.message?.includes('NetworkError')) {
+      throw new Error("Unable to connect. Please try again later.");
     }
     throw error;
   }

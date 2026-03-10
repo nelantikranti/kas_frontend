@@ -118,8 +118,8 @@ export default function SignupPage() {
       }
     } catch (error: any) {
       console.error("Signup error:", error);
-      if (error.message?.includes("fetch") || error.message?.includes("network")) {
-        setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
+      if (error.message?.includes("fetch") || error.message?.includes("network") || error.message?.includes("Unable to connect")) {
+        setError("Unable to connect. Please try again later.");
       } else {
         setError("Failed to create account. Please try again.");
       }

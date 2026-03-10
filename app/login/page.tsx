@@ -73,8 +73,9 @@ export default function LoginPage() {
           error.message?.includes("Failed to fetch") ||
           error.name === "TypeError" ||
           error.message?.includes("ERR_CONNECTION_REFUSED") ||
-          error.message?.includes("ECONNREFUSED")) {
-        setError("Failed to connect to server. Please ensure the backend server is running on port 5000.");
+          error.message?.includes("ECONNREFUSED") ||
+          error.message?.includes("Unable to connect")) {
+        setError("Unable to connect. Please try again later.");
       } else {
         setError(error.message || "Login failed. Please try again.");
       }

@@ -92,8 +92,8 @@ export default function ContactPage() {
     } catch (error: any) {
       console.error("Failed to submit contact form:", error);
       setSubmitStatus("error");
-      if (error.message?.includes("fetch") || error.name === "TypeError") {
-        setErrorMessage("Cannot connect to server. Please ensure the backend server is running on port 5000.");
+      if (error.message?.includes("fetch") || error.name === "TypeError" || error.message?.includes("Unable to connect")) {
+        setErrorMessage("Unable to connect. Please try again later.");
       } else {
         setErrorMessage("Failed to send message. Please try again.");
       }

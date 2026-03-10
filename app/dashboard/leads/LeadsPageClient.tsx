@@ -134,6 +134,7 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState("");
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [syncingFacebook, setSyncingFacebook] = useState(false);
@@ -505,18 +506,27 @@ export default function LeadsPage() {
       setTotalLeads(typeof total === "number" ? total : 0);
       setTotalPages(typeof tp === "number" ? tp : 1);
       setBackendConnected(true);
+      setAccessDenied(false);
     } catch (error: any) {
       console.error("Failed to load leads:", error);
-      setBackendConnected(false);
-
+      const status = error?.status;
       const errorMessage = error?.message || "";
-      if (errorMessage.includes("ERR_CONNECTION_REFUSED") ||
-        errorMessage.includes("Failed to fetch") ||
-        errorMessage.includes("Cannot connect to backend")) {
-        toast.error(
-          "Backend server is not running. Please start it with: cd kas_backend && npm run dev",
-          6000
-        );
+
+      if (status === 401 || status === 403) {
+        setAccessDenied(true);
+        toast.error("You don't have access.");
+        setLeadList([]);
+        setTotalLeads(0);
+        setTotalPages(1);
+        // Do not set backendConnected = false so we don't show connection banner
+      } else {
+        setAccessDenied(false);
+        setBackendConnected(false);
+        if (errorMessage.includes("Unable to connect") || errorMessage.includes("Failed to fetch") || errorMessage.includes("ERR_CONNECTION_REFUSED")) {
+          toast.error("Unable to connect. Please try again later.");
+        } else {
+          toast.error(errorMessage || "Failed to load leads.");
+        }
       }
     } finally {
       setLoading(false);
@@ -1548,20 +1558,13 @@ NEXT ACTION:
       });
     } catch (error: any) {
       console.error("Failed to create lead:", error);
-
-      // Check for connection errors
+      const status = error?.status;
       const errorMessage = error?.message || "";
-      if (errorMessage.includes("ERR_CONNECTION_REFUSED") ||
-        errorMessage.includes("Failed to fetch") ||
-        errorMessage.includes("Cannot connect to backend")) {
-        toast.error(
-          "Cannot connect to backend server. Please ensure:\n" +
-          "1. Backend server is running (cd kas_backend && npm run dev)\n" +
-          "2. Backend is accessible at http://localhost:5000",
-          8000
-        );
-      } else if (errorMessage.includes("API Error")) {
-        toast.error(`API Error: ${errorMessage}`);
+
+      if (status === 401 || status === 403) {
+        toast.error("You don't have access.");
+      } else if (errorMessage.includes("Unable to connect") || errorMessage.includes("Failed to fetch") || errorMessage.includes("ERR_CONNECTION_REFUSED")) {
+        toast.error("Unable to connect. Please try again later.");
       } else {
         toast.error(errorMessage || "Failed to create lead. Please try again.");
       }
@@ -1809,29 +1812,11 @@ NEXT ACTION:
 
   // Google Ads leads now come via webhook, no periodic sync needed
 
-  // Backend handles search, source, and group filtering + pagination.
-  // Client-side only applies role-based visibility filtering.
+  // Backend returns only leads assigned to non-admin users (and enforces LEADS_VIEW).
+  // Client-side filter: admin sees all; others only see leads assigned to them.
   const filteredLeads = leadList.filter(lead => {
     const userIsAdmin = isAdmin();
     if (userIsAdmin) return true;
-
-    const userPermissions = currentUser?.permissions || [];
-
-    // Users with LEADS_VIEW can see all leads
-    if (can(PERMISSIONS.LEADS_VIEW, userPermissions)) return true;
-
-    // Users with LEADS_EDIT or LEADS_CREATE see unassigned leads + their own
-    const canAssignLeads = can(PERMISSIONS.LEADS_EDIT, userPermissions) ||
-                          can(PERMISSIONS.LEADS_CREATE, userPermissions);
-
-    if (canAssignLeads && currentUser) {
-      const isUnassigned = !lead.assignedTo ||
-                          lead.assignedTo === "" ||
-                          lead.assignedTo === "Sales Executive 1" ||
-                          lead.assignedTo === currentUser.name;
-      return isUnassigned;
-    }
-
     return !!currentUser && lead.assignedTo === currentUser.name;
   });
 
@@ -1843,26 +1828,31 @@ NEXT ACTION:
     );
   }
 
+  if (accessDenied) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200 max-w-md">
+          <p className="text-gray-700 font-medium">You don&apos;t have access.</p>
+          <p className="text-sm text-gray-500 mt-1">You don&apos;t have permission to view this module.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* Backend Connection Warning */}
+      {/* Connection issue: generic message only (no dev instructions) */}
       {backendConnected === false && (
-        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+        <div className="mb-4 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-lg">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-red-800">Backend Server Not Connected</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>Cannot connect to the backend API. Please start the backend server:</p>
-                <code className="mt-1 block bg-red-100 px-2 py-1 rounded text-xs">
-                  cd kas_backend && npm run dev
-                </code>
-                <p className="mt-2 text-xs">Or set NEXT_PUBLIC_API_URL environment variable to your backend URL.</p>
-              </div>
+              <h3 className="text-sm font-medium text-amber-800">Unable to connect</h3>
+              <p className="mt-1 text-sm text-amber-700">Please try again later.</p>
             </div>
           </div>
         </div>
