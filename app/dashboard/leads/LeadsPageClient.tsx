@@ -1839,13 +1839,8 @@ NEXT ACTION:
 
   // Google Ads leads now come via webhook, no periodic sync needed
 
-  // Backend returns only leads assigned to non-admin users (and enforces LEADS_VIEW).
-  // Client-side filter: admin sees all; others only see leads assigned to them.
-  const filteredLeads = leadList.filter(lead => {
-    const userIsAdmin = isAdmin();
-    if (userIsAdmin) return true;
-    return !!currentUser && lead.assignedTo === currentUser.name;
-  });
+  // Let the backend control which leads are visible for the current user.
+  const filteredLeads = leadList;
 
   if (loading) {
     return (
