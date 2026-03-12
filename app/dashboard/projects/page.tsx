@@ -107,11 +107,13 @@ function DocViewerContent({
 }
 
 export default function ProjectsPage() {
-  const userPermissions = getUserPermissions();
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const canViewExpense = can(PERMISSIONS.EXPENSE_VIEW, userPermissions);
   const canAddExpense = can(PERMISSIONS.EXPENSE_ADD, userPermissions);
   const canEditExpense = can(PERMISSIONS.EXPENSE_EDIT, userPermissions);
   const canDeleteExpense = can(PERMISSIONS.EXPENSE_DELETE, userPermissions);
+  const canViewProjects = can(PERMISSIONS.PROJECTS_VIEW, userPermissions);
+  const canDeleteProjects = can(PERMISSIONS.PROJECTS_DELETE, userPermissions);
   const canSeeExpenseList = canViewExpense || canDeleteExpense || canEditExpense;
   const addExpenseOnly = canAddExpense && !canViewExpense && !canEditExpense && !canDeleteExpense;
   const hasAllOrMultipleExpensePermissions =
@@ -160,6 +162,26 @@ export default function ProjectsPage() {
     status: "On Track" as "On Track" | "Delayed" | "On Hold",
     currentStage: "First Technical Visit" as ProjectStage,
   });
+
+  useEffect(() => {
+    const syncUserPermissions = () => {
+      setUserPermissions(getUserPermissions());
+    };
+
+    syncUserPermissions();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "user") syncUserPermissions();
+    };
+
+    window.addEventListener("userPermissionsUpdated", syncUserPermissions);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("userPermissionsUpdated", syncUserPermissions);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
 
   useEffect(() => {
     loadProjects();
@@ -831,13 +853,15 @@ export default function ProjectsPage() {
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
-              <button
-                onClick={() => handleViewDetails(project)}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm text-center sm:text-left"
-              >
-                <span className="hidden sm:inline">View Timeline →</span>
-                <span className="sm:hidden">View Timeline</span>
-              </button>
+              {canViewProjects && (
+                <button
+                  onClick={() => handleViewDetails(project)}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm text-center sm:text-left"
+                >
+                  <span className="hidden sm:inline">View Timeline →</span>
+                  <span className="sm:hidden">View Timeline</span>
+                </button>
+              )}
               <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                 {canAddExpense && (
                 <button
@@ -859,11 +883,13 @@ export default function ProjectsPage() {
                   Documents
                 </button>
                 {/* Delete button for Admin: allow deleting any project */}
-                <AnimatedDeleteButton
-                  onClick={() => handleDeleteClick(project)}
-                  size="sm"
-                  title="Delete Project"
-                />
+                {canDeleteProjects && (
+                  <AnimatedDeleteButton
+                    onClick={() => handleDeleteClick(project)}
+                    size="sm"
+                    title="Delete Project"
+                  />
+                )}
               </div>
             </div>
           </div>

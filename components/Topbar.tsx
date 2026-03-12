@@ -57,8 +57,11 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
           // Refresh user data from backend to get latest role
           if (userData.id) {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+            const token = localStorage.getItem("authToken");
             try {
-              const userResponse = await fetch(`${apiUrl}/users/${userData.id}`);
+              const userResponse = await fetch(`${apiUrl}/users/${userData.id}`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
               if (userResponse.ok) {
                 const updatedUser = await userResponse.json();
                 const updatedUserData = {

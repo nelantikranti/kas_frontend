@@ -6,8 +6,14 @@ import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
 import { IoAdd, IoDocumentText, IoSearch, IoDownload, IoEye, IoTrash } from "react-icons/io5";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 export default function QuotationsPage() {
+  const userPermissions = getUserPermissions();
+  const canViewQuotations = can(PERMISSIONS.QUOTATIONS_VIEW, userPermissions);
+  const canDeleteQuotations =
+    can(PERMISSIONS.QUOTATIONS_CREATE, userPermissions) ||
+    can(PERMISSIONS.QUOTATIONS_APPROVE, userPermissions);
   const [quotationList, setQuotationList] = useState<Quotation[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -389,44 +395,50 @@ export default function QuotationsPage() {
                 <span className="block sm:inline">Version: {quotation.version}</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <button
-                  onClick={() => handleViewPDF(quotation)}
-                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base"
-                >
-                  <IoEye className="w-4 h-4" />
-                  View
-                </button>
-                <button
-                  onClick={() => handlePreview(quotation)}
-                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base"
-                >
-                  <IoDocumentText className="w-4 h-4" />
-                  Preview
-                </button>
-                <button
-                  onClick={() => handleDownload(quotation)}
-                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base"
-                >
-                  <IoDownload className="w-4 h-4" />
-                  Download
-                </button>
-                <button
-                  onClick={async () => {
-                    if (!confirm("Delete this quotation? This action cannot be undone.")) return;
-                    try {
-                      await quotationsAPI.delete(quotation.id);
-                      setQuotationList((prev) => prev.filter((q) => q.id !== quotation.id));
-                      toast.success("Quotation deleted");
-                    } catch (err) {
-                      console.error("Failed to delete quotation:", err);
-                      toast.error("Failed to delete quotation. Please try again.");
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
-                >
-                  <IoTrash className="w-4 h-4" />
-                  Delete
-                </button>
+                {canViewQuotations && (
+                  <>
+                    <button
+                      onClick={() => handleViewPDF(quotation)}
+                      className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base"
+                    >
+                      <IoEye className="w-4 h-4" />
+                      View
+                    </button>
+                    <button
+                      onClick={() => handlePreview(quotation)}
+                      className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base"
+                    >
+                      <IoDocumentText className="w-4 h-4" />
+                      Preview
+                    </button>
+                    <button
+                      onClick={() => handleDownload(quotation)}
+                      className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base"
+                    >
+                      <IoDownload className="w-4 h-4" />
+                      Download
+                    </button>
+                  </>
+                )}
+                {canDeleteQuotations && (
+                  <button
+                    onClick={async () => {
+                      if (!confirm("Delete this quotation? This action cannot be undone.")) return;
+                      try {
+                        await quotationsAPI.delete(quotation.id);
+                        setQuotationList((prev) => prev.filter((q) => q.id !== quotation.id));
+                        toast.success("Quotation deleted");
+                      } catch (err) {
+                        console.error("Failed to delete quotation:", err);
+                        toast.error("Failed to delete quotation. Please try again.");
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+                  >
+                    <IoTrash className="w-4 h-4" />
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           </div>

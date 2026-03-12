@@ -8,8 +8,13 @@ import { IoAdd, IoSearch, IoEye, IoEyeOff } from "react-icons/io5";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import Link from "next/link";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 export default function BlogsPage() {
+  const userPermissions = getUserPermissions();
+  const canViewBlogs = can(PERMISSIONS.BLOGS_VIEW, userPermissions);
+  const canEditBlogs = can(PERMISSIONS.BLOGS_EDIT, userPermissions);
+  const canDeleteBlogs = can(PERMISSIONS.BLOGS_DELETE, userPermissions);
   const [blogList, setBlogList] = useState<Blog[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -235,25 +240,31 @@ export default function BlogsPage() {
                   <span>{blog.views} views</span>
                 </div>
                 <div className="flex gap-2">
-                  <AnimatedEditButton
-                    onClick={() => handleEditClick(blog)}
-                    size="sm"
-                    title="Edit Blog"
-                    className="flex-shrink-0"
-                  />
-                  <AnimatedDeleteButton
-                    onClick={() => handleDeleteClick(blog)}
-                    size="sm"
-                    title="Delete Blog"
-                  />
-                  <Link
-                    href={`/blogs/${blog._id || blog.id}`}
-                    target="_blank"
-                    className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-sm"
-                    title="View Blog"
-                  >
-                    <IoEye className="w-4 h-4" />
-                  </Link>
+                  {canEditBlogs && (
+                    <AnimatedEditButton
+                      onClick={() => handleEditClick(blog)}
+                      size="sm"
+                      title="Edit Blog"
+                      className="flex-shrink-0"
+                    />
+                  )}
+                  {canDeleteBlogs && (
+                    <AnimatedDeleteButton
+                      onClick={() => handleDeleteClick(blog)}
+                      size="sm"
+                      title="Delete Blog"
+                    />
+                  )}
+                  {canViewBlogs && (
+                    <Link
+                      href={`/blogs/${blog._id || blog.id}`}
+                      target="_blank"
+                      className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-sm"
+                      title="View Blog"
+                    >
+                      <IoEye className="w-4 h-4" />
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

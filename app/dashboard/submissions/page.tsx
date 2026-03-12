@@ -6,6 +6,7 @@ import { IoMail, IoCall, IoDocumentText, IoTime, IoCheckmarkCircle, IoCloseCircl
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 interface Contact {
   _id: string;
@@ -33,6 +34,15 @@ interface Demo {
 }
 
 export default function SubmissionsPage() {
+  const userPermissions = getUserPermissions();
+  const canViewContactSubmissions =
+    can(PERMISSIONS.FORM_SUBMISSIONS_VIEW, userPermissions) ||
+    can(PERMISSIONS.FORM_SUBMISSIONS_DELETE, userPermissions);
+  const canDeleteContactSubmissions = can(PERMISSIONS.FORM_SUBMISSIONS_DELETE, userPermissions);
+  const canViewDemoSubmissions =
+    can(PERMISSIONS.DEMO_REQUESTS_VIEW, userPermissions) ||
+    can(PERMISSIONS.DEMO_REQUESTS_DELETE, userPermissions);
+  const canDeleteDemoSubmissions = can(PERMISSIONS.DEMO_REQUESTS_DELETE, userPermissions);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [demos, setDemos] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -396,17 +406,19 @@ export default function SubmissionsPage() {
                     <p className="text-sm text-gray-900">{formatDate(contact.createdAt)}</p>
                   </div>
                   <div className="flex gap-2 pt-2 border-t border-gray-100">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(contact);
-                        setIsModalOpen(true);
-                      }}
-                      title="View Details"
-                      className="w-[40px] h-[40px] flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors flex-shrink-0"
-                    >
-                      <IoEye className="w-5 h-5" />
-                    </button>
-                    {contact.status === "New" && (
+                    {canViewContactSubmissions && (
+                      <button
+                        onClick={() => {
+                          setSelectedItem(contact);
+                          setIsModalOpen(true);
+                        }}
+                        title="View Details"
+                        className="w-[40px] h-[40px] flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors flex-shrink-0"
+                      >
+                        <IoEye className="w-5 h-5" />
+                      </button>
+                    )}
+                    {canViewContactSubmissions && contact.status === "New" && (
                       <>
                         <button
                           onClick={() => updateContactStatus(contact._id, "Read")}
@@ -424,7 +436,7 @@ export default function SubmissionsPage() {
                         </button>
                       </>
                     )}
-                    {contact.status === "Read" && (
+                    {canViewContactSubmissions && contact.status === "Read" && (
                       <button
                         onClick={() => updateContactStatus(contact._id, "Replied")}
                         title="Mark as Replied"
@@ -433,12 +445,14 @@ export default function SubmissionsPage() {
                         <IoCheckmarkCircle className="w-5 h-5" />
                       </button>
                     )}
-                    <AnimatedDeleteButton
-                      onClick={() => handleDeleteContact(contact._id)}
-                      size="sm"
-                      title="Delete"
-                      className="flex-shrink-0"
-                    />
+                    {canDeleteContactSubmissions && (
+                      <AnimatedDeleteButton
+                        onClick={() => handleDeleteContact(contact._id)}
+                        size="sm"
+                        title="Delete"
+                        className="flex-shrink-0"
+                      />
+                    )}
                   </div>
                 </div>
               ))
@@ -499,17 +513,19 @@ export default function SubmissionsPage() {
                         </td>
                         <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                setSelectedItem(contact);
-                                setIsModalOpen(true);
-                              }}
-                              title="View Details"
-                              className="w-[28px] h-[28px] flex items-center justify-center rounded-lg text-green-600 hover:bg-green-50 hover:text-green-900 transition-colors"
-                            >
-                              <IoEye className="w-4 h-4" />
-                            </button>
-                            {contact.status === "New" && (
+                            {canViewContactSubmissions && (
+                              <button
+                                onClick={() => {
+                                  setSelectedItem(contact);
+                                  setIsModalOpen(true);
+                                }}
+                                title="View Details"
+                                className="w-[28px] h-[28px] flex items-center justify-center rounded-lg text-green-600 hover:bg-green-50 hover:text-green-900 transition-colors"
+                              >
+                                <IoEye className="w-4 h-4" />
+                              </button>
+                            )}
+                            {canViewContactSubmissions && contact.status === "New" && (
                               <>
                                 <button
                                   onClick={() => updateContactStatus(contact._id, "Read")}
@@ -527,7 +543,7 @@ export default function SubmissionsPage() {
                                 </button>
                               </>
                             )}
-                            {contact.status === "Read" && (
+                            {canViewContactSubmissions && contact.status === "Read" && (
                               <button
                                 onClick={() => updateContactStatus(contact._id, "Replied")}
                                 title="Mark as Replied"
@@ -536,11 +552,13 @@ export default function SubmissionsPage() {
                                 <IoCheckmarkCircle className="w-4 h-4" />
                               </button>
                             )}
-                            <AnimatedDeleteButton
-                              onClick={() => handleDeleteContact(contact._id)}
-                              size="xs"
-                              title="Delete"
-                            />
+                            {canDeleteContactSubmissions && (
+                              <AnimatedDeleteButton
+                                onClick={() => handleDeleteContact(contact._id)}
+                                size="xs"
+                                title="Delete"
+                              />
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -588,17 +606,19 @@ export default function SubmissionsPage() {
                     <p className="text-sm text-gray-900">{formatDate(demo.createdAt)}</p>
                   </div>
                   <div className="flex gap-2 pt-2 border-t border-gray-100">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(demo);
-                        setIsModalOpen(true);
-                      }}
-                      title="View Details"
-                      className="w-[40px] h-[40px] flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors flex-shrink-0"
-                    >
-                      <IoEye className="w-5 h-5" />
-                    </button>
-                    {demo.status === "Pending" && (
+                    {canViewDemoSubmissions && (
+                      <button
+                        onClick={() => {
+                          setSelectedItem(demo);
+                          setIsModalOpen(true);
+                        }}
+                        title="View Details"
+                        className="w-[40px] h-[40px] flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors flex-shrink-0"
+                      >
+                        <IoEye className="w-5 h-5" />
+                      </button>
+                    )}
+                    {canViewDemoSubmissions && demo.status === "Pending" && (
                       <button
                         onClick={() => updateDemoStatus(demo._id, "Contacted")}
                         title="Mark as Contacted"
@@ -607,12 +627,14 @@ export default function SubmissionsPage() {
                         <IoCheckmarkCircle className="w-5 h-5" />
                       </button>
                     )}
-                    <AnimatedDeleteButton
-                      onClick={() => handleDeleteDemo(demo._id)}
-                      size="sm"
-                      title="Delete"
-                      className="flex-shrink-0"
-                    />
+                    {canDeleteDemoSubmissions && (
+                      <AnimatedDeleteButton
+                        onClick={() => handleDeleteDemo(demo._id)}
+                        size="sm"
+                        title="Delete"
+                        className="flex-shrink-0"
+                      />
+                    )}
                   </div>
                 </div>
               ))
@@ -679,17 +701,19 @@ export default function SubmissionsPage() {
                         </td>
                         <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                setSelectedItem(demo);
-                                setIsModalOpen(true);
-                              }}
-                              title="View Details"
-                              className="w-[28px] h-[28px] flex items-center justify-center rounded-lg text-green-600 hover:bg-green-50 hover:text-green-900 transition-colors"
-                            >
-                              <IoEye className="w-4 h-4" />
-                            </button>
-                            {demo.status === "Pending" && (
+                            {canViewDemoSubmissions && (
+                              <button
+                                onClick={() => {
+                                  setSelectedItem(demo);
+                                  setIsModalOpen(true);
+                                }}
+                                title="View Details"
+                                className="w-[28px] h-[28px] flex items-center justify-center rounded-lg text-green-600 hover:bg-green-50 hover:text-green-900 transition-colors"
+                              >
+                                <IoEye className="w-4 h-4" />
+                              </button>
+                            )}
+                            {canViewDemoSubmissions && demo.status === "Pending" && (
                               <button
                                 onClick={() => updateDemoStatus(demo._id, "Contacted")}
                                 title="Mark as Contacted"
@@ -698,11 +722,13 @@ export default function SubmissionsPage() {
                                 <IoCheckmarkCircle className="w-4 h-4" />
                               </button>
                             )}
-                            <AnimatedDeleteButton
-                              onClick={() => handleDeleteDemo(demo._id)}
-                              size="xs"
-                              title="Delete"
-                            />
+                            {canDeleteDemoSubmissions && (
+                              <AnimatedDeleteButton
+                                onClick={() => handleDeleteDemo(demo._id)}
+                                size="xs"
+                                title="Delete"
+                              />
+                            )}
                           </div>
                         </td>
                       </tr>

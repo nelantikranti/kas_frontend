@@ -116,6 +116,10 @@ const getStageColor = (stage: Lead["stage"]) => {
 export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const userPermissions = getUserPermissions();
+  const canViewLeadActions = can(PERMISSIONS.LEADS_VIEW, userPermissions);
+  const canEditLeadActions = can(PERMISSIONS.LEADS_EDIT, userPermissions);
+  const canDeleteLeadActions = can(PERMISSIONS.LEADS_DELETE, userPermissions);
   const [leadList, setLeadList] = useState<Lead[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -158,6 +162,7 @@ export default function LeadsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [leadsPerPage, setLeadsPerPage] = useState(20);
   const [facebookConfigured, setFacebookConfigured] = useState(false);
+  const canManageAssignments = currentUser?.role === "Admin";
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -278,7 +283,7 @@ export default function LeadsPage() {
     // Legacy fields (for compatibility)
     company: "",
     value: "",
-    assignedTo: "Sales Executive 1",
+    assignedTo: "",
     notes: "",
     groupId: "",
   });
@@ -377,6 +382,11 @@ export default function LeadsPage() {
   };
 
   const handleAssignLeads = async (userId: string, userName: string) => {
+    if (!canManageAssignments) {
+      toast.error("Only admins can reassign leads.");
+      return;
+    }
+
     if (selectedLeadIds.size === 0) return;
 
     setAssigning(true);
@@ -403,6 +413,11 @@ export default function LeadsPage() {
   };
 
   const handleUnassignLeads = async () => {
+    if (!canManageAssignments) {
+      toast.error("Only admins can reassign leads.");
+      return;
+    }
+
     if (selectedLeadIds.size === 0) return;
 
     setAssigning(true);
@@ -1579,7 +1594,7 @@ NEXT ACTION:
         remarks: "",
         company: "",
         value: "",
-        assignedTo: "Sales Executive 1",
+        assignedTo: "",
         notes: "",
         groupId: "",
       });
@@ -2007,7 +2022,7 @@ NEXT ACTION:
         </div>
       </div>
 
-      {/* Assign, Unassign & Delete All Buttons */}
+      {/* Assignment and bulk actions */}
       {selectedLeadIds.size > 0 && (() => {
         const selectedLeads = leadList.filter((l) => {
           const id = l.id || (l as any)._id?.toString?.() || "";
@@ -2020,33 +2035,39 @@ NEXT ACTION:
         });
         return (
         <div className="mb-4 flex items-center gap-3 flex-wrap">
-          <button
-            onClick={() => setIsAssignModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
-          >
-            <IoPerson className="w-4 h-4 sm:w-5 sm:h-5" />
-            Assign ({selectedLeadIds.size})
-          </button>
-          <button
-            onClick={handleUnassignLeads}
-            disabled={assigning || !hasAnyAssigned}
-            title={!hasAnyAssigned ? "No selected lead is assigned" : undefined}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {assigning ? (
-              <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-            ) : (
-              <IoPersonRemove className="w-4 h-4 sm:w-5 sm:h-5" />
-            )}
-            Unassign ({selectedLeadIds.size})
-          </button>
-          <button
-            onClick={() => setIsBulkDeleteModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
-          >
-            <IoCloseCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-            Delete All ({selectedLeadIds.size})
-          </button>
+          {canManageAssignments && (
+            <>
+              <button
+                onClick={() => setIsAssignModalOpen(true)}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+              >
+                <IoPerson className="w-4 h-4 sm:w-5 sm:h-5" />
+                Assign ({selectedLeadIds.size})
+              </button>
+              <button
+                onClick={handleUnassignLeads}
+                disabled={assigning || !hasAnyAssigned}
+                title={!hasAnyAssigned ? "No selected lead is assigned" : undefined}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {assigning ? (
+                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                ) : (
+                  <IoPersonRemove className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+                Unassign ({selectedLeadIds.size})
+              </button>
+            </>
+          )}
+          {canDeleteLeadActions && (
+            <button
+              onClick={() => setIsBulkDeleteModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+            >
+              <IoCloseCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              Delete All ({selectedLeadIds.size})
+            </button>
+          )}
           <button
             onClick={() => setSelectedLeadIds(new Set())}
             className="text-sm text-gray-600 hover:text-gray-800"
@@ -2160,23 +2181,29 @@ NEXT ACTION:
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleViewDetails(lead)}
-                      className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex-1"
-                    >
-                      <IoDocumentText className="w-4 h-4" />
-                      View Details
-                    </button>
-                    <AnimatedEditButton
-                      onClick={() => handleEditLead(lead)}
-                      size="sm"
-                      title="Edit Lead"
-                    />
-                    <AnimatedDeleteButton
-                      onClick={() => handleDeleteClick(lead)}
-                      size="sm"
-                      title="Delete Lead"
-                    />
+                    {canViewLeadActions && (
+                      <button
+                        onClick={() => handleViewDetails(lead)}
+                        className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex-1"
+                      >
+                        <IoDocumentText className="w-4 h-4" />
+                        View Details
+                      </button>
+                    )}
+                    {canEditLeadActions && (
+                      <AnimatedEditButton
+                        onClick={() => handleEditLead(lead)}
+                        size="sm"
+                        title="Edit Lead"
+                      />
+                    )}
+                    {canDeleteLeadActions && (
+                      <AnimatedDeleteButton
+                        onClick={() => handleDeleteClick(lead)}
+                        size="sm"
+                        title="Delete Lead"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -2321,23 +2348,29 @@ NEXT ACTION:
                     </td>
                     <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                       <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => handleViewDetails(lead)}
-                          className="text-green-600 hover:text-green-900 text-sm"
-                        >
-                          <span className="hidden lg:inline">View Details</span>
-                          <span className="lg:hidden">View</span>
-                        </button>
-                        <AnimatedEditButton
-                          onClick={() => handleEditLead(lead)}
-                          size="sm"
-                          title="Edit Lead"
-                        />
-                        <AnimatedDeleteButton
-                          onClick={() => handleDeleteClick(lead)}
-                          size="sm"
-                          title="Delete Lead"
-                        />
+                        {canViewLeadActions && (
+                          <button
+                            onClick={() => handleViewDetails(lead)}
+                            className="text-green-600 hover:text-green-900 text-sm"
+                          >
+                            <span className="hidden lg:inline">View Details</span>
+                            <span className="lg:hidden">View</span>
+                          </button>
+                        )}
+                        {canEditLeadActions && (
+                          <AnimatedEditButton
+                            onClick={() => handleEditLead(lead)}
+                            size="sm"
+                            title="Edit Lead"
+                          />
+                        )}
+                        {canDeleteLeadActions && (
+                          <AnimatedDeleteButton
+                            onClick={() => handleDeleteClick(lead)}
+                            size="sm"
+                            title="Delete Lead"
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -6188,7 +6221,7 @@ NEXT ACTION:
 
       {/* Assign Lead Modal - Admin excluded (admins see all leads) */}
       <Modal
-        isOpen={isAssignModalOpen}
+        isOpen={canManageAssignments && isAssignModalOpen}
         onClose={() => {
           setIsAssignModalOpen(false);
           setUserSearchTerm("");

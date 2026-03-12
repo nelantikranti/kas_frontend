@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { leadsAPI, projectsAPI, groupsAPI, type Lead } from "@/lib/api";
+import { isAdmin } from "@/lib/permissions";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
 import { IoArrowBack, IoCheckmarkCircle } from "react-icons/io5";
@@ -54,6 +55,7 @@ export default function EditLeadPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [canReassignLead, setCanReassignLead] = useState(false);
   const [originalStage, setOriginalStage] = useState<Lead["stage"]>("New Lead");
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [leadData, setLeadData] = useState({
@@ -117,6 +119,7 @@ export default function EditLeadPage() {
   });
 
   useEffect(() => {
+    setCanReassignLead(isAdmin());
     if (leadId) {
       loadLead();
       loadGroups();
@@ -411,7 +414,7 @@ SALES OWNER:
         source: leadData.source,
         stage: leadData.stage, // Use the stage selected in the form (editable)
         value: leadData.value ? Math.round(parseFloat(leadData.value) * 100000) : 0,
-        assignedTo: leadData.salesExecutiveName,
+        assignedTo: canReassignLead ? leadData.salesExecutiveName : leadData.assignedTo || leadData.salesExecutiveName,
         notes: notes,
         lastContact: leadData.contactDateTime || new Date().toISOString(),
       };
@@ -1177,9 +1180,15 @@ SALES OWNER:
                     type="text"
                     value={leadData.salesExecutiveName}
                     onChange={(e) => setLeadData({ ...leadData, salesExecutiveName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter sales executive name"
+                    disabled={!canReassignLead}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                    placeholder={canReassignLead ? "Enter sales executive name" : "Only admins can change this"}
                   />
+                  {!canReassignLead && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Lead reassignment is admin-only. Please contact an admin if this needs to change.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

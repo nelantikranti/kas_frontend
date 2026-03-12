@@ -76,7 +76,11 @@ export default function DashboardLayout({
             try {
               const currentUser = JSON.parse(userStr);
               // Fetch latest user data including permissions and role
-              const userResponse = await fetch(`${apiUrl}/users/${currentUser.id}`);
+              const userResponse = await fetch(`${apiUrl}/users/${currentUser.id}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
               if (userResponse.ok) {
                 const updatedUser = await userResponse.json();
                 const updatedUserData = {

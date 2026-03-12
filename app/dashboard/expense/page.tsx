@@ -17,8 +17,7 @@ export default function ExpensePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [expensesByProject, setExpensesByProject] = useState<Record<string, { id: string; amount: number; description: string }[]>>({});
   const [loading, setLoading] = useState(true);
-
-  const userPermissions = getUserPermissions();
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const canView = can(PERMISSIONS.EXPENSE_VIEW, userPermissions);
   const canEditExpense = can(PERMISSIONS.EXPENSE_EDIT, userPermissions);
   const canAddExpense = can(PERMISSIONS.EXPENSE_ADD, userPermissions);
@@ -26,6 +25,26 @@ export default function ExpensePage() {
   const viewOnlyExpense = canView && !canEditExpense && !canAddExpense && !canDeleteExpense;
   const hasAllOrMultipleExpensePermissions = canView && (canAddExpense || canEditExpense || canDeleteExpense);
   const showCostAndPL = hasAllOrMultipleExpensePermissions;
+
+  useEffect(() => {
+    const syncUserPermissions = () => {
+      setUserPermissions(getUserPermissions());
+    };
+
+    syncUserPermissions();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "user") syncUserPermissions();
+    };
+
+    window.addEventListener("userPermissionsUpdated", syncUserPermissions);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("userPermissionsUpdated", syncUserPermissions);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
 
   useEffect(() => {
     if (!canView) {

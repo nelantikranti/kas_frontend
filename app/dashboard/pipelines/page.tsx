@@ -55,14 +55,30 @@ export default function PipelinesPage() {
   const [currentUserId, setCurrentUserId] = useState("");
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
+    const syncUserState = () => {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return;
       try {
         const u = JSON.parse(userStr);
-        setUserPermissions(u.permissions || []);
+        setUserPermissions(Array.isArray(u.permissions) ? u.permissions : []);
         setCurrentUserId(u.id || "");
       } catch (_) {}
-    }
+    };
+
+    syncUserState();
+
+    const handlePermissionsUpdate = () => syncUserState();
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "user") syncUserState();
+    };
+
+    window.addEventListener("userPermissionsUpdated", handlePermissionsUpdate);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("userPermissionsUpdated", handlePermissionsUpdate);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   const fetchPipelines = async () => {

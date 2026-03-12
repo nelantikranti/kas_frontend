@@ -8,7 +8,7 @@ import { IoAdd, IoPerson, IoSearch, IoEye, IoShieldCheckmark, IoCheckmarkCircle,
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { usersAPI } from "@/lib/api";
-import { PERMISSION_GROUPS } from "@/lib/permissions";
+import { PERMISSION_GROUPS, can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 interface User {
   id: string;
@@ -22,112 +22,10 @@ interface User {
   createdAt?: string;
 }
 
-// Role-based permissions
-const getRolePermissions = (role: User["role"]) => {
-  switch (role) {
-    case "Admin":
-      return {
-        canViewLeads: true,
-        canEditLeads: true,
-        canViewProjects: true,
-        canEditProjects: true,
-        canViewAMC: true,
-        canEditAMC: true,
-        canViewReports: true,
-        canManageUsers: true,
-      };
-    case "Sales Executive":
-      return {
-        canViewLeads: true,
-        canEditLeads: true,
-        canViewProjects: false,
-        canEditProjects: false,
-        canViewAMC: false,
-        canEditAMC: false,
-        canViewReports: true,
-        canManageUsers: false,
-      };
-    case "Service Engineer":
-      return {
-        canViewLeads: false,
-        canEditLeads: false,
-        canViewProjects: true,
-        canEditProjects: false,
-        canViewAMC: true,
-        canEditAMC: true,
-        canViewReports: false,
-        canManageUsers: false,
-      };
-    case "Project Manager":
-      return {
-        canViewLeads: true,
-        canEditLeads: false,
-        canViewProjects: true,
-        canEditProjects: true,
-        canViewAMC: true,
-        canEditAMC: false,
-        canViewReports: true,
-        canManageUsers: false,
-      };
-    case "Accounts":
-      return {
-        canViewLeads: true,
-        canEditLeads: false,
-        canViewProjects: true,
-        canEditProjects: false,
-        canViewAMC: true,
-        canEditAMC: false,
-        canViewReports: true,
-        canManageUsers: false,
-      };
-    case "Manager":
-      return {
-        canViewLeads: true,
-        canEditLeads: true,
-        canViewProjects: true,
-        canEditProjects: true,
-        canViewAMC: true,
-        canEditAMC: true,
-        canViewReports: true,
-        canManageUsers: false,
-      };
-    case "Technician":
-      return {
-        canViewLeads: false,
-        canEditLeads: false,
-        canViewProjects: true,
-        canEditProjects: false,
-        canViewAMC: true,
-        canEditAMC: true,
-        canViewReports: false,
-        canManageUsers: false,
-      };
-    case "Accountant":
-      return {
-        canViewLeads: true,
-        canEditLeads: false,
-        canViewProjects: true,
-        canEditProjects: false,
-        canViewAMC: true,
-        canEditAMC: false,
-        canViewReports: true,
-        canManageUsers: false,
-      };
-    default:
-      return {
-        canViewLeads: false,
-        canEditLeads: false,
-        canViewProjects: false,
-        canEditProjects: false,
-        canViewAMC: false,
-        canEditAMC: false,
-        canViewReports: false,
-        canManageUsers: false,
-      };
-  }
-};
-
 export default function UsersPage() {
+  const currentUserPermissions = getUserPermissions();
+  const canViewUsers = can(PERMISSIONS.USERS_VIEW, currentUserPermissions) || can(PERMISSIONS.USERS_MANAGE, currentUserPermissions);
+  const canManageUsers = can(PERMISSIONS.USERS_MANAGE, currentUserPermissions);
   const [users, setUsers] = useState<User[]>([]);
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,61 +63,8 @@ export default function UsersPage() {
 
   // Fetch users from API on component mount
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const token = localStorage.getItem("authToken");
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        
-        // Fetch with passwords if admin
-        const isAdmin = currentUserRole === "Admin";
-        const url = isAdmin 
-          ? `${apiUrl}/users?includePasswords=true`
-          : undefined;
-        
-        const fetchedUsers = url 
-          ? await fetch(url, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }).then(res => res.json())
-          : await usersAPI.getAll();
-        
-        // Separate active/inactive users from pending users
-        const activeUsers = fetchedUsers.filter((u: User) => u.status !== "Pending");
-        const pending = fetchedUsers.filter((u: User) => u.status === "Pending");
-        
-        setUsers(activeUsers);
-        setPendingUsers(pending);
-        
-        // Also fetch pending users separately if admin
-        if (isAdmin) {
-          try {
-            const pendingResponse = await fetch(`${apiUrl}/users/pending`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (pendingResponse.ok) {
-              const pendingData = await pendingResponse.json();
-              setPendingUsers(pendingData);
-            }
-          } catch (error) {
-            console.error("Failed to fetch pending users:", error);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-        // Fallback to empty array on error
-        setUsers([]);
-        setPendingUsers([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (currentUserRole) {
-      fetchUsers();
+      refreshUsers(currentUserRole);
     }
   }, [currentUserRole]);
   const [newUser, setNewUser] = useState({
@@ -239,6 +84,47 @@ export default function UsersPage() {
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [showPermissionsSection, setShowPermissionsSection] = useState(false);
+
+  const getApiUrl = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+  const refreshUsers = async (role: string) => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("authToken");
+      const apiUrl = getApiUrl();
+      const isAdmin = role === "Admin";
+      const usersResponse = await fetch(
+        isAdmin ? `${apiUrl}/users?includePasswords=true` : `${apiUrl}/users`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      if (!usersResponse.ok) {
+        throw new Error("Failed to fetch users");
+      }
+
+      const fetchedUsers: User[] = await usersResponse.json();
+      setUsers(fetchedUsers.filter((u) => u.status !== "Pending"));
+      setPendingUsers(fetchedUsers.filter((u) => u.status === "Pending"));
+
+      if (isAdmin) {
+        const pendingResponse = await fetch(`${apiUrl}/users/pending`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (pendingResponse.ok) {
+          const pendingData = await pendingResponse.json();
+          setPendingUsers(pendingData);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      setUsers([]);
+      setPendingUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddUser = async () => {
     // Validation
@@ -260,26 +146,11 @@ export default function UsersPage() {
         role: newUser.role,
         status: "Active" as User["status"],
       };
-      const createdUser = await usersAPI.create(userData);
-      const userWithPermissions: User = {
-        ...createdUser,
-        permissions: getRolePermissions(createdUser.role),
-      };
-      setUsers([...users, userWithPermissions]);
+      await usersAPI.create(userData);
       setIsModalOpen(false);
       setNewUser({ name: "", email: "", password: "", role: "Sales Executive" });
       toast.success("User created successfully");
-      
-      // Refresh users list to get password
-      if (currentUserRole === "Admin") {
-        const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/users?includePasswords=true`;
-        const fetchedUsers = await fetch(url).then(res => res.json());
-        const usersWithPermissions = fetchedUsers.map((user: User) => ({
-          ...user,
-          permissions: getRolePermissions(user.role),
-        }));
-        setUsers(usersWithPermissions);
-      }
+      await refreshUsers(currentUserRole);
     } catch (error: any) {
       console.error("Failed to create user:", error);
       const errorMessage = error?.message || "Failed to create user. Please try again.";
@@ -381,6 +252,9 @@ export default function UsersPage() {
           Authorization: `Bearer ${token}`,
         },
       });
+      if (!updatedUserResponse.ok) {
+        throw new Error("Failed to refresh updated permissions");
+      }
       const updatedUserData = await updatedUserResponse.json();
       
       // Update user in list with new permissions from backend
@@ -405,6 +279,7 @@ export default function UsersPage() {
               permissions: updatedUserData.permissions || selectedPermissions,
             };
             localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
+            setCurrentUserRole(updatedCurrentUser.role || currentUserRole);
             // Dispatch event to update sidebar and dashboard immediately
             window.dispatchEvent(new CustomEvent('userPermissionsUpdated', { 
               detail: { permissions: updatedUserData.permissions || selectedPermissions } 
@@ -477,7 +352,7 @@ export default function UsersPage() {
       }
       
       // Update user basic info
-      const updatedUser = await usersAPI.update(editingUser.id, updateData);
+      await usersAPI.update(editingUser.id, updateData);
 
       // Update permissions
       const token = localStorage.getItem("authToken");
@@ -496,7 +371,12 @@ export default function UsersPage() {
       }
 
       // Fetch updated user data from backend to get latest permissions
-      const updatedUserResponse = await fetch(`${apiUrl}/users/${editingUser.id}`);
+      const updatedUserResponse = await fetch(`${apiUrl}/users/${editingUser.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!updatedUserResponse.ok) {
+        throw new Error("Failed to refresh updated user data");
+      }
       const updatedUserData = await updatedUserResponse.json();
       
       // Update user in list with new permissions from backend
@@ -521,6 +401,7 @@ export default function UsersPage() {
               permissions: updatedUserData.permissions || selectedPermissions,
             };
             localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
+            setCurrentUserRole(updatedCurrentUser.role || currentUserRole);
             // Dispatch event to update sidebar and dashboard immediately
             window.dispatchEvent(new CustomEvent('userPermissionsUpdated', { 
               detail: { permissions: updatedUserData.permissions || selectedPermissions } 
@@ -833,23 +714,27 @@ export default function UsersPage() {
                 </div>
               </div>
               <div className="flex gap-2 pt-2 border-t border-gray-100">
-                <button 
-                  onClick={() => {
-                    setViewingUser(user);
-                    setIsViewModalOpen(true);
-                  }}
-                  className="flex-1 px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
-                >
-                  <IoEye className="w-4 h-4" />
-                  View
-                </button>
-                <AnimatedEditButton
-                  onClick={() => handleEditUser(user)}
-                  size="sm"
-                  title="Edit User"
-                  className="flex-shrink-0"
-                />
-                {currentUserRole === "Admin" && (
+                {canViewUsers && (
+                  <button 
+                    onClick={() => {
+                      setViewingUser(user);
+                      setIsViewModalOpen(true);
+                    }}
+                    className="flex-1 px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                  >
+                    <IoEye className="w-4 h-4" />
+                    View
+                  </button>
+                )}
+                {canManageUsers && (
+                  <AnimatedEditButton
+                    onClick={() => handleEditUser(user)}
+                    size="sm"
+                    title="Edit User"
+                    className="flex-shrink-0"
+                  />
+                )}
+                {currentUserRole === "Admin" && canManageUsers && (
                   <button 
                     onClick={() => handleOpenPermissions(user)}
                     className="flex-1 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
@@ -859,7 +744,7 @@ export default function UsersPage() {
                     Permissions
                   </button>
                 )}
-                {user.role !== "Admin" && (
+                {canManageUsers && user.role !== "Admin" && (
                   <AnimatedDeleteButton
                     onClick={() => handleDeleteClick(user)}
                     size="sm"
@@ -952,22 +837,26 @@ export default function UsersPage() {
                   </td>
                   <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => {
-                          setViewingUser(user);
-                          setIsViewModalOpen(true);
-                        }}
-                        className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-                        title="View User Details"
-                      >
-                        <IoEye className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                      <AnimatedEditButton
-                        onClick={() => handleEditUser(user)}
-                        size="sm"
-                        title="Edit User"
-                      />
-                      {currentUserRole === "Admin" && (
+                      {canViewUsers && (
+                        <button 
+                          onClick={() => {
+                            setViewingUser(user);
+                            setIsViewModalOpen(true);
+                          }}
+                          className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                          title="View User Details"
+                        >
+                          <IoEye className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                      )}
+                      {canManageUsers && (
+                        <AnimatedEditButton
+                          onClick={() => handleEditUser(user)}
+                          size="sm"
+                          title="Edit User"
+                        />
+                      )}
+                      {currentUserRole === "Admin" && canManageUsers && (
                         <button 
                           onClick={() => handleOpenPermissions(user)}
                           className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
@@ -976,7 +865,7 @@ export default function UsersPage() {
                           <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       )}
-                      {user.role !== "Admin" && (
+                      {canManageUsers && user.role !== "Admin" && (
                         <AnimatedDeleteButton
                           onClick={() => handleDeleteClick(user)}
                           size="sm"

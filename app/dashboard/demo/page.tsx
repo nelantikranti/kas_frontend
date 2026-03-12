@@ -5,6 +5,7 @@ import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import { IoMail, IoCall, IoBusiness, IoSearch } from "react-icons/io5";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 interface DemoRequest {
   id: string;
@@ -18,6 +19,11 @@ interface DemoRequest {
 }
 
 export default function DemoRequestsPage() {
+  const userPermissions = getUserPermissions();
+  const canViewDemoRequests =
+    can(PERMISSIONS.DEMO_REQUESTS_VIEW, userPermissions) ||
+    can(PERMISSIONS.DEMO_REQUESTS_DELETE, userPermissions);
+  const canDeleteDemoRequests = can(PERMISSIONS.DEMO_REQUESTS_DELETE, userPermissions);
   const [demoRequests, setDemoRequests] = useState<DemoRequest[]>([]);
   const [selectedDemo, setSelectedDemo] = useState<DemoRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,8 +42,10 @@ export default function DemoRequestsPage() {
     try {
       // Don't block UI - show content immediately
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`${apiUrl}/demo`, {
         cache: 'no-cache',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!response.ok) {
         throw new Error("Failed to fetch demo requests");
@@ -57,10 +65,12 @@ export default function DemoRequestsPage() {
   const handleStatusChange = async (id: string, newStatus: DemoRequest["status"]) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const token = localStorage.getItem("authToken");
       await fetch(`${apiUrl}/demo/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -91,10 +101,12 @@ export default function DemoRequestsPage() {
     setIsDeleting(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`${apiUrl}/demo/${demoToDelete.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
 
@@ -232,26 +244,32 @@ export default function DemoRequestsPage() {
                 </div>
               </div>
               <div className="flex gap-2 pt-2 border-t border-gray-100">
-                <button
-                  onClick={() => handleViewDetails(demo)}
-                  className="flex-1 px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium"
-                >
-                  View Details
-                </button>
-                <AnimatedDeleteButton
-                  onClick={() => handleDeleteClick(demo)}
-                  size="sm"
-                  title="Delete"
-                />
-                <select
-                  value={demo.status}
-                  onChange={(e) => handleStatusChange(demo.id, e.target.value as DemoRequest["status"])}
-                  className="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Contacted">Contacted</option>
-                  <option value="Completed">Completed</option>
-                </select>
+                {canViewDemoRequests && (
+                  <button
+                    onClick={() => handleViewDetails(demo)}
+                    className="flex-1 px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium"
+                  >
+                    View Details
+                  </button>
+                )}
+                {canDeleteDemoRequests && (
+                  <AnimatedDeleteButton
+                    onClick={() => handleDeleteClick(demo)}
+                    size="sm"
+                    title="Delete"
+                  />
+                )}
+                {canViewDemoRequests && (
+                  <select
+                    value={demo.status}
+                    onChange={(e) => handleStatusChange(demo.id, e.target.value as DemoRequest["status"])}
+                    className="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                )}
               </div>
             </div>
           ))
@@ -326,30 +344,38 @@ export default function DemoRequestsPage() {
                       {new Date(demo.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={demo.status}
-                        onChange={(e) => handleStatusChange(demo.id, e.target.value as DemoRequest["status"])}
-                        className="text-sm border-2 border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
-                      >
-                        <option value="Pending" className={demo.status === "Pending" ? "bg-green-600 text-white font-semibold" : ""}>Pending</option>
-                        <option value="Contacted" className={demo.status === "Contacted" ? "bg-green-600 text-white font-semibold" : ""}>Contacted</option>
-                        <option value="Completed" className={demo.status === "Completed" ? "bg-green-600 text-white font-semibold" : ""}>Completed</option>
-                      </select>
+                      {canViewDemoRequests ? (
+                        <select
+                          value={demo.status}
+                          onChange={(e) => handleStatusChange(demo.id, e.target.value as DemoRequest["status"])}
+                          className="text-sm border-2 border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
+                        >
+                          <option value="Pending" className={demo.status === "Pending" ? "bg-green-600 text-white font-semibold" : ""}>Pending</option>
+                          <option value="Contacted" className={demo.status === "Contacted" ? "bg-green-600 text-white font-semibold" : ""}>Contacted</option>
+                          <option value="Completed" className={demo.status === "Completed" ? "bg-green-600 text-white font-semibold" : ""}>Completed</option>
+                        </select>
+                      ) : (
+                        <StatusBadge status={demo.status} />
+                      )}
                     </td>
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleViewDetails(demo)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <span className="hidden lg:inline">View Details</span>
-                        <span className="lg:hidden">View</span>
-                      </button>
-                        <AnimatedDeleteButton
-                          onClick={() => handleDeleteClick(demo)}
-                          size="sm"
-                          title="Delete"
-                        />
+                        {canViewDemoRequests && (
+                          <button
+                            onClick={() => handleViewDetails(demo)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <span className="hidden lg:inline">View Details</span>
+                            <span className="lg:hidden">View</span>
+                          </button>
+                        )}
+                        {canDeleteDemoRequests && (
+                          <AnimatedDeleteButton
+                            onClick={() => handleDeleteClick(demo)}
+                            size="sm"
+                            title="Delete"
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

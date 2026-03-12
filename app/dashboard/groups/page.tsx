@@ -74,14 +74,30 @@ export default function GroupsPage() {
   const [viewGroupLeadsLoading, setViewGroupLeadsLoading] = useState(false);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
+    const syncUserState = () => {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return;
       try {
         const u = JSON.parse(userStr);
-        setUserPermissions(u.permissions || []);
+        setUserPermissions(Array.isArray(u.permissions) ? u.permissions : []);
         setCurrentUserId(u.id || "");
       } catch (_) {}
-    }
+    };
+
+    syncUserState();
+
+    const handlePermissionsUpdate = () => syncUserState();
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "user") syncUserState();
+    };
+
+    window.addEventListener("userPermissionsUpdated", handlePermissionsUpdate);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("userPermissionsUpdated", handlePermissionsUpdate);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   const fetchGroups = async () => {
@@ -222,6 +238,7 @@ export default function GroupsPage() {
     can(PERMISSIONS.GROUPS_CREATE, userPermissions) ||
     can(PERMISSIONS.GROUPS_VIEW, userPermissions) ||
     can(PERMISSIONS.LEADS_VIEW, userPermissions);
+  const canView = can(PERMISSIONS.GROUPS_VIEW, userPermissions) || can(PERMISSIONS.LEADS_VIEW, userPermissions);
   const canEdit = can(PERMISSIONS.GROUPS_EDIT, userPermissions);
   const canDelete = can(PERMISSIONS.GROUPS_DELETE, userPermissions);
 
@@ -332,14 +349,18 @@ export default function GroupsPage() {
                       </div>
                     </td>
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/dashboard/leads?groupId=${group.id}`)}
-                        className="text-green-700 hover:text-green-900 hover:underline"
-                        title="View leads in this group"
-                      >
-                        {group.groupName}
-                      </button>
+                      {canView ? (
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/dashboard/leads?groupId=${group.id}`)}
+                          className="text-green-700 hover:text-green-900 hover:underline"
+                          title="View leads in this group"
+                        >
+                          {group.groupName}
+                        </button>
+                      ) : (
+                        <span>{group.groupName}</span>
+                      )}
                     </td>
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {group.totalLeads}
@@ -373,13 +394,15 @@ export default function GroupsPage() {
                     </td>
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleViewGroup(group)}
-                          className="p-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
-                          title="View"
-                        >
-                          <IoEye className="w-4 h-4" />
-                        </button>
+                        {canView && (
+                          <button
+                            onClick={() => handleViewGroup(group)}
+                            className="p-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+                            title="View"
+                          >
+                            <IoEye className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleCopy(group)}
                           className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -454,6 +477,7 @@ export default function GroupsPage() {
                         </svg>
                       </div>
                       <div className="min-w-0 flex-1">
+                      {canView ? (
                         <button
                           type="button"
                           onClick={() => router.push(`/dashboard/leads?groupId=${group.id}`)}
@@ -462,20 +486,25 @@ export default function GroupsPage() {
                         >
                           {group.groupName}
                         </button>
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 break-words line-clamp-2">{group.groupName}</p>
+                      )}
                         <p className="text-xs text-gray-500 mt-1">
                           {group.totalLeads} leads · {formatCreated(group.created)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleViewGroup(group)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors touch-manipulation"
-                        title="View"
-                        aria-label="View group"
-                      >
-                        <IoEye className="w-5 h-5" />
-                      </button>
+                      {canView && (
+                        <button
+                          onClick={() => handleViewGroup(group)}
+                          className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors touch-manipulation"
+                          title="View"
+                          aria-label="View group"
+                        >
+                          <IoEye className="w-5 h-5" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleCopy(group)}
                         className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
