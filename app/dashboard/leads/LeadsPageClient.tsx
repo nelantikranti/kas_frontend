@@ -347,19 +347,21 @@ export default function LeadsPage() {
   }, []);
 
   useEffect(() => {
-    if (isAssignModalOpen) {
-      const loadUsers = async () => {
-        try {
-          const fetchedUsers = await usersAPI.getAll();
-          setUsers(fetchedUsers);
-        } catch (error) {
-          console.error("Failed to load users:", error);
-          toast.error("Failed to load users");
-        }
-      };
-      loadUsers();
-    }
-  }, [isAssignModalOpen]);
+    if (!isAssignModalOpen && !isModalOpen) return;
+    if (users.length > 0) return;
+
+    const loadUsers = async () => {
+      try {
+        const fetchedUsers = await usersAPI.getAll();
+        setUsers(Array.isArray(fetchedUsers) ? fetchedUsers : []);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+        toast.error("Failed to load users");
+      }
+    };
+
+    loadUsers();
+  }, [isAssignModalOpen, isModalOpen, users.length]);
 
   const handleSelectLead = (leadId: string) => {
     setSelectedLeadIds(prev => {
@@ -1856,6 +1858,13 @@ NEXT ACTION:
 
   // Let the backend control which leads are visible for the current user.
   const filteredLeads = leadList;
+  const salesExecutiveSuggestions = Array.from(
+    new Set(
+      users
+        .filter((user) => user.role !== "Admin" && user.name?.trim())
+        .map((user) => user.name.trim())
+    )
+  );
 
   if (loading) {
     return (
@@ -2582,11 +2591,18 @@ NEXT ACTION:
                   </label>
                   <input
                     type="text"
+                    list="sales-executive-suggestions"
                     value={newLead.assignedTo}
                     onChange={(e) => setNewLead({ ...newLead, assignedTo: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter sales executive name"
+                    autoComplete="off"
                   />
+                  <datalist id="sales-executive-suggestions">
+                    {salesExecutiveSuggestions.map((userName) => (
+                      <option key={userName} value={userName} />
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

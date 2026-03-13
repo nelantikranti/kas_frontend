@@ -9,7 +9,10 @@ import { IoAdd, IoDocumentText, IoSearch, IoDownload, IoEye, IoTrash } from "rea
 import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 export default function QuotationsPage() {
-  const userPermissions = getUserPermissions();
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  useEffect(() => {
+    setUserPermissions(getUserPermissions());
+  }, []);
   const canViewQuotations = can(PERMISSIONS.QUOTATIONS_VIEW, userPermissions);
   const canDeleteQuotations =
     can(PERMISSIONS.QUOTATIONS_CREATE, userPermissions) ||
@@ -74,11 +77,13 @@ export default function QuotationsPage() {
   const loadQuotations = async () => {
     try {
       setLoading(true);
-      const quotations = await quotationsAPI.getAll();
-      setQuotationList(quotations);
+      const data = await quotationsAPI.getAll();
+      const list = Array.isArray(data) ? data : [];
+      setQuotationList(list);
     } catch (error) {
       console.error("Failed to load quotations:", error);
       toast.error("Failed to load quotations");
+      setQuotationList([]);
     } finally {
       setLoading(false);
     }
@@ -86,10 +91,13 @@ export default function QuotationsPage() {
 
   const loadLeads = async () => {
     try {
-      const leadsData = await leadsAPI.getAll();
-      setLeads(leadsData);
+      // Request more leads for the dropdown (API returns { leads, total, page, limit })
+      const leadsData = await leadsAPI.getAll({ limit: 200 });
+      const list = Array.isArray(leadsData?.leads) ? leadsData.leads : (Array.isArray(leadsData) ? leadsData : []);
+      setLeads(list);
     } catch (error) {
       console.error("Failed to load leads:", error);
+      setLeads([]);
     }
   };
 
@@ -259,7 +267,7 @@ export default function QuotationsPage() {
   };
 
   const handleLeadSelect = (leadId: string) => {
-    const selectedLead = leads.find(l => l.id === leadId);
+    const selectedLead = Array.isArray(leads) ? leads.find(l => l.id === leadId) : undefined;
     if (selectedLead) {
       setNewQuotation({
         ...newQuotation,
@@ -270,19 +278,27 @@ export default function QuotationsPage() {
     }
   };
 
-  // Filter quotations based on search query
+  // Filter quotations based on search query (null-safe for API data)
   const filteredQuotations = useMemo(() => {
+    if (!Array.isArray(quotationList)) return [];
     if (!searchQuery.trim()) return quotationList;
     const query = searchQuery.toLowerCase().trim();
     return quotationList.filter((quotation) => {
+      const id = (quotation?.id ?? "").toString().toLowerCase();
+      const leadId = (quotation?.leadId ?? "").toString().toLowerCase();
+      const leadName = (quotation?.leadName ?? "").toString().toLowerCase();
+      const elevatorType = (quotation?.elevatorType ?? "").toString().toLowerCase();
+      const status = (quotation?.status ?? "").toString().toLowerCase();
+      const totalAmount = (quotation?.totalAmount ?? "").toString();
+      const validUntil = (quotation?.validUntil ?? "").toString().toLowerCase();
       return (
-        quotation.id.toLowerCase().includes(query) ||
-        quotation.leadId.toLowerCase().includes(query) ||
-        quotation.leadName.toLowerCase().includes(query) ||
-        quotation.elevatorType.toLowerCase().includes(query) ||
-        quotation.status.toLowerCase().includes(query) ||
-        quotation.totalAmount.toString().includes(query) ||
-        quotation.validUntil.toLowerCase().includes(query)
+        id.includes(query) ||
+        leadId.includes(query) ||
+        leadName.includes(query) ||
+        elevatorType.includes(query) ||
+        status.includes(query) ||
+        totalAmount.includes(query) ||
+        validUntil.includes(query)
       );
     });
   }, [quotationList, searchQuery]);
@@ -348,51 +364,51 @@ export default function QuotationsPage() {
         </div>
       ) : (
         <div className="grid gap-6">
-          {filteredQuotations.map((quotation) => (
+          {filteredQuotations.map((quotation, index) => (
           <div
-            key={quotation.id}
+            key={quotation?.id ?? `quotation-${index}`}
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow w-full overflow-hidden"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{quotation.id}</h3>
-                  <StatusBadge status={quotation.status} />
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{quotation?.id ?? "—"}</h3>
+                  <StatusBadge status={quotation?.status ?? "Pending"} />
                 </div>
-                <p className="text-sm sm:text-base text-gray-600 truncate">{quotation.leadName}</p>
+                <p className="text-sm sm:text-base text-gray-600 truncate">{quotation?.leadName ?? "—"}</p>
               </div>
               <div className="text-left sm:text-right w-full sm:w-auto">
                 <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  ₹{(quotation.totalAmount / 100000).toFixed(2)}L
+                  ₹{((Number(quotation?.totalAmount) || 0) / 100000).toFixed(2)}L
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500">Valid until {quotation.validUntil}</p>
+                <p className="text-xs sm:text-sm text-gray-500">Valid until {quotation?.validUntil ?? "—"}</p>
               </div>
             </div>
 
             <div className="grid md:grid-cols-4 gap-4 mb-4">
               <div>
                 <p className="text-sm text-gray-500">Elevator Type</p>
-                <p className="font-medium text-gray-900">{quotation.elevatorType}</p>
+                <p className="font-medium text-gray-900">{quotation?.elevatorType ?? "—"}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Floors</p>
-                <p className="font-medium text-gray-900">{quotation.floors}</p>
+                <p className="font-medium text-gray-900">{quotation?.floors ?? "—"}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Capacity</p>
-                <p className="font-medium text-gray-900">{quotation.capacity} kg</p>
+                <p className="font-medium text-gray-900">{quotation?.capacity ?? "—"} kg</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Speed</p>
-                <p className="font-medium text-gray-900">{quotation.speed} m/s</p>
+                <p className="font-medium text-gray-900">{quotation?.speed ?? "—"} m/s</p>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-gray-200">
               <div className="text-xs sm:text-sm text-gray-500">
-                <span className="block sm:inline">Created: {quotation.createdAt}</span>
+                <span className="block sm:inline">Created: {quotation?.createdAt ?? "—"}</span>
                 <span className="hidden sm:inline"> | </span>
-                <span className="block sm:inline">Version: {quotation.version}</span>
+                <span className="block sm:inline">Version: {quotation?.version ?? "—"}</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 {canViewQuotations && (
@@ -468,7 +484,7 @@ export default function QuotationsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select a lead...</option>
-                  {leads.map((lead) => (
+                  {(Array.isArray(leads) ? leads : []).map((lead) => (
                     <option key={lead.id} value={lead.id}>
                       {lead.name} {lead.company ? `- ${lead.company}` : ''}
                     </option>
@@ -827,27 +843,27 @@ export default function QuotationsPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Base Price</span>
-                  <span className="font-medium">₹{previewQuotation.basePrice.toLocaleString()}</span>
+                  <span className="font-medium">₹{(previewQuotation.basePrice ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Installation Cost</span>
-                  <span className="font-medium">₹{previewQuotation.installationCost.toLocaleString()}</span>
+                  <span className="font-medium">₹{(previewQuotation.installationCost ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-medium">₹{previewQuotation.tax.toLocaleString()}</span>
+                  <span className="font-medium">₹{(previewQuotation.tax ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <span className="text-lg font-semibold text-gray-900">Total Amount</span>
                   <span className="text-lg font-bold text-blue-600">
-                    ₹{previewQuotation.totalAmount.toLocaleString()}
+                    ₹{(previewQuotation.totalAmount ?? 0).toLocaleString()}
                   </span>
                 </div>
               </div>
             </div>
             <div className="pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-500">
-                Valid until: {previewQuotation.validUntil}
+                Valid until: {previewQuotation?.validUntil ?? "—"}
               </p>
             </div>
           </div>
