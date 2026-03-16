@@ -566,7 +566,17 @@ export const projectsAPI = {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents/${docId}/download`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
-    if (!response.ok) throw new Error("Download failed");
+    if (!response.ok) {
+      const errText = await response.text();
+      let message = "Download failed";
+      try {
+        const errData = JSON.parse(errText);
+        if (errData?.error) message = errData.error;
+      } catch {
+        if (errText) message = errText;
+      }
+      throw new Error(message);
+    }
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -582,7 +592,17 @@ export const projectsAPI = {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/documents/${docId}/view`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
-    if (!response.ok) throw new Error("Failed to load document");
+    if (!response.ok) {
+      const errText = await response.text();
+      let message = "Failed to load document";
+      try {
+        const errData = JSON.parse(errText);
+        if (errData?.error) message = errData.error;
+      } catch {
+        if (errText) message = errText;
+      }
+      throw new Error(message);
+    }
     const mimeType = response.headers.get("Content-Type") || "application/octet-stream";
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);

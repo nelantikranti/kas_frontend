@@ -1092,7 +1092,12 @@ export default function ProjectsPage() {
                 viewingDoc={viewingDoc}
                 blobUrl={viewingDocBlobUrl}
                 loading={viewingDocLoading}
-                onBlobReady={(url) => setViewingDocBlobUrl(url)}
+                onBlobReady={(url) => {
+                  setViewingDocBlobUrl((prev) => {
+                    if (prev) URL.revokeObjectURL(prev);
+                    return url;
+                  });
+                }}
                 onLoadingChange={(v) => setViewingDocLoading(v)}
               />
             </div>
