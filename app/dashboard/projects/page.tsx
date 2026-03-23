@@ -259,27 +259,43 @@ export default function ProjectsPage() {
           continue;
         }
 
-        const uploaded = await projectsAPI.uploadDocument(selectedProject.id, stage, file) as any;
+        try {
+          const uploaded = await projectsAPI.uploadDocument(selectedProject.id, stage, file) as any;
 
-        const newDoc = {
-          id: uploaded.id,
-          stage: uploaded.stage || stage,
-          fileName: uploaded.fileName || file.name,
-          fileType: uploaded.fileType || file.type || "application/octet-stream",
-          fileSize: uploaded.fileSize || file.size,
-          fileUrl: uploaded.fileUrl,
-          uploadedDate: uploaded.uploadedDate || new Date().toISOString().split("T")[0],
-        };
+          const newDoc = {
+            id: uploaded.id,
+            stage: uploaded.stage || stage,
+            fileName: uploaded.fileName || file.name,
+            fileType: uploaded.fileType || file.type || "application/octet-stream",
+            fileSize: uploaded.fileSize || file.size,
+            fileUrl: uploaded.fileUrl,
+            uploadedDate: uploaded.uploadedDate || new Date().toISOString().split("T")[0],
+          };
 
-        setSelectedProject((prev) => prev ? { ...prev, documents: [...(prev.documents || []), newDoc] } : prev);
-        setProjectList((prev) =>
-          prev.map((p) => p.id !== selectedProject.id ? p : { ...p, documents: [...(p.documents || []), newDoc] })
-        );
-        toast.success(`${file.name} uploaded successfully`);
+          setSelectedProject((prev) =>
+            prev ? { ...prev, documents: [...(prev.documents || []), newDoc] } : prev
+          );
+          setProjectList((prev) =>
+            prev.map((p) =>
+              p.id !== selectedProject.id
+                ? p
+                : { ...p, documents: [...(p.documents || []), newDoc] }
+            )
+          );
+          toast.success(`${file.name} uploaded successfully`);
+        } catch (fileError: any) {
+          // projectsAPI throws `new Error(errorMessage)` so `.message` is usually what we want to display.
+          const message =
+            fileError?.message ||
+            (typeof fileError === "string" ? fileError : null) ||
+            "Failed to upload this file";
+          console.error(`Upload failed for ${file.name}:`, fileError);
+          toast.error(`${file.name}: ${message}`);
+        }
       }
     } catch (error) {
       console.error("Upload failed:", error);
-      toast.error("Failed to upload document. Please try again.");
+      toast.error((error as any)?.message || "Failed to upload document. Please try again.");
     } finally {
       setUploadingStage(null);
     }
