@@ -143,7 +143,10 @@ export default function LeadsPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [syncingFacebook, setSyncingFacebook] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const fbSyncParamsRef = useRef<{ assignedTo: string; groupId: string | null }>({ assignedTo: "Sales Executive 1", groupId: null });
+  const fbSyncParamsRef = useRef<{ assignedTo: string; assignedToUserId?: string; groupId: string | null }>({
+    assignedTo: "Sales Executive 1",
+    groupId: null,
+  });
   const isInitialMount = useRef(true);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -152,7 +155,12 @@ export default function LeadsPage() {
   const [assigning, setAssigning] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; permissions: string[] } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+    role: string;
+    permissions: string[];
+  } | null>(null);
   const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
@@ -296,10 +304,11 @@ export default function LeadsPage() {
         if (userStr) {
           try {
             const userData = JSON.parse(userStr);
-            setCurrentUser({ 
-              name: userData.name, 
+            setCurrentUser({
+              id: userData.id || "",
+              name: userData.name,
               role: userData.role,
-              permissions: userData.permissions || []
+              permissions: userData.permissions || [],
             });
           } catch (e) {
             console.error("Failed to parse user data");
@@ -396,7 +405,7 @@ export default function LeadsPage() {
       const updates = Array.from(selectedLeadIds).map(async (leadId) => {
         const lead = leadList.find(l => (l.id === leadId) || ((l as any)._id === leadId));
         if (lead) {
-          await leadsAPI.update(leadId, { assignedTo: userName });
+          await leadsAPI.update(leadId, { assignedTo: userName, assignedToUserId: userId });
         }
       });
 
@@ -1574,6 +1583,16 @@ NEXT ACTION:
         notes: newLead.remarks,
       };
 
+      const nameMatch = users.find(
+        (u) =>
+          u.name &&
+          newLead.assignedTo?.trim() &&
+          u.name.trim().toLowerCase() === newLead.assignedTo.trim().toLowerCase()
+      );
+      if (nameMatch?.id) {
+        leadData.assignedToUserId = nameMatch.id;
+      }
+
       if (newLead.groupId) {
         leadData.groupId = newLead.groupId;
       }
@@ -1723,7 +1742,7 @@ NEXT ACTION:
                 assignedTo = currentUser?.name || 'Unassigned';
               }
 
-              const leadData = {
+              const leadData: Record<string, unknown> = {
                 name: row.name,
                 company: row.company,
                 email: row.email,
@@ -1734,6 +1753,9 @@ NEXT ACTION:
                 assignedTo,
                 notes: '',
               };
+              if (currentUser?.id && assignedTo === currentUser.name) {
+                leadData.assignedToUserId = currentUser.id;
+              }
 
               await leadsAPI.create(leadData);
               successCount++;
@@ -1798,15 +1820,20 @@ NEXT ACTION:
 
   fbSyncParamsRef.current = {
     assignedTo: isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1"),
+    assignedToUserId: !isAdmin() && currentUser?.id ? currentUser.id : undefined,
     groupId: selectedGroupId || null,
   };
 
   const syncFacebookSilent = async () => {
     if (!facebookConfigured) return;
     console.log("[Leads] Fetching leads from Facebook...");
-    const { assignedTo, groupId } = fbSyncParamsRef.current;
+    const { assignedTo, assignedToUserId, groupId } = fbSyncParamsRef.current;
     try {
-      const res = await leadsAPI.syncFacebook({ assignedTo, groupId: groupId ?? undefined });
+      const res = await leadsAPI.syncFacebook({
+        assignedTo,
+        assignedToUserId,
+        groupId: groupId ?? undefined,
+      });
       if (res.imported > 0) {
         console.log(`[Leads] Fetched ${res.imported} lead(s) from Facebook. Leads are fetching from Facebook.`);
         await loadLeads({ page: 1 });
@@ -1828,6 +1855,7 @@ NEXT ACTION:
     try {
       const res = await leadsAPI.syncFacebook({
         assignedTo: isAdmin() ? "Sales Executive 1" : (currentUser?.name || "Sales Executive 1"),
+        assignedToUserId: !isAdmin() && currentUser?.id ? currentUser.id : undefined,
         groupId: selectedGroupId || null,
       });
       console.log(`[Leads] Leads are fetching from Facebook. Synced ${res.imported} lead(s).`);

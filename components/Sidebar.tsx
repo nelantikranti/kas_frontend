@@ -22,14 +22,17 @@ import {
   IoWallet,
   IoList,
 } from "react-icons/io5";
-import { PERMISSIONS, can } from "@/lib/permissions";
+import { PERMISSIONS, can, getEffectivePermissions } from "@/lib/permissions";
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
   adminOnly?: boolean;
+  /** User needs this permission (unless requiredAnyOf is set) */
   requiredPermission?: string;
+  /** If set, user needs at least one of these permissions */
+  requiredAnyOf?: string[];
 }
 
 interface SidebarProps {
@@ -60,7 +63,12 @@ const allNavItems: NavItem[] = [
   { name: "Demo Requests", href: "/dashboard/demo", icon: <IoVideocam className="w-5 h-5" />, requiredPermission: PERMISSIONS.DEMO_REQUESTS_VIEW },
   { name: "Blogs & Reviews", href: "/dashboard/blogs", icon: <IoNewspaper className="w-5 h-5" />, requiredPermission: PERMISSIONS.BLOGS_VIEW },
   { name: "Testimonials", href: "/dashboard/testimonials", icon: <IoChatbubbles className="w-5 h-5" />, requiredPermission: PERMISSIONS.TESTIMONIALS_VIEW },
-  { name: "Users", href: "/dashboard/users", icon: <IoPerson className="w-5 h-5" />, requiredPermission: PERMISSIONS.USERS_MANAGE },
+  {
+    name: "Users",
+    href: "/dashboard/users",
+    icon: <IoPerson className="w-5 h-5" />,
+    requiredAnyOf: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE],
+  },
   { name: "Settings", href: "/dashboard/settings", icon: <IoSettings className="w-5 h-5" />, requiredPermission: PERMISSIONS.SETTINGS_MANAGE },
   { name: "Activity", href: "/dashboard/activity", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.ACTIVITY_VIEW },
 ];
@@ -73,6 +81,9 @@ const getNavItems = (userRole: string | null, userPermissions: string[] = []): N
     return allNavItems;
   }
   return allNavItems.filter(item => {
+    if (item.requiredAnyOf?.length) {
+      return item.requiredAnyOf.some((p) => can(p, userPermissions));
+    }
     if (!item.requiredPermission) return true;
     // Groups: show if user has GROUPS_VIEW or LEADS_VIEW (groups are lead groups)
     if (item.requiredPermission === PERMISSIONS.GROUPS_VIEW) {
@@ -96,7 +107,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           try {
             const userData = JSON.parse(userStr);
             setUser(userData);
-            setUserPermissions(userData.permissions || []);
+            setUserPermissions(getEffectivePermissions(userData));
             
             // Refresh user data from backend to get latest role
             if (userData.id) {
@@ -114,7 +125,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     permissions: updatedUser.permissions || userData.permissions || [],
                   };
                   setUser(updatedUserData);
-                  setUserPermissions(updatedUserData.permissions || []);
+                  setUserPermissions(getEffectivePermissions(updatedUserData));
                   localStorage.setItem("user", JSON.stringify(updatedUserData));
                 }
               } catch (error) {

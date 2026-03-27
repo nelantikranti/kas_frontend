@@ -396,6 +396,7 @@ export const leadsAPI = {
     accessToken: string;
     pageId: string;
     assignedTo?: string;
+    assignedToUserId?: string;
     groupId?: string | null;
   }) =>
     fetchAPI("/leads/import/facebook", { method: "POST", body: JSON.stringify(data) }) as Promise<{
@@ -405,11 +406,17 @@ export const leadsAPI = {
       message: string;
     }>,
   /** Sync leads from Facebook using credentials stored in backend Settings. Uses GET with query params. */
-  syncFacebook: (data: { assignedTo: string; groupId?: string | null }) =>
+  syncFacebook: (data: {
+    assignedTo: string;
+    assignedToUserId?: string;
+    groupId?: string | null;
+  }) =>
     fetchAPI(
-      `/leads/sync/facebook?assignedTo=${encodeURIComponent(
-        data.assignedTo
-      )}${data.groupId ? `&groupId=${encodeURIComponent(data.groupId)}` : ""}`
+      `/leads/sync/facebook?assignedTo=${encodeURIComponent(data.assignedTo)}${
+        data.assignedToUserId
+          ? `&assignedToUserId=${encodeURIComponent(data.assignedToUserId)}`
+          : ""
+      }${data.groupId ? `&groupId=${encodeURIComponent(data.groupId)}` : ""}`
     ) as Promise<{
       imported: number;
       total?: number;

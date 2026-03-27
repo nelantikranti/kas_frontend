@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { ToastContainer, toast as toastManager, Toast } from "@/components/Toast";
+import { getEffectivePermissions } from "@/lib/permissions";
 
 export default function DashboardLayout({
   children,
@@ -91,7 +92,7 @@ export default function DashboardLayout({
                 localStorage.setItem("user", JSON.stringify(updatedUserData));
                 // Trigger sidebar update
                 window.dispatchEvent(new CustomEvent('userPermissionsUpdated', { 
-                  detail: { permissions: updatedUser.permissions || [] } 
+                  detail: { permissions: getEffectivePermissions(updatedUserData) } 
                 }));
               }
             } catch (e) {

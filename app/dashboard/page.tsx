@@ -104,7 +104,12 @@ export default function DashboardPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const leadsData = await leadsAPI.getAll();
+      const leadsResponse = await leadsAPI.getAll();
+      const leadsData = Array.isArray(leadsResponse)
+        ? leadsResponse
+        : Array.isArray((leadsResponse as any)?.leads)
+          ? (leadsResponse as any).leads
+          : [];
 
       // Calculate lead stage metrics from live data
       const totalLeads = leadsData.length;

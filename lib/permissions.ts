@@ -50,6 +50,96 @@ export const PERMISSIONS = {
 // All permission values (Admin gets this list)
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS) as string[];
 
+/** Mirrors backend defaults — used when stored permissions are empty */
+export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
+  Admin: [...ALL_PERMISSIONS],
+  "Sales Executive": [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.LEADS_VIEW,
+    PERMISSIONS.LEADS_CREATE,
+    PERMISSIONS.LEADS_EDIT,
+    PERMISSIONS.QUOTATIONS_VIEW,
+    PERMISSIONS.QUOTATIONS_CREATE,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.AMC_VIEW,
+    PERMISSIONS.GROUPS_VIEW,
+    PERMISSIONS.GROUPS_CREATE,
+    PERMISSIONS.GROUPS_EDIT,
+    PERMISSIONS.GROUPS_DELETE,
+  ],
+  "Service Engineer": [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.DOCUMENT_UPLOAD,
+    PERMISSIONS.AMC_VIEW,
+    PERMISSIONS.AMC_UPDATE,
+  ],
+  "Project Manager": [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.PROJECTS_CREATE,
+    PERMISSIONS.PROJECTS_EDIT,
+    PERMISSIONS.PROJECTS_DELETE,
+    PERMISSIONS.PROJECTS_ASSIGN,
+    PERMISSIONS.DOCUMENT_UPLOAD,
+    PERMISSIONS.DOCUMENT_DELETE,
+    PERMISSIONS.EXPENSE_VIEW,
+    PERMISSIONS.EXPENSE_EDIT,
+    PERMISSIONS.EXPENSE_ADD,
+    PERMISSIONS.EXPENSE_DELETE,
+    PERMISSIONS.QUOTATIONS_VIEW,
+    PERMISSIONS.QUOTATIONS_APPROVE,
+  ],
+  Technician: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.DOCUMENT_UPLOAD,
+    PERMISSIONS.AMC_VIEW,
+    PERMISSIONS.AMC_UPDATE,
+  ],
+  Manager: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.LEADS_VIEW,
+    PERMISSIONS.LEADS_VIEW_ALL,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.QUOTATIONS_VIEW,
+    PERMISSIONS.REPORTS_VIEW,
+    PERMISSIONS.USERS_VIEW,
+    PERMISSIONS.GROUPS_VIEW,
+    PERMISSIONS.PIPELINES_VIEW,
+  ],
+  Accounts: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.QUOTATIONS_VIEW,
+    PERMISSIONS.EXPENSE_VIEW,
+    PERMISSIONS.EXPENSE_EDIT,
+    PERMISSIONS.EXPENSE_ADD,
+    PERMISSIONS.EXPENSE_DELETE,
+    PERMISSIONS.REPORTS_VIEW,
+    PERMISSIONS.AMC_VIEW,
+  ],
+  Accountant: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.PROJECTS_VIEW,
+    PERMISSIONS.QUOTATIONS_VIEW,
+    PERMISSIONS.EXPENSE_VIEW,
+    PERMISSIONS.EXPENSE_EDIT,
+    PERMISSIONS.EXPENSE_ADD,
+    PERMISSIONS.EXPENSE_DELETE,
+    PERMISSIONS.REPORTS_VIEW,
+    PERMISSIONS.AMC_VIEW,
+  ],
+};
+
+export function getEffectivePermissions(user: { role: string; permissions?: string[] }): string[] {
+  if (user.role === "Admin") return [...ALL_PERMISSIONS];
+  const stored = user.permissions ?? [];
+  if (stored.length > 0) return stored;
+  const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role];
+  return fromRole ? [...fromRole] : [];
+}
+
 // Check if user has permission (Admin always has access)
 export const can = (permission: string, userPermissions: string[] = []): boolean => {
   if (isAdmin()) return true;
@@ -59,19 +149,18 @@ export const can = (permission: string, userPermissions: string[] = []): boolean
 
 // Get user permissions from localStorage (Admin always gets all permissions)
 export const getUserPermissions = (): string[] => {
-  if (typeof window === 'undefined') return [];
-  
+  if (typeof window === "undefined") return [];
+
   try {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      if (user?.role === "Admin") return ALL_PERMISSIONS;
-      return user.permissions || [];
+      return getEffectivePermissions(user);
     }
   } catch (e) {
     console.error("Failed to parse user permissions");
   }
-  
+
   return [];
 };
 
