@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { leadsAPI, projectsAPI, healthAPI, usersAPI, groupsAPI, settingsAPI, type Lead } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
@@ -295,6 +295,7 @@ export default function LeadsPage() {
     notes: "",
     groupId: "",
   });
+  const [isCreatingLead, setIsCreatingLead] = useState(false);
 
   useEffect(() => {
     // Load current user from localStorage
@@ -1551,6 +1552,7 @@ NEXT ACTION:
   };
 
   const handleAddLead = async () => {
+    if (isCreatingLead) return;
     // Validation
     if (!newLead.name || !newLead.phone || !newLead.email || !newLead.projectLocation || !newLead.source) {
       toast.error("Please fill in all required basic lead details.");
@@ -1571,6 +1573,7 @@ NEXT ACTION:
     }
 
     try {
+      setIsCreatingLead(true);
       const leadData: any = {
         name: newLead.name,
         company: newLead.projectLocation, // Using project location as company for now
@@ -1631,6 +1634,8 @@ NEXT ACTION:
       } else {
         toast.error(errorMessage || "Failed to create lead. Please try again.");
       }
+    } finally {
+      setIsCreatingLead(false);
     }
   };
 
@@ -1671,6 +1676,9 @@ NEXT ACTION:
           const parsedRows: ParsedRow[] = [];
           let parseErrorCount = 0;
           const parseErrors: string[] = [];
+          const seenPhonesInFile = new Set<string>();
+          const seenEmailsInFile = new Set<string>();
+          const duplicateRowsInFile = new Map<number, string>();
 
           for (let i = 0; i < (jsonData as any[]).length; i++) {
             const row = (jsonData as any[])[i];
@@ -1678,7 +1686,7 @@ NEXT ACTION:
 
             const name = (row['Name'] || row['name'] || row['Name / Company'] || row['Lead Name'] || row['Customer Name'] || '').toString().trim();
             const company = (row['Company'] || row['company'] || row['Name / Company'] || row['Organization'] || '').toString().trim();
-            const email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim();
+            const email = (row['Email'] || row['email'] || row['Email ID'] || row['E-mail'] || row['e-mail'] || row['Contact Email'] || '').toString().trim().toLowerCase();
             let phone = (row['Phone'] || row['phone'] || row['Phone Number'] || row['Mobile'] || row['mobile'] || row['Contact Number'] || row['Contact'] || '').toString().trim().replace(/\D/g, '');
             if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
             if (phone.length === 13 && phone.startsWith('091')) phone = phone.slice(3);
@@ -1697,6 +1705,17 @@ NEXT ACTION:
               continue;
             }
 
+            if (seenPhonesInFile.has(phone)) {
+              duplicateRowsInFile.set(rowIndex, `phone ${phone} duplicated in same file`);
+              continue;
+            }
+            if (email && seenEmailsInFile.has(email)) {
+              duplicateRowsInFile.set(rowIndex, `email ${email} duplicated in same file`);
+              continue;
+            }
+
+            seenPhonesInFile.add(phone);
+            if (email) seenEmailsInFile.add(email);
             parsedRows.push({ rowIndex, name, company, email, phone, source, stage, value });
           }
 
@@ -1763,6 +1782,12 @@ NEXT ACTION:
               errorCount++;
               errors.push(`Row ${row.rowIndex}: ${error.message || 'Failed to import'}`);
             }
+          }
+
+          // Count duplicates detected inside the uploaded sheet itself.
+          for (const [rowIndex, reason] of duplicateRowsInFile.entries()) {
+            duplicateCount++;
+            duplicateMessages.push(`Row ${rowIndex}: Lead is duplicate — ${reason}`);
           }
 
           if (successCount > 0) {
@@ -1893,6 +1918,13 @@ NEXT ACTION:
         .map((user) => user.name.trim())
     )
   );
+  const [isSalesExecDropdownOpen, setIsSalesExecDropdownOpen] = useState(false);
+  const filteredSalesExecSuggestions = useMemo(() => {
+    const q = (newLead.assignedTo || "").trim().toLowerCase();
+    const list = salesExecutiveSuggestions;
+    const filtered = q ? list.filter((n) => n.toLowerCase().includes(q)) : list;
+    return filtered.slice(0, 25);
+  }, [salesExecutiveSuggestions, newLead.assignedTo]);
 
   if (loading) {
     return (
@@ -2617,20 +2649,42 @@ NEXT ACTION:
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Sales Executive Name *
                   </label>
-                  <input
-                    type="text"
-                    list="sales-executive-suggestions"
-                    value={newLead.assignedTo}
-                    onChange={(e) => setNewLead({ ...newLead, assignedTo: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter sales executive name"
-                    autoComplete="off"
-                  />
-                  <datalist id="sales-executive-suggestions">
-                    {salesExecutiveSuggestions.map((userName) => (
-                      <option key={userName} value={userName} />
-                    ))}
-                  </datalist>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={newLead.assignedTo}
+                      onChange={(e) => {
+                        setNewLead({ ...newLead, assignedTo: e.target.value });
+                        setIsSalesExecDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsSalesExecDropdownOpen(true)}
+                      onBlur={() => {
+                        // Delay close so click selection can register.
+                        window.setTimeout(() => setIsSalesExecDropdownOpen(false), 150);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter sales executive name"
+                      autoComplete="off"
+                    />
+
+                    {isSalesExecDropdownOpen && filteredSalesExecSuggestions.length > 0 && (
+                      <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
+                        {filteredSalesExecSuggestions.map((userName) => (
+                          <li
+                            key={userName}
+                            className="px-3 py-2 text-sm text-gray-800 hover:bg-gray-50 cursor-pointer"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setNewLead({ ...newLead, assignedTo: userName });
+                              setIsSalesExecDropdownOpen(false);
+                            }}
+                          >
+                            {userName}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2651,9 +2705,12 @@ NEXT ACTION:
             <div className="flex gap-3 pt-4 border-t">
               <button
                 onClick={handleAddLead}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                disabled={isCreatingLead}
+                className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
+                  isCreatingLead ? "bg-blue-400 text-white cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
               >
-                Add Lead
+                {isCreatingLead ? "Adding..." : "Add Lead"}
               </button>
               <button
                 onClick={() => setIsModalOpen(false)}
