@@ -297,6 +297,8 @@ export default function LandingPage() {
                   src="/premium_lift.jpg"
                   alt="Luxury elevator lobby"
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute bottom-4 left-4 text-white text-sm font-medium">
                   — Kas elevators
@@ -307,6 +309,8 @@ export default function LandingPage() {
                   src="/premium_lift2.jpg"
                   alt="Elevator interior"
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </motion.div>
@@ -409,6 +413,8 @@ export default function LandingPage() {
                     src={service.image}
                     alt={service.title}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     whileHover={{ 
                       scale: 1.1,
                       transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
@@ -503,6 +509,8 @@ export default function LandingPage() {
                   src="./display.jpg"
                   alt="KAS Elevator"
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                   whileHover={{
                     scale: 1.06,
                     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -93,16 +93,18 @@ const getNavItems = (userRole: string | null, userPermissions: string[] = []): N
   });
 };
 
-export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
+function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const lastUserStrRef = useRef<string | null>(null);
 
   // Get logged-in user from localStorage and listen for changes
   useEffect(() => {
     const loadUserData = async () => {
       if (typeof window !== 'undefined') {
         const userStr = localStorage.getItem("user");
+        lastUserStrRef.current = userStr;
         if (userStr) {
           try {
             const userData = JSON.parse(userStr);
@@ -173,17 +175,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     // Poll for localStorage changes (for same-tab updates)
     const interval = setInterval(() => {
       const currentUserStr = localStorage.getItem("user");
-      if (currentUserStr) {
-        try {
-          const currentUser = JSON.parse(currentUserStr);
-          if (user?.id === currentUser.id && 
-              JSON.stringify(user?.permissions || []) !== JSON.stringify(currentUser.permissions || [])) {
-            loadUserData();
-          }
-        } catch (e) {
-          // Ignore parse errors
-        }
-      }
+      // Fast path: avoid JSON parsing and comparisons when unchanged.
+      if (currentUserStr === lastUserStrRef.current) return;
+      lastUserStrRef.current = currentUserStr;
+      loadUserData();
     }, 1000); // Check every second
 
     return () => {
@@ -193,6 +188,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     };
   }, [user?.id]);
 
+  const navItems = useMemo(
+    () => getNavItems(user?.role || null, userPermissions),
+    [user?.role, userPermissions]
+  );
 
   // Get user initials
   const getInitials = (name: string) => {
@@ -248,7 +247,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </div>
         </div>
         <nav className={`flex-1 ${isOpen ? "p-3 sm:p-4" : "lg:p-2"} space-y-1 overflow-y-auto overflow-x-hidden`}>
-          {getNavItems(user?.role || null, userPermissions).map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -294,5 +293,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     </>
   );
 }
+
+export default memo(SidebarImpl);
 
 

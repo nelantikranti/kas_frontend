@@ -92,6 +92,8 @@ export default function BlogsPage() {
                     src={blog.image}
                     alt={blog.title}
                     className="w-full h-auto object-contain"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =
                         "https://via.placeholder.com/800x300?text=Blog+Image";

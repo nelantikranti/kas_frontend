@@ -129,7 +129,8 @@ export default function ContactPage() {
       {/* Contact Section */}
       <section className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-start">
             {/* Contact Form */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -137,15 +138,17 @@ export default function ContactPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-green-100 shadow-lg shadow-green-100/40 p-6 sm:p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+                <form onSubmit={handleSubmit} className="space-y-6">
                 {submitStatus === "error" && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
                     <p className="font-semibold mb-1">Failed to send message</p>
                     <p className="text-sm">{errorMessage || "Please check if the backend server is running and MongoDB is connected. Try again later."}</p>
                   </div>
                 )}
-                <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Name *
                   </label>
@@ -154,12 +157,12 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={(e) => handleTextChange('name', e.target.value, setFormData, formData)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full h-12 px-4 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-green-500/60 focus:border-green-300 transition-shadow"
                     placeholder="Enter your name (text only)"
                     pattern="[A-Za-z\s\.\-\'']+"
                   />
-                </div>
-                <div>
+                  </div>
+                  <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email *
                   </label>
@@ -168,11 +171,11 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full h-12 px-4 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-green-500/60 focus:border-green-300 transition-shadow"
                     placeholder="Enter your email"
                   />
-                </div>
-                <div>
+                  </div>
+                  <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone *
                   </label>
@@ -183,25 +186,31 @@ export default function ContactPage() {
                     onChange={(e) => handlePhoneChange(e.target.value, setFormData, formData)}
                     maxLength={10}
                     pattern="[0-9]{10}"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full h-12 px-4 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-green-500/60 focus:border-green-300 transition-shadow"
                     placeholder="Enter 10 digit phone number"
                   />
                   {formData.phone && formData.phone.length !== 10 && (
                     <p className="text-xs text-red-600 mt-1">Phone number must be exactly 10 digits</p>
                   )}
-                </div>
-                <div>
+                  </div>
+                  <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Subject *
+                    Services *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="Enter subject"
-                  />
+                    className="w-full h-12 px-4 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-green-500/60 focus:border-green-300 transition-shadow"
+                  >
+                    <option value="" disabled>
+                      Select a service
+                    </option>
+                    <option value="Lift EMC service">Lift EMC service</option>
+                    <option value="New installation service">New installation service</option>
+                    <option value="Maintenance service">Maintenance service</option>
+                  </select>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -212,18 +221,19 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-green-500/60 focus:border-green-300 transition-shadow resize-none"
                     placeholder="Enter your message"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 px-6 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-green-200/60"
                 >
                   {isSubmitting ? "Sending..." : "Send Message"}
                 </button>
-              </form>
+                </form>
+              </div>
             </motion.div>
 
             {/* Contact Information */}
@@ -233,13 +243,14 @@ export default function ContactPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Get in Touch</h2>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                We're here to answer your questions and help you find the perfect elevator solution
-                for your needs. Reach out to us through any of the following channels.
-              </p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-green-100 shadow-lg shadow-green-100/40 p-6 sm:p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  We're here to answer your questions and help you find the perfect elevator solution
+                  for your needs. Reach out to us through any of the following channels.
+                </p>
 
-              <div className="space-y-6">
+                <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <IoCall className="w-6 h-6 text-green-600" />
@@ -288,8 +299,10 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
+              </div>
             </motion.div>
           </div>
+        </div>
         </div>
       </section>
 

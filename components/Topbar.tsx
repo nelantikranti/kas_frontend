@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IoNotifications, IoLogOut, IoPerson, IoSettings, IoMenu, IoTrash, IoClose } from "react-icons/io5";
 import { notificationsAPI, Notification } from "@/lib/api";
@@ -36,7 +36,7 @@ const formatTimeAgo = (dateString: string): string => {
   }
 };
 
-export default function Topbar({ onSidebarToggle }: TopbarProps) {
+function TopbarImpl({ onSidebarToggle }: TopbarProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -44,11 +44,13 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const lastUserStrRef = useRef<string | null>(null);
 
   // Load user data and refresh from backend
   useEffect(() => {
     const loadUserData = async () => {
       const userStr = localStorage.getItem("user");
+      lastUserStrRef.current = userStr;
       if (userStr) {
         try {
           const userData = JSON.parse(userStr);
@@ -100,18 +102,20 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
     // Poll for localStorage changes (for same-tab updates)
     const interval = setInterval(() => {
       const userStr = localStorage.getItem("user");
-      if (userStr) {
-        try {
-          const userData = JSON.parse(userStr);
-          setUser(prevUser => {
-            if (prevUser?.id !== userData.id || prevUser?.role !== userData.role) {
-              return userData;
-            }
-            return prevUser;
-          });
-        } catch (e) {
-          console.error("Failed to parse user data");
-        }
+      // Fast path: avoid JSON parsing when unchanged.
+      if (userStr === lastUserStrRef.current) return;
+      lastUserStrRef.current = userStr;
+      if (!userStr) return;
+      try {
+        const userData = JSON.parse(userStr);
+        setUser((prevUser) => {
+          if (prevUser?.id !== userData.id || prevUser?.role !== userData.role) {
+            return userData;
+          }
+          return prevUser;
+        });
+      } catch (e) {
+        console.error("Failed to parse user data");
       }
     }, 1000);
     
@@ -122,7 +126,7 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
   }, []);
 
   // Fetch notifications
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       if (!user?.id) return;
       
@@ -143,7 +147,7 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   // Initial fetch and polling
   useEffect(() => {
@@ -386,6 +390,8 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
     </div>
   );
 }
+
+export default memo(TopbarImpl);
 
 
 

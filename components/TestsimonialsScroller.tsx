@@ -94,7 +94,13 @@ export default function TestimonialsScroller() {
                       <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
                         {t.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={t.image} alt={t.customerName} className="w-full h-full object-cover" />
+                          <img
+                            src={t.image}
+                            alt={t.customerName}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-500 font-semibold">
                             {String(t.customerName || "U").slice(0,2).toUpperCase()}

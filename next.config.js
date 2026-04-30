@@ -37,9 +37,6 @@ const nextConfig = {
     // Optimize memory usage
     optimizeCss: false, // Disable CSS optimization to save memory
   },
-  turbopack: {
-    root: path.resolve(process.cwd()),
-  },
   // Ensure path aliases work correctly during build
   webpack: (config, { isServer }) => {
     config.resolve.alias = {
