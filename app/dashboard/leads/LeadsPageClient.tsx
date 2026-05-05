@@ -127,11 +127,15 @@ export default function LeadsPage() {
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
   const [isManagerDeliberationModalOpen, setIsManagerDeliberationModalOpen] = useState(false);
+  const [isOrderLostModalOpen, setIsOrderLostModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [leadForContact, setLeadForContact] = useState<Lead | null>(null);
   const [leadForMeeting, setLeadForMeeting] = useState<Lead | null>(null);
   const [leadForQuotation, setLeadForQuotation] = useState<Lead | null>(null);
   const [leadForDeliberation, setLeadForDeliberation] = useState<Lead | null>(null);
+  const [leadForOrderLost, setLeadForOrderLost] = useState<Lead | null>(null);
+  const [orderLostReason, setOrderLostReason] = useState<string>("");
+  const [orderLostReasonOther, setOrderLostReasonOther] = useState<string>("");
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -165,6 +169,9 @@ export default function LeadsPage() {
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>("");
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedBdmUserId, setSelectedBdmUserId] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -340,6 +347,17 @@ export default function LeadsPage() {
     };
 
     loadGroups();
+
+    const loadUsers = async () => {
+      try {
+        const fetchedUsers = await usersAPI.getAll();
+        setUsers(Array.isArray(fetchedUsers) ? fetchedUsers : []);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      }
+    };
+
+    loadUsers();
 
     // Listen for storage changes (when user logs in/out in another tab)
     const handleStorageChange = (e: StorageEvent) => {
@@ -526,16 +544,33 @@ export default function LeadsPage() {
     refreshFacebookConfigured();
   }, []);
 
-  const loadLeads = async (opts?: { groupId?: string; page?: number; search?: string; source?: string }) => {
+  useEffect(() => {
+    const loadStates = async () => {
+      try {
+        const res = await settingsAPI.getStates();
+        const list = Array.isArray(res?.states) ? res.states : [];
+        setAvailableStates(list.length > 0 ? list : indianStates);
+      } catch {
+        setAvailableStates(indianStates);
+      }
+    };
+    loadStates();
+  }, []);
+
+  const loadLeads = async (opts?: { groupId?: string; state?: string; assignedToUserId?: string; page?: number; search?: string; source?: string }) => {
     try {
       setLoading(true);
       const filterGroupId = opts?.groupId !== undefined ? opts.groupId : selectedGroupId;
       const page = opts?.page !== undefined ? opts.page : currentPage;
       const search = opts?.search !== undefined ? opts.search : searchTerm;
       const source = opts?.source !== undefined ? opts.source : selectedSourceFilter;
+      const state = opts?.state !== undefined ? opts.state : selectedState;
+      const assignedToUserId = opts?.assignedToUserId !== undefined ? opts.assignedToUserId : selectedBdmUserId;
 
       const response = await leadsAPI.getAll({
         groupId: filterGroupId || null,
+        state: state || undefined,
+        assignedToUserId: assignedToUserId || undefined,
         page,
         limit: leadsPerPage,
         search: search || undefined,
@@ -623,6 +658,30 @@ export default function LeadsPage() {
     loadLeads({ page: 1, source: selectedSourceFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSourceFilter]);
+
+  // Reload when state filter changes (reset to page 1)
+  const stateInitialMount = useRef(true);
+  useEffect(() => {
+    if (stateInitialMount.current) {
+      stateInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+    loadLeads({ page: 1, state: selectedState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedState]);
+
+  // Reload when BDM filter changes (reset to page 1)
+  const bdmInitialMount = useRef(true);
+  useEffect(() => {
+    if (bdmInitialMount.current) {
+      bdmInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+    loadLeads({ page: 1, assignedToUserId: selectedBdmUserId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBdmUserId]);
 
   // Reload when page size changes (reset to page 1)
   const pageSizeInitialMount = useRef(true);
@@ -823,6 +882,15 @@ export default function LeadsPage() {
       delete updated[validLeadId];
       return updated;
     });
+
+    // If changing to "Order Lost", ask for reason before saving.
+    if (newStage === "Order Lost") {
+      setLeadForOrderLost(lead);
+      setOrderLostReason("");
+      setOrderLostReasonOther("");
+      setIsOrderLostModalOpen(true);
+      return;
+    }
 
     try {
       await leadsAPI.update(validLeadId, { stage: newStage });
@@ -1969,8 +2037,8 @@ NEXT ACTION:
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Leads</h1>
           <p className="text-sm sm:text-base text-gray-600">Track and manage all your sales leads</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="relative w-48 md:w-56">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
+          <div className="relative w-full sm:w-48 md:w-56">
             <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               type="text"
@@ -1988,7 +2056,7 @@ NEXT ACTION:
               setCurrentPage(1);
               loadLeads({ groupId: v || undefined, page: 1 });
             }}
-            className="w-full sm:w-48 md:w-56 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+            className="w-full sm:w-40 md:w-48 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
           >
             <option value="">All Groups</option>
             {groups.map((g) => (
@@ -1997,6 +2065,49 @@ NEXT ACTION:
               </option>
             ))}
           </select>
+          <select
+            value={selectedState}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSelectedState(v);
+            }}
+            className="w-full sm:w-40 md:w-48 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+          >
+            <option value="">All States</option>
+            {(availableStates.length > 0 ? availableStates : indianStates).map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedBdmUserId}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSelectedBdmUserId(v);
+            }}
+            className="w-full sm:w-40 md:w-48 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+          >
+            <option value="">All BDM</option>
+            {users
+              .filter((u: any) => (u?.role || "") !== "Admin")
+              .map((u: any) => (
+                <option key={u.id || u._id} value={u.id || u._id}>
+                  {u.name || u.email || "User"}
+                </option>
+              ))}
+          </select>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            disabled={backendConnected === false}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false
+              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+          >
+            <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
+            Add Lead
+          </button>
           <input
             type="file"
             ref={fileInputRef}
@@ -2027,27 +2138,15 @@ NEXT ACTION:
             <IoRefresh className="w-4 h-4 sm:w-5 sm:h-5" />
             {syncingFacebook ? "Syncing..." : "Sync Facebook"}
           </button>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            disabled={backendConnected === false}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false
-              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
-          >
-            <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
-            Add Lead
-          </button>
         </div>
       </div>
 
       {/* Results Info & Rows Per Page */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div className={`text-sm rounded-lg px-4 py-2 inline-block ${
-          totalLeads > 0
+        <div className={`text-sm rounded-lg px-4 py-2 inline-block ${totalLeads > 0
             ? "bg-green-50 border border-green-200 text-gray-600"
             : "bg-gray-50 border border-gray-200 text-gray-500"
-        }`}>
+          }`}>
           {totalLeads > 0 ? (
             <>
               Showing{" "}
@@ -2060,6 +2159,12 @@ NEXT ACTION:
               )}
               {selectedGroupId && (
                 <span className="ml-2">• Group: <span className="font-semibold">{groups.find((g) => g.id === selectedGroupId)?.groupName ?? "—"}</span></span>
+              )}
+              {selectedState && (
+                <span className="ml-2">• State: <span className="font-semibold">{selectedState}</span></span>
+              )}
+              {selectedBdmUserId && (
+                <span className="ml-2">• BDM: <span className="font-semibold">{users.find((u: any) => (u.id || u._id) === selectedBdmUserId)?.name ?? "—"}</span></span>
               )}
               {searchTerm && (
                 <span className="ml-2">• Search: &ldquo;<span className="font-semibold">{searchTerm}</span>&rdquo;</span>
@@ -2103,47 +2208,47 @@ NEXT ACTION:
           return t !== "" && t !== "Unassigned";
         });
         return (
-        <div className="mb-4 flex items-center gap-3 flex-wrap">
-          {canManageAssignments && (
-            <>
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
+            {canManageAssignments && (
+              <>
+                <button
+                  onClick={() => setIsAssignModalOpen(true)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+                >
+                  <IoPerson className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Assign ({selectedLeadIds.size})
+                </button>
+                <button
+                  onClick={handleUnassignLeads}
+                  disabled={assigning || !hasAnyAssigned}
+                  title={!hasAnyAssigned ? "No selected lead is assigned" : undefined}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {assigning ? (
+                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                  ) : (
+                    <IoPersonRemove className="w-4 h-4 sm:w-5 sm:h-5" />
+                  )}
+                  Unassign ({selectedLeadIds.size})
+                </button>
+              </>
+            )}
+            {canDeleteLeadActions && (
               <button
-                onClick={() => setIsAssignModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+                onClick={() => setIsBulkDeleteModalOpen(true)}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
               >
-                <IoPerson className="w-4 h-4 sm:w-5 sm:h-5" />
-                Assign ({selectedLeadIds.size})
+                <IoCloseCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                Delete All ({selectedLeadIds.size})
               </button>
-              <button
-                onClick={handleUnassignLeads}
-                disabled={assigning || !hasAnyAssigned}
-                title={!hasAnyAssigned ? "No selected lead is assigned" : undefined}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {assigning ? (
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                ) : (
-                  <IoPersonRemove className="w-4 h-4 sm:w-5 sm:h-5" />
-                )}
-                Unassign ({selectedLeadIds.size})
-              </button>
-            </>
-          )}
-          {canDeleteLeadActions && (
+            )}
             <button
-              onClick={() => setIsBulkDeleteModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+              onClick={() => setSelectedLeadIds(new Set())}
+              className="text-sm text-gray-600 hover:text-gray-800"
             >
-              <IoCloseCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              Delete All ({selectedLeadIds.size})
+              Clear Selection
             </button>
-          )}
-          <button
-            onClick={() => setSelectedLeadIds(new Set())}
-            className="text-sm text-gray-600 hover:text-gray-800"
-          >
-            Clear Selection
-          </button>
-        </div>
+          </div>
         );
       })()}
 
@@ -2161,121 +2266,127 @@ NEXT ACTION:
               return (
                 <div key={lead.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={selectedLeadIds.has(leadId)}
-                      onChange={() => handleSelectLead(leadId)}
-                      className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-semibold text-gray-900">{lead.id}</span>
-                        <StatusBadge status={lead.stage} />
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeadIds.has(leadId)}
+                        onChange={() => handleSelectLead(leadId)}
+                        className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-gray-900">{lead.id}</span>
+                          <StatusBadge status={lead.stage} />
+                        </div>
+                        <p className="text-base font-medium text-gray-900 truncate">{lead.name}</p>
+                        <p className="text-sm text-gray-600 truncate">{lead.company}</p>
                       </div>
-                      <p className="text-base font-medium text-gray-900 truncate">{lead.name}</p>
-                      <p className="text-sm text-gray-600 truncate">{lead.company}</p>
                     </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Email</p>
-                    <p className="text-gray-900 truncate">{lead.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Phone</p>
-                    <p className="text-gray-900">{lead.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Source</p>
-                    {(lead.source || "").toLowerCase().includes("facebook") ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">{lead.source}</span>
-                    ) : (
-                      <p className="text-gray-900">{lead.source}</p>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Value</p>
-                    <p className="text-gray-900 font-semibold">₹{(lead.value / 100000).toFixed(1)}L</p>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-                  <label className="text-xs font-medium text-gray-700 mb-1">Stage</label>
-                  <div className="relative">
-                    <select
-                      value={lead.stage}
-                      onChange={(e) => {
-                        const leadId = lead.id || (lead as any)._id || "";
-                        if (leadId) {
-                          handleStageChange(leadId, e.target.value as Lead["stage"]);
-                        } else {
-                          console.error("Lead has no valid ID:", lead);
-                          toast.error("Lead ID is missing. Please refresh the page.");
-                        }
-                      }}
-                      className={`text-sm sm:text-base border-2 rounded-lg pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-3.5 focus:outline-none focus:ring-2 transition-all bg-white w-full appearance-none cursor-pointer shadow-sm hover:shadow-md active:shadow-lg touch-manipulation min-h-[44px] ${stageChangeError[lead.id || (lead as any)._id || ""]
-                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                        : `${getStageColor(lead.stage)} focus:ring-green-500 focus:border-green-500`
-                        }`}
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 0.75rem center',
-                        backgroundSize: '1em 1em',
-                        paddingRight: '2.5rem',
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none',
-                        fontSize: '16px' // Prevents zoom on iOS
-                      }}
-                    >
-                      {getAvailableStages(lead.stage).map((stage) => (
-                        <option
-                          key={stage}
-                          value={stage}
-                          className={lead.stage === stage ? "font-semibold bg-green-600 text-white" : ""}
-                        >
-                          {stage}
-                        </option>
-                      ))}
-                    </select>
-                    {/* Icon overlay */}
-                    <div className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none ${getStageColor(lead.stage).split(' ')[1]}`}>
-                      {getStageIcon(lead.stage)}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Email</p>
+                      <p className="text-gray-900 truncate">{lead.email}</p>
                     </div>
-                    {stageChangeError[lead.id || (lead as any)._id || ""] && (
-                      <div className="absolute top-full left-0 mt-1 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1 z-10 whitespace-normal sm:whitespace-nowrap max-w-[calc(100vw-2rem)] sm:max-w-xs shadow-sm">
-                        {stageChangeError[lead.id || (lead as any)._id || ""]}
-                      </div>
-                    )}
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Phone</p>
+                      <p className="text-gray-900">{lead.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Date</p>
+                      <p className="text-gray-900">
+                        {(lead as any).createdAt ? new Date((lead as any).createdAt).toLocaleDateString() : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Source</p>
+                      {(lead.source || "").toLowerCase().includes("facebook") ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">{lead.source}</span>
+                      ) : (
+                        <p className="text-gray-900">{lead.source}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Value</p>
+                      <p className="text-gray-900 font-semibold">₹{(lead.value / 100000).toFixed(1)}L</p>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {canViewLeadActions && (
-                      <button
-                        onClick={() => handleViewDetails(lead)}
-                        className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex-1"
+                  <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+                    <label className="text-xs font-medium text-gray-700 mb-1">Stage</label>
+                    <div className="relative">
+                      <select
+                        value={lead.stage}
+                        onChange={(e) => {
+                          const leadId = lead.id || (lead as any)._id || "";
+                          if (leadId) {
+                            handleStageChange(leadId, e.target.value as Lead["stage"]);
+                          } else {
+                            console.error("Lead has no valid ID:", lead);
+                            toast.error("Lead ID is missing. Please refresh the page.");
+                          }
+                        }}
+                        className={`text-sm sm:text-base border-2 rounded-lg pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-3.5 focus:outline-none focus:ring-2 transition-all bg-white w-full appearance-none cursor-pointer shadow-sm hover:shadow-md active:shadow-lg touch-manipulation min-h-[44px] ${stageChangeError[lead.id || (lead as any)._id || ""]
+                          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                          : `${getStageColor(lead.stage)} focus:ring-green-500 focus:border-green-500`
+                          }`}
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'right 0.75rem center',
+                          backgroundSize: '1em 1em',
+                          paddingRight: '2.5rem',
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          fontSize: '16px' // Prevents zoom on iOS
+                        }}
                       >
-                        <IoDocumentText className="w-4 h-4" />
-                        View Details
-                      </button>
-                    )}
-                    {canEditLeadActions && (
-                      <AnimatedEditButton
-                        onClick={() => handleEditLead(lead)}
-                        size="sm"
-                        title="Edit Lead"
-                      />
-                    )}
-                    {canDeleteLeadActions && (
-                      <AnimatedDeleteButton
-                        onClick={() => handleDeleteClick(lead)}
-                        size="sm"
-                        title="Delete Lead"
-                      />
-                    )}
+                        {getAvailableStages(lead.stage).map((stage) => (
+                          <option
+                            key={stage}
+                            value={stage}
+                            className={lead.stage === stage ? "font-semibold bg-green-600 text-white" : ""}
+                          >
+                            {stage}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Icon overlay */}
+                      <div className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none ${getStageColor(lead.stage).split(' ')[1]}`}>
+                        {getStageIcon(lead.stage)}
+                      </div>
+                      {stageChangeError[lead.id || (lead as any)._id || ""] && (
+                        <div className="absolute top-full left-0 mt-1 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1 z-10 whitespace-normal sm:whitespace-nowrap max-w-[calc(100vw-2rem)] sm:max-w-xs shadow-sm">
+                          {stageChangeError[lead.id || (lead as any)._id || ""]}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {canViewLeadActions && (
+                        <button
+                          onClick={() => handleViewDetails(lead)}
+                          className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex-1"
+                        >
+                          <IoDocumentText className="w-4 h-4" />
+                          View Details
+                        </button>
+                      )}
+                      {canEditLeadActions && (
+                        <AnimatedEditButton
+                          onClick={() => handleEditLead(lead)}
+                          size="sm"
+                          title="Edit Lead"
+                        />
+                      )}
+                      {canDeleteLeadActions && (
+                        <AnimatedDeleteButton
+                          onClick={() => handleDeleteClick(lead)}
+                          size="sm"
+                          title="Delete Lead"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
               );
             })
           )}
@@ -2310,6 +2421,9 @@ NEXT ACTION:
                   Group
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stage
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2326,7 +2440,7 @@ NEXT ACTION:
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 lg:px-6 py-8 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 lg:px-6 py-8 text-center text-gray-500">
                     {leadList.length === 0 ? "No leads yet" : "No results found"}
                   </td>
                 </tr>
@@ -2335,114 +2449,117 @@ NEXT ACTION:
                   const leadId = lead.id || (lead as any)._id || "";
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50">
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedLeadIds.has(leadId)}
-                        onChange={() => handleSelectLead(leadId)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
-                      <span className="truncate block max-w-[80px] sm:max-w-none">{lead.id}</span>
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
-                      <div className="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[120px] sm:max-w-none">{lead.name}</div>
-                      <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[120px] sm:max-w-none">{lead.company}</div>
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
-                      <div className="text-xs sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-[150px]">{lead.email}</div>
-                      <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[120px] sm:max-w-[150px]">{lead.phone}</div>
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                      {lead.source}
-                    </td>
-                <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                  {lead.groupName || "-"}
-                </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
-                      <div className="relative min-w-[140px] sm:min-w-[160px] lg:min-w-[180px] max-w-full">
-                        <select
-                          value={lead.stage}
-                          onChange={(e) => {
-                            const leadId = lead.id || (lead as any)._id || "";
-                            if (leadId) {
-                              handleStageChange(leadId, e.target.value as Lead["stage"]);
-                            } else {
-                              console.error("Lead has no valid ID:", lead);
-                              toast.error("Lead ID is missing. Please refresh the page.");
-                            }
-                          }}
-                          className={`text-sm sm:text-sm border-2 rounded-lg pl-9 sm:pl-10 pr-8 sm:pr-9 py-2 sm:py-2.5 focus:outline-none focus:ring-2 transition-all bg-white w-full appearance-none cursor-pointer shadow-sm hover:shadow-md active:shadow-lg touch-manipulation min-h-[40px] sm:min-h-[44px] ${stageChangeError[lead.id || (lead as any)._id || ""]
-                            ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                            : `${getStageColor(lead.stage)} focus:ring-green-500 focus:border-green-500`
-                            }`}
-                          style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'right 0.6rem center',
-                            backgroundSize: '1em 1em',
-                            paddingRight: '2.25rem',
-                            WebkitAppearance: 'none',
-                            MozAppearance: 'none',
-                            fontSize: '14px'
-                          }}
-                        >
-                          {getAvailableStages(lead.stage).map((stage) => (
-                            <option
-                              key={stage}
-                              value={stage}
-                              className={lead.stage === stage ? "font-semibold bg-green-600 text-white" : ""}
-                            >
-                              {stage}
-                            </option>
-                          ))}
-                        </select>
-                        {/* Icon overlay */}
-                        <div className={`absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none ${getStageColor(lead.stage).split(' ')[1]}`}>
-                          {getStageIcon(lead.stage)}
-                        </div>
-                        {stageChangeError[lead.id || (lead as any)._id || ""] && (
-                          <div className="absolute top-full left-0 mt-1 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1 z-10 whitespace-normal sm:whitespace-nowrap max-w-[200px] sm:max-w-xs shadow-sm">
-                            {stageChangeError[lead.id || (lead as any)._id || ""]}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900">
-                      ₹{(lead.value / 100000).toFixed(1)}L
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden lg:table-cell">
-                      {lead.assignedTo}
-                    </td>
-                    <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
-                      <div className="flex items-center gap-3">
-                        {canViewLeadActions && (
-                          <button
-                            onClick={() => handleViewDetails(lead)}
-                            className="text-green-600 hover:text-green-900 text-sm"
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedLeadIds.has(leadId)}
+                          onChange={() => handleSelectLead(leadId)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
+                        <span className="truncate block max-w-[80px] sm:max-w-none">{lead.id}</span>
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[120px] sm:max-w-none">{lead.name}</div>
+                        <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[120px] sm:max-w-none">{lead.company}</div>
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-[150px]">{lead.email}</div>
+                        <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[120px] sm:max-w-[150px]">{lead.phone}</div>
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                        {lead.source}
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                        {lead.groupName || "-"}
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                        {(lead as any).createdAt ? new Date((lead as any).createdAt).toLocaleDateString() : "-"}
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
+                        <div className="relative min-w-[140px] sm:min-w-[160px] lg:min-w-[180px] max-w-full">
+                          <select
+                            value={lead.stage}
+                            onChange={(e) => {
+                              const leadId = lead.id || (lead as any)._id || "";
+                              if (leadId) {
+                                handleStageChange(leadId, e.target.value as Lead["stage"]);
+                              } else {
+                                console.error("Lead has no valid ID:", lead);
+                                toast.error("Lead ID is missing. Please refresh the page.");
+                              }
+                            }}
+                            className={`text-sm sm:text-sm border-2 rounded-lg pl-9 sm:pl-10 pr-8 sm:pr-9 py-2 sm:py-2.5 focus:outline-none focus:ring-2 transition-all bg-white w-full appearance-none cursor-pointer shadow-sm hover:shadow-md active:shadow-lg touch-manipulation min-h-[40px] sm:min-h-[44px] ${stageChangeError[lead.id || (lead as any)._id || ""]
+                              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                              : `${getStageColor(lead.stage)} focus:ring-green-500 focus:border-green-500`
+                              }`}
+                            style={{
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.6rem center',
+                              backgroundSize: '1em 1em',
+                              paddingRight: '2.25rem',
+                              WebkitAppearance: 'none',
+                              MozAppearance: 'none',
+                              fontSize: '14px'
+                            }}
                           >
-                            <span className="hidden lg:inline">View Details</span>
-                            <span className="lg:hidden">View</span>
-                          </button>
-                        )}
-                        {canEditLeadActions && (
-                          <AnimatedEditButton
-                            onClick={() => handleEditLead(lead)}
-                            size="sm"
-                            title="Edit Lead"
-                          />
-                        )}
-                        {canDeleteLeadActions && (
-                          <AnimatedDeleteButton
-                            onClick={() => handleDeleteClick(lead)}
-                            size="sm"
-                            title="Delete Lead"
-                          />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                            {getAvailableStages(lead.stage).map((stage) => (
+                              <option
+                                key={stage}
+                                value={stage}
+                                className={lead.stage === stage ? "font-semibold bg-green-600 text-white" : ""}
+                              >
+                                {stage}
+                              </option>
+                            ))}
+                          </select>
+                          {/* Icon overlay */}
+                          <div className={`absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none ${getStageColor(lead.stage).split(' ')[1]}`}>
+                            {getStageIcon(lead.stage)}
+                          </div>
+                          {stageChangeError[lead.id || (lead as any)._id || ""] && (
+                            <div className="absolute top-full left-0 mt-1 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1 z-10 whitespace-normal sm:whitespace-nowrap max-w-[200px] sm:max-w-xs shadow-sm">
+                              {stageChangeError[lead.id || (lead as any)._id || ""]}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900">
+                        ₹{(lead.value / 100000).toFixed(1)}L
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden lg:table-cell">
+                        {lead.assignedTo}
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                        <div className="flex items-center gap-3">
+                          {canViewLeadActions && (
+                            <button
+                              onClick={() => handleViewDetails(lead)}
+                              className="text-green-600 hover:text-green-900 text-sm"
+                            >
+                              <span className="hidden lg:inline">View Details</span>
+                              <span className="lg:hidden">View</span>
+                            </button>
+                          )}
+                          {canEditLeadActions && (
+                            <AnimatedEditButton
+                              onClick={() => handleEditLead(lead)}
+                              size="sm"
+                              title="Edit Lead"
+                            />
+                          )}
+                          {canDeleteLeadActions && (
+                            <AnimatedDeleteButton
+                              onClick={() => handleDeleteClick(lead)}
+                              size="sm"
+                              title="Delete Lead"
+                            />
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -2492,11 +2609,10 @@ NEXT ACTION:
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                      currentPage === pageNum
+                    className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${currentPage === pageNum
                         ? "bg-blue-600 text-white border-blue-600 font-semibold"
                         : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {pageNum}
                   </button>
@@ -2592,7 +2708,7 @@ NEXT ACTION:
                     required
                   >
                     <option value="">Select State</option>
-                    {indianStates.map((state) => (
+                    {(availableStates.length > 0 ? availableStates : indianStates).map((state) => (
                       <option key={state} value={state}>
                         {state}
                       </option>
@@ -2621,7 +2737,7 @@ NEXT ACTION:
                     Lead Source *
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                    {["Website", "Google Ads", "Referral", "Walk-in", "Other"].map((source) => (
+                    {["Website", "Google Ads","Meta Ads", "Referral", "Walk-in", "Other"].map((source) => (
                       <label key={source} className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="radio"
@@ -2706,9 +2822,8 @@ NEXT ACTION:
               <button
                 onClick={handleAddLead}
                 disabled={isCreatingLead}
-                className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
-                  isCreatingLead ? "bg-blue-400 text-white cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
+                className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${isCreatingLead ? "bg-blue-400 text-white cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
               >
                 {isCreatingLead ? "Adding..." : "Add Lead"}
               </button>
@@ -3488,6 +3603,125 @@ NEXT ACTION:
             </div>
           );
         })()}
+      </Modal>
+
+      {/* Order Lost Reason Modal */}
+      <Modal
+        isOpen={isOrderLostModalOpen && leadForOrderLost !== null}
+        onClose={() => {
+          setIsOrderLostModalOpen(false);
+          setLeadForOrderLost(null);
+          setOrderLostReason("");
+          setOrderLostReasonOther("");
+        }}
+        title="Order Lost - Reason"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Please select a reason for marking this lead as <span className="font-semibold text-red-600">Order Lost</span>.
+          </p>
+
+          <div className="space-y-2">
+            {[
+              "Price too high",
+              "Competitor selected",
+              "Budget issue",
+              "Timeline mismatch",
+              "No response / Not reachable",
+              "No requirement",
+              "Other",
+            ].map((r) => (
+              <label key={r} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="orderLostReason"
+                  value={r}
+                  checked={orderLostReason === r}
+                  onChange={(e) => setOrderLostReason(e.target.value)}
+                  className="w-4 h-4 text-red-600"
+                />
+                <span className="text-sm text-gray-800">{r}</span>
+              </label>
+            ))}
+          </div>
+
+          {orderLostReason === "Other" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Other reason *</label>
+              <input
+                value={orderLostReasonOther}
+                onChange={(e) => setOrderLostReasonOther(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                placeholder="Type reason..."
+              />
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              onClick={() => {
+                setIsOrderLostModalOpen(false);
+                setLeadForOrderLost(null);
+                setOrderLostReason("");
+                setOrderLostReasonOther("");
+              }}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                const lead = leadForOrderLost;
+                if (!lead) return;
+                const validLeadId = lead.id || (lead as any)._id;
+                const selected = (orderLostReason || "").trim();
+                const other = (orderLostReasonOther || "").trim();
+
+                if (!selected) {
+                  toast.error("Please select a reason.");
+                  return;
+                }
+                if (selected === "Other" && !other) {
+                  toast.error("Please type the other reason.");
+                  return;
+                }
+
+                try {
+                  await leadsAPI.update(validLeadId, {
+                    stage: "Order Lost",
+                    orderLostReason: selected,
+                    orderLostReasonOther: selected === "Other" ? other : "",
+                  });
+
+                  setLeadList(leadList.map((l) => {
+                    const currentId = l.id || (l as any)._id;
+                    if (currentId !== validLeadId) return l;
+                    return {
+                      ...l,
+                      id: validLeadId,
+                      stage: "Order Lost",
+                      orderLostReason: selected,
+                      orderLostReasonOther: selected === "Other" ? other : "",
+                    } as any;
+                  }));
+
+                  toast.success("Lead marked as Order Lost");
+                  setIsOrderLostModalOpen(false);
+                  setLeadForOrderLost(null);
+                  setOrderLostReason("");
+                  setOrderLostReasonOther("");
+                } catch (err: any) {
+                  console.error("Failed to update Order Lost reason:", err);
+                  toast.error(err?.message || "Failed to update lead");
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+            >
+              Save
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* Meeting Verification Modal */}
@@ -4833,7 +5067,7 @@ NEXT ACTION:
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select State</option>
-                    {indianStates.map((state) => (
+                    {(availableStates.length > 0 ? availableStates : indianStates).map((state) => (
                       <option key={state} value={state}>
                         {state}
                       </option>
@@ -5386,10 +5620,10 @@ NEXT ACTION:
                 user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
                 user.role.toLowerCase().includes(userSearchTerm.toLowerCase())
               ).length === 0 && (
-              <div className="px-4 py-8 text-center text-gray-500">
-                No users found
-              </div>
-            )}
+                <div className="px-4 py-8 text-center text-gray-500">
+                  No users found
+                </div>
+              )}
           </div>
         </div>
       </Modal>
@@ -5467,9 +5701,3 @@ NEXT ACTION:
     </div>
   );
 }
-
-
-
-
-
-

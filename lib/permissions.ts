@@ -45,6 +45,9 @@ export const PERMISSIONS = {
   PIPELINES_CREATE: "pipelines:create",
   PIPELINES_EDIT: "pipelines:edit",
   PIPELINES_DELETE: "pipelines:delete",
+
+  // Staff Performance
+  VIEW_PERFORMANCE_REPORT: "view_performance_report",
 } as const;
 
 // All permission values (Admin gets this list)
@@ -107,6 +110,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.USERS_VIEW,
     PERMISSIONS.GROUPS_VIEW,
     PERMISSIONS.PIPELINES_VIEW,
+    PERMISSIONS.VIEW_PERFORMANCE_REPORT,
   ],
   Accounts: [
     PERMISSIONS.DASHBOARD_VIEW,

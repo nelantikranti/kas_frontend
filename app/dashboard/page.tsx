@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
-import { leadsAPI, projectsAPI, amcAPI } from "@/lib/api";
+import { leadsAPI, projectsAPI, amcAPI, settingsAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import {
   IoPeople,
@@ -11,12 +11,15 @@ import {
   IoCheckmarkCircle,
   IoTime,
   IoBarChart,
+  IoCloseCircle,
 } from "react-icons/io5";
 import SalesPipelineOverview from "@/components/dashboard/SalesPipelineOverview";
  
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
   const [stats, setStats] = useState({
     totalLeads: 0,
     leadContacted: 0,
@@ -24,6 +27,7 @@ export default function DashboardPage() {
     meetingsCompleted: 0,
     quotationSent: 0,
     managerDeliberation: 0,
+    lostLeads: 0,
   });
   const [loading, setLoading] = useState(true);
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
@@ -34,15 +38,29 @@ export default function DashboardPage() {
   const [selectedStatCard, setSelectedStatCard] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    loadData({ state: selectedState });
   }, []);
 
   // Poll dashboard data periodically so pipeline updates when lead status changes elsewhere.
   useEffect(() => {
     const interval = setInterval(() => {
-      loadData().catch(() => {});
+      loadData({ state: selectedState }).catch(() => {});
     }, 20000); // every 20s
     return () => clearInterval(interval);
+  }, []);
+
+  // Load available states from backend (derived from leads collection)
+  useEffect(() => {
+    const loadStates = async () => {
+      try {
+        const res = await settingsAPI.getStates();
+        const list = Array.isArray((res as any)?.states) ? (res as any).states : [];
+        setAvailableStates(list);
+      } catch {
+        setAvailableStates([]);
+      }
+    };
+    loadStates();
   }, []);
 
   // Helper function to parse meeting date/time from notes
@@ -101,10 +119,11 @@ export default function DashboardPage() {
     return null;
   };
 
-  const loadData = async () => {
+  const loadData = async (opts?: { state?: string }) => {
     try {
       setLoading(true);
-      const leadsResponse = await leadsAPI.getAll();
+      const state = opts?.state !== undefined ? opts.state : selectedState;
+      const leadsResponse = await leadsAPI.getAll({ state: state || undefined });
       const leadsData = Array.isArray(leadsResponse)
         ? leadsResponse
         : Array.isArray((leadsResponse as any)?.leads)
@@ -124,6 +143,7 @@ export default function DashboardPage() {
       ).length;
       const quotationSent = leadsData.filter((l: any) => l.stage === "Quotation Sent").length;
       const managerDeliberation = leadsData.filter((l: any) => l.stage === "Manager Deliberation").length;
+      const lostLeads = leadsData.filter((l: any) => l.stage === "Order Lost").length;
 
       setStats({
         totalLeads,
@@ -132,6 +152,7 @@ export default function DashboardPage() {
         meetingsCompleted,
         quotationSent,
         managerDeliberation,
+        lostLeads,
       });
       setRecentLeads(leadsData.slice(0, 3));
       // Store leads with parsed meeting dates
@@ -159,6 +180,12 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+  // Reload dashboard metrics when state filter changes
+  useEffect(() => {
+    loadData({ state: selectedState }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedState]);
 
   const handleCardClick = (title: string) => {
     setSelectedStatCard(title);
@@ -202,6 +229,14 @@ export default function DashboardPage() {
       trend: "Initial contact made",
       color: "green" as const,
       stage: "Lead Contacted" as const,
+    },
+    {
+      title: "Lost Leads",
+      value: stats.lostLeads,
+      icon: <IoCloseCircle className="w-6 h-6" />,
+      trend: "Lost opportunities",
+      color: "red" as const,
+      stage: "Order Lost" as const,
     },
     {
       title: "Meeting Scheduled",
@@ -299,9 +334,30 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Dashboard Overview</h1>
-        <p className="text-sm sm:text-base text-gray-600">Welcome back! Here's what's happening with your business.</p>
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Dashboard Overview</h1>
+          <p className="text-sm sm:text-base text-gray-600">Welcome back! Here's what's happening with your business.</p>
+        </div>
+
+        {/* State filter */}
+        {availableStates.length > 0 && (
+          <div className="w-full sm:w-48 md:w-56">
+            <label className="block text-xs font-medium text-gray-700 mb-1">State</label>
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">All States</option>
+              {availableStates.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">

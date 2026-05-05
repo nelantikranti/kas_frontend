@@ -21,6 +21,7 @@ import {
   IoChatbubbles,
   IoWallet,
   IoList,
+  IoStatsChart,
 } from "react-icons/io5";
 import { PERMISSIONS, can, getEffectivePermissions } from "@/lib/permissions";
 
@@ -63,6 +64,7 @@ const allNavItems: NavItem[] = [
   { name: "Demo Requests", href: "/dashboard/demo", icon: <IoVideocam className="w-5 h-5" />, requiredPermission: PERMISSIONS.DEMO_REQUESTS_VIEW },
   { name: "Blogs & Reviews", href: "/dashboard/blogs", icon: <IoNewspaper className="w-5 h-5" />, requiredPermission: PERMISSIONS.BLOGS_VIEW },
   { name: "Testimonials", href: "/dashboard/testimonials", icon: <IoChatbubbles className="w-5 h-5" />, requiredPermission: PERMISSIONS.TESTIMONIALS_VIEW },
+  { name: "Performance Report", href: "/dashboard/performance-report", icon: <IoStatsChart className="w-5 h-5" />, requiredPermission: PERMISSIONS.VIEW_PERFORMANCE_REPORT },
   {
     name: "Users",
     href: "/dashboard/users",

@@ -107,10 +107,13 @@ export interface Lead {
   stage: "New Lead" | "Lead Contacted" | "Meeting Scheduled" | "Meeting Completed" | "Quotation Sent" | "Manager Deliberation" | "Order Closed" | "Order Lost";
   value: number;
   assignedTo: string;
+  assignedToUserId?: string | null;
   createdAt: string;
   lastContact: string;
 
   notes: string;
+  orderLostReason?: string;
+  orderLostReasonOther?: string;
   groupId?: string | null;
   groupName?: string | null;
   contactReport?: {
@@ -366,6 +369,8 @@ export interface AMCContract {
 export const leadsAPI = {
   getAll: (params?: {
     groupId?: string | null;
+    state?: string;
+    assignedToUserId?: string;
     page?: number;
     limit?: number;
     search?: string;
@@ -374,6 +379,8 @@ export const leadsAPI = {
     const p = params || {};
     const qs = new URLSearchParams();
     if (p.groupId) qs.set("groupId", p.groupId);
+    if (p.state) qs.set("state", p.state);
+    if (p.assignedToUserId) qs.set("assignedToUserId", p.assignedToUserId);
     if (p.page) qs.set("page", String(p.page));
     if (p.limit) qs.set("limit", String(p.limit));
     if (p.search) qs.set("search", p.search);
@@ -427,6 +434,10 @@ export const leadsAPI = {
 
 // Settings API (integrations stored on backend)
 export const settingsAPI = {
+  getStates: () =>
+    fetchAPI("/settings/states") as Promise<{
+      states: string[];
+    }>,
   getFacebookLeadAds: () =>
     fetchAPI("/settings/facebook-lead-ads") as Promise<{
       configured: boolean;
@@ -683,6 +694,29 @@ export const pipelinesAPI = {
 // Dashboard API
 export const dashboardAPI = {
   getStats: () => fetchAPI("/dashboard/stats"),
+};
+
+// Performance report API
+export const performanceAPI = {
+  getReport: (params?: { from?: string; to?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set("from", params.from);
+    if (params?.to) qs.set("to", params.to);
+    const query = qs.toString();
+    return fetchAPI(`/performance-report${query ? `?${query}` : ""}`) as Promise<{
+      meta: { from: string | null; to: string | null; generatedAt: string };
+      data: Array<{
+        userId: string;
+        staffName: string;
+        email: string;
+        role: string;
+        totalTasks: number;
+        completedTasks: number;
+        pendingTasks: number;
+        efficiency: number;
+      }>;
+    }>;
+  },
 };
 
 // Health check API
