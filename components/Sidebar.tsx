@@ -49,9 +49,17 @@ interface User {
   permissions?: string[];
 }
 
-// All navigation items with required permissions
+const isAdminRole = (role: string | null | undefined) => String(role || "").trim() === "Admin";
+
+// All navigation items with required permissions (order = display order; Users is high so Admins see it without scrolling)
 const allNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <IoHome className="w-5 h-5" />, requiredPermission: PERMISSIONS.DASHBOARD_VIEW },
+  {
+    name: "Users",
+    href: "/dashboard/users",
+    icon: <IoPerson className="w-5 h-5" />,
+    requiredAnyOf: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE],
+  },
   { name: "Leads", href: "/dashboard/leads", icon: <IoPeople className="w-5 h-5" />, requiredPermission: PERMISSIONS.LEADS_VIEW },
   { name: "Groups", href: "/dashboard/groups", icon: <IoPeopleCircle className="w-5 h-5" />, requiredPermission: PERMISSIONS.GROUPS_VIEW },
   { name: "Leads Pipelines", href: "/dashboard/pipelines", icon: <IoList className="w-5 h-5" />, requiredPermission: PERMISSIONS.PIPELINES_VIEW },
@@ -65,12 +73,6 @@ const allNavItems: NavItem[] = [
   { name: "Blogs & Reviews", href: "/dashboard/blogs", icon: <IoNewspaper className="w-5 h-5" />, requiredPermission: PERMISSIONS.BLOGS_VIEW },
   { name: "Testimonials", href: "/dashboard/testimonials", icon: <IoChatbubbles className="w-5 h-5" />, requiredPermission: PERMISSIONS.TESTIMONIALS_VIEW },
   { name: "Performance Report", href: "/dashboard/performance-report", icon: <IoStatsChart className="w-5 h-5" />, requiredPermission: PERMISSIONS.VIEW_PERFORMANCE_REPORT },
-  {
-    name: "Users",
-    href: "/dashboard/users",
-    icon: <IoPerson className="w-5 h-5" />,
-    requiredAnyOf: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE],
-  },
   { name: "Settings", href: "/dashboard/settings", icon: <IoSettings className="w-5 h-5" />, requiredPermission: PERMISSIONS.SETTINGS_MANAGE },
   { name: "Activity", href: "/dashboard/activity", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.ACTIVITY_VIEW },
 ];
@@ -79,7 +81,7 @@ const allNavItems: NavItem[] = [
 const getNavItems = (userRole: string | null, userPermissions: string[] = []): NavItem[] => {
   
   // Filter by permissions — Admin has access to all nav items
-  if (userRole === "Admin") {
+  if (isAdminRole(userRole)) {
     return allNavItems;
   }
   return allNavItems.filter(item => {
@@ -127,6 +129,7 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
                     ...userData,
                     role: updatedUser.role || userData.role,
                     permissions: updatedUser.permissions || userData.permissions || [],
+                    permissionSource: updatedUser.permissionSource ?? userData.permissionSource,
                   };
                   setUser(updatedUserData);
                   setUserPermissions(getEffectivePermissions(updatedUserData));

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
@@ -8,7 +9,16 @@ import { IoAdd, IoPerson, IoSearch, IoEye, IoShieldCheckmark, IoCheckmarkCircle,
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { usersAPI } from "@/lib/api";
-import { PERMISSION_GROUPS, can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
+import {
+  PERMISSION_GROUPS,
+  can,
+  getEffectivePermissions,
+  getUserPermissions,
+  isAdmin,
+  PERMISSIONS,
+  resolvePermissionSource,
+  type PermissionSourceMode,
+} from "@/lib/permissions";
 
 interface User {
   id: string;
@@ -17,12 +27,14 @@ interface User {
   role: "Admin" | "Sales Executive" | "Service Engineer" | "Project Manager" | "Accounts" | "Manager" | "Technician" | "Accountant";
   status: "Active" | "Inactive" | "Pending";
   lastLogin: string;
-  password?: string; // Password field for admin view
-  permissions?: string[]; // Array of permission strings
+  password?: string;
+  permissions?: string[];
+  permissionSource?: PermissionSourceMode;
   createdAt?: string;
 }
 
 export default function UsersPage() {
+  const router = useRouter();
   const currentUserPermissions = getUserPermissions();
   const canViewUsers = can(PERMISSIONS.USERS_VIEW, currentUserPermissions) || can(PERMISSIONS.USERS_MANAGE, currentUserPermissions);
   const canManageUsers = can(PERMISSIONS.USERS_MANAGE, currentUserPermissions);
@@ -43,22 +55,26 @@ export default function UsersPage() {
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get current user role to check if admin
-  const [currentUserRole, setCurrentUserRole] = useState<string>("");
-  const [currentUserId, setCurrentUserId] = useState<string>("");
+  /** Read synchronously so first paint matches admin checks (fixes missing Permissions button for Admin). */
+  const readSessionUserRoleId = (): { role: string; id: string } => {
+    if (typeof window === "undefined") return { role: "", id: "" };
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return { role: "", id: "" };
+      const u = JSON.parse(raw);
+      return { role: String(u?.role || "").trim(), id: String(u?.id || "") };
+    } catch {
+      return { role: "", id: "" };
+    }
+  };
+
+  const [currentUserRole, setCurrentUserRole] = useState<string>(() => readSessionUserRoleId().role);
+  const [currentUserId, setCurrentUserId] = useState<string>(() => readSessionUserRoleId().id);
 
   useEffect(() => {
-    // Get current user role and ID from localStorage
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setCurrentUserRole(user.role || "");
-        setCurrentUserId(user.id || "");
-      } catch (e) {
-        console.error("Failed to parse user data");
-      }
-    }
+    const { role, id } = readSessionUserRoleId();
+    setCurrentUserRole(role);
+    setCurrentUserId(id);
   }, []);
 
   // Fetch users from API on component mount
@@ -167,7 +183,13 @@ export default function UsersPage() {
       role: user.role,
       status: user.status,
     });
-    setSelectedPermissions(Array.isArray(user.permissions) ? user.permissions : []);
+    setSelectedPermissions(
+      getEffectivePermissions({
+        role: user.role,
+        permissions: user.permissions ?? [],
+        permissionSource: user.permissionSource,
+      })
+    );
     setEditErrors({});
     setShowPasswordField(false);
     setShowPermissionsSection(false);
@@ -211,8 +233,89 @@ export default function UsersPage() {
 
   const handleOpenPermissions = (user: User) => {
     setPermissionsUser(user);
-    setSelectedPermissions(Array.isArray(user.permissions) ? user.permissions : []);
+    const effective = getEffectivePermissions({
+      role: user.role,
+      permissions: user.permissions ?? [],
+      permissionSource: user.permissionSource,
+    });
+    setSelectedPermissions(effective);
     setIsPermissionsModalOpen(true);
+  };
+
+  const handleResetPermissionsToRoleDefaults = async () => {
+    if (!permissionsUser || permissionsUser.role === "Admin") return;
+    setIsUpdating(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const apiUrl = getApiUrl();
+      const permissionsResponse = await fetch(`${apiUrl}/users/${permissionsUser.id}/permissions`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ permissionSource: "role", permissions: [] }),
+      });
+      if (!permissionsResponse.ok) {
+        const errorData = await permissionsResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to reset permissions");
+      }
+
+      const updatedUserResponse = await fetch(`${apiUrl}/users/${permissionsUser.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!updatedUserResponse.ok) throw new Error("Failed to refresh user");
+      const updatedUserData = await updatedUserResponse.json();
+
+      const refreshed: User = {
+        id: updatedUserData.id,
+        name: updatedUserData.name,
+        email: updatedUserData.email,
+        role: updatedUserData.role,
+        status: updatedUserData.status,
+        lastLogin: updatedUserData.lastLogin,
+        permissions: updatedUserData.permissions,
+        permissionSource: updatedUserData.permissionSource,
+      };
+
+      setUsers((prev) => prev.map((u) => (u.id === refreshed.id ? refreshed : u)));
+      setPermissionsUser(refreshed);
+      setSelectedPermissions(
+        getEffectivePermissions({
+          role: refreshed.role,
+          permissions: refreshed.permissions ?? [],
+          permissionSource: refreshed.permissionSource,
+        })
+      );
+
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          if (u?.id === refreshed.id) {
+            const next = {
+              ...u,
+              permissions: refreshed.permissions,
+              permissionSource: refreshed.permissionSource,
+            };
+            localStorage.setItem("user", JSON.stringify(next));
+            window.dispatchEvent(
+              new CustomEvent("userPermissionsUpdated", {
+                detail: { permissions: getEffectivePermissions(next) },
+              })
+            );
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      toast.success("User now follows role default permissions.");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to reset permissions");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleUpdatePermissions = async () => {
@@ -229,7 +332,10 @@ export default function UsersPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ permissions: selectedPermissions }),
+        body: JSON.stringify({
+          permissionSource: "custom",
+          permissions: selectedPermissions,
+        }),
       });
 
       if (!permissionsResponse.ok) {
@@ -261,6 +367,7 @@ export default function UsersPage() {
       const userWithPermissions: User = {
         ...updatedUserData,
         permissions: updatedUserData.permissions || selectedPermissions,
+        permissionSource: updatedUserData.permissionSource,
       };
       const updatedUsers = users.map((u) =>
         u.id === permissionsUser.id ? userWithPermissions : u
@@ -277,14 +384,13 @@ export default function UsersPage() {
               ...currentUser,
               role: updatedUserData.role || currentUser.role,
               permissions: updatedUserData.permissions || selectedPermissions,
+              permissionSource: updatedUserData.permissionSource ?? currentUser.permissionSource,
             };
             localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
             setCurrentUserRole(updatedCurrentUser.role || currentUserRole);
-            // Dispatch event to update sidebar and dashboard immediately
             window.dispatchEvent(new CustomEvent('userPermissionsUpdated', { 
-              detail: { permissions: updatedUserData.permissions || selectedPermissions } 
+              detail: { permissions: getEffectivePermissions(updatedCurrentUser) } 
             }));
-            // Also trigger a storage event for cross-tab sync
             window.dispatchEvent(new StorageEvent('storage', {
               key: 'user',
               newValue: JSON.stringify(updatedCurrentUser),
@@ -313,7 +419,7 @@ export default function UsersPage() {
     if (!editingUser) return;
     
     // Only Admin can change roles
-    if (editUser.role !== editingUser.role && currentUserRole !== "Admin") {
+    if (editUser.role !== editingUser.role && !isAdmin()) {
       toast.error("Only administrators can change user roles.");
       return;
     }
@@ -342,7 +448,7 @@ export default function UsersPage() {
       };
       
       // Only include role if Admin is changing someone else's role
-      if (currentUserRole === "Admin" && editingUser.id !== currentUserId && editUser.role) {
+      if (isAdmin() && editingUser.id !== currentUserId && editUser.role) {
         updateData.role = editUser.role;
       }
       
@@ -354,20 +460,25 @@ export default function UsersPage() {
       // Update user basic info
       await usersAPI.update(editingUser.id, updateData);
 
-      // Update permissions
       const token = localStorage.getItem("authToken");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const permissionsResponse = await fetch(`${apiUrl}/users/${editingUser.id}/permissions`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ permissions: selectedPermissions }),
-      });
 
-      if (!permissionsResponse.ok) {
-        throw new Error("Failed to update permissions");
+      if (isAdmin() && showPermissionsSection) {
+        const permissionsResponse = await fetch(`${apiUrl}/users/${editingUser.id}/permissions`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            permissionSource: "custom",
+            permissions: selectedPermissions,
+          }),
+        });
+
+        if (!permissionsResponse.ok) {
+          throw new Error("Failed to update permissions");
+        }
       }
 
       // Fetch updated user data from backend to get latest permissions
@@ -383,6 +494,7 @@ export default function UsersPage() {
       const userWithPermissions: User = {
         ...updatedUserData,
         permissions: updatedUserData.permissions || selectedPermissions,
+        permissionSource: updatedUserData.permissionSource,
       };
       const updatedUsers = users.map((u) =>
         u.id === editingUser.id ? userWithPermissions : u
@@ -399,14 +511,13 @@ export default function UsersPage() {
               ...currentUser,
               role: updatedUserData.role || currentUser.role,
               permissions: updatedUserData.permissions || selectedPermissions,
+              permissionSource: updatedUserData.permissionSource ?? currentUser.permissionSource,
             };
             localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
             setCurrentUserRole(updatedCurrentUser.role || currentUserRole);
-            // Dispatch event to update sidebar and dashboard immediately
             window.dispatchEvent(new CustomEvent('userPermissionsUpdated', { 
-              detail: { permissions: updatedUserData.permissions || selectedPermissions } 
+              detail: { permissions: getEffectivePermissions(updatedCurrentUser) } 
             }));
-            // Also trigger a storage event for cross-tab sync
             window.dispatchEvent(new StorageEvent('storage', {
               key: 'user',
               newValue: JSON.stringify(updatedCurrentUser),
@@ -589,11 +700,22 @@ export default function UsersPage() {
             <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
             Add User
           </button>
+          {isAdmin() && (
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard/permissions")}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors whitespace-nowrap text-sm sm:text-base"
+              title="Manage permissions by role"
+            >
+              <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
+              Permissions
+            </button>
+          )}
         </div>
       </div>
 
       {/* Pending Signup Requests Section - Only for Admin */}
-      {currentUserRole === "Admin" && (
+      {isAdmin() && (
         <div className={`mb-6 ${pendingUsers.length > 0 ? "bg-yellow-50 border-2 border-yellow-200" : "bg-gray-50 border-2 border-gray-200"} rounded-lg p-4`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -695,7 +817,7 @@ export default function UsersPage() {
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Email</p>
                   <p className="text-gray-900 truncate">{user.email}</p>
-                  {currentUserRole === "Admin" && (
+                  {isAdmin() && (
                     <>
                       <p className="text-xs text-gray-500 mb-1 mt-2">Password</p>
                       <p className="text-gray-900 truncate font-mono text-xs">{user.password || "Not set"}</p>
@@ -734,16 +856,7 @@ export default function UsersPage() {
                     className="flex-shrink-0"
                   />
                 )}
-                {currentUserRole === "Admin" && canManageUsers && (
-                  <button 
-                    onClick={() => handleOpenPermissions(user)}
-                    className="flex-1 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium flex items-center justify-center gap-1"
-                    title="Update Permissions"
-                  >
-                    <IoLockClosed className="w-4 h-4" />
-                    Permissions
-                  </button>
-                )}
+                {/* Per-user permissions removed: manage role permissions from the single dashboard page */}
                 {canManageUsers && user.role !== "Admin" && (
                   <AnimatedDeleteButton
                     onClick={() => handleDeleteClick(user)}
@@ -817,7 +930,7 @@ export default function UsersPage() {
                   <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px]">
                     <div>
                       <div className="truncate">{user.email}</div>
-                      {currentUserRole === "Admin" && (
+                      {isAdmin() && (
                         <div className="text-xs text-gray-600 font-mono mt-1 truncate">
                           {user.password || "Not set"}
                         </div>
@@ -856,15 +969,7 @@ export default function UsersPage() {
                           title="Edit User"
                         />
                       )}
-                      {currentUserRole === "Admin" && canManageUsers && (
-                        <button 
-                          onClick={() => handleOpenPermissions(user)}
-                          className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
-                          title="Update Permissions"
-                        >
-                          <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </button>
-                      )}
+                      {/* Per-user permissions removed: manage role permissions from the single dashboard page */}
                       {canManageUsers && user.role !== "Admin" && (
                         <AnimatedDeleteButton
                           onClick={() => handleDeleteClick(user)}
@@ -1122,18 +1227,7 @@ export default function UsersPage() {
                   </div>
                   Role & Status
                 </h4>
-                {currentUserRole === "Admin" && (
-                  <button
-                    type="button"
-                    onClick={() => setShowPermissionsSection(!showPermissionsSection)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors text-sm font-medium"
-                    disabled={isUpdating}
-                    title="Update Permissions"
-                  >
-                    <IoLockClosed className="w-4 h-4" />
-                    <span>Permissions</span>
-                  </button>
-                )}
+                {/* Per-user permissions removed: use /dashboard/permissions to manage role permissions */}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div>
@@ -1144,7 +1238,7 @@ export default function UsersPage() {
               value={editUser.role}
               onChange={(e) => setEditUser({ ...editUser, role: e.target.value as User["role"] })}
                     className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 font-medium"
-                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || currentUserRole !== "Admin"}
+                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || !isAdmin()}
             >
                     <option value="Admin">Admin</option>
                     <option value="Sales Executive">Sales Executive</option>
@@ -1157,7 +1251,7 @@ export default function UsersPage() {
             {editingUser && editingUser.id === currentUserId && (
               <p className="text-sm text-red-600 mt-1">You cannot change your own role</p>
             )}
-            {currentUserRole !== "Admin" && (
+            {!isAdmin() && (
               <p className="text-sm text-red-600 mt-1">Only administrators can change user roles</p>
             )}
           </div>
@@ -1178,58 +1272,7 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {/* Permissions Section - Only for Admin */}
-            {currentUserRole === "Admin" && showPermissionsSection && (
-              <div className="bg-white rounded-lg border-2 border-gray-100 p-5">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                  <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <IoShieldCheckmark className="w-4 h-4 text-purple-600" />
-                    </div>
-                    Access Permissions
-                  </h4>
-                  <span className="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg text-sm font-bold">
-                    {selectedPermissions.length} Selected
-                  </span>
-                </div>
-                <div className="space-y-3 max-h-[350px] overflow-y-auto border-2 border-gray-200 rounded-lg p-4 bg-gray-50 mt-4">
-                  {PERMISSION_GROUPS.map((group) => (
-                    <div key={group.label} className="bg-white rounded-lg p-3 border border-gray-200">
-                      <h6 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                        {group.label}
-                      </h6>
-                      <div className="space-y-2">
-                        {group.permissions.map((perm) => (
-                          <label
-                            key={perm.key}
-                            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                              selectedPermissions.includes(perm.key)
-                                ? "bg-green-50 border-2 border-green-200"
-                                : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedPermissions.includes(perm.key)}
-                              onChange={() => togglePermission(perm.key)}
-                              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
-                              disabled={isUpdating}
-                            />
-                            <span className={`text-sm flex-1 ${selectedPermissions.includes(perm.key) ? "text-gray-900 font-medium" : "text-gray-700"}`}>
-                              {perm.label}
-                            </span>
-                            {selectedPermissions.includes(perm.key) && (
-                              <span className="text-green-600 text-xs">✓</span>
-                            )}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Role permissions moved to /dashboard/permissions */}
 
             {/* Action Buttons - Clean Design */}
             <div className="mt-6 pt-4 pb-2">
@@ -1280,135 +1323,7 @@ export default function UsersPage() {
         )}
       </Modal>
 
-      {/* Permissions Update Modal */}
-      <Modal
-        isOpen={isPermissionsModalOpen}
-        onClose={() => {
-          if (!isUpdating) {
-            setIsPermissionsModalOpen(false);
-            setPermissionsUser(null);
-            setSelectedPermissions([]);
-          }
-        }}
-        title="Update Permissions"
-        size="lg"
-      >
-        {permissionsUser && (
-          <div className="space-y-5">
-            {/* User Header Card */}
-            <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 rounded-xl p-5 border-2 border-purple-100 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                  {permissionsUser.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{permissionsUser.name}</h3>
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
-                    <span>📧</span> {permissionsUser.email}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-xs font-semibold">
-                      {permissionsUser.role}
-                    </span>
-                    <StatusBadge status={permissionsUser.status} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Permissions Section */}
-            <div className="bg-white rounded-lg border-2 border-gray-100 p-5">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <IoShieldCheckmark className="w-4 h-4 text-purple-600" />
-                  </div>
-                  Access Permissions
-                </h4>
-                <span className="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg text-sm font-bold">
-                  {selectedPermissions.length} Selected
-                </span>
-              </div>
-              <div className="space-y-3 max-h-[350px] overflow-y-auto border-2 border-gray-200 rounded-lg p-4 bg-gray-50 mt-4">
-                {PERMISSION_GROUPS.map((group) => (
-                  <div key={group.label} className="bg-white rounded-lg p-3 border border-gray-200">
-                    <h6 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                      {group.label}
-                    </h6>
-                    <div className="space-y-2">
-                      {group.permissions.map((perm) => (
-                        <label
-                          key={perm.key}
-                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                            selectedPermissions.includes(perm.key)
-                              ? "bg-green-50 border-2 border-green-200"
-                              : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedPermissions.includes(perm.key)}
-                            onChange={() => togglePermission(perm.key)}
-                            className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
-                            disabled={isUpdating}
-                          />
-                          <span className={`text-sm flex-1 ${selectedPermissions.includes(perm.key) ? "text-gray-900 font-medium" : "text-gray-700"}`}>
-                            {perm.label}
-                          </span>
-                          {selectedPermissions.includes(perm.key) && (
-                            <span className="text-green-600 text-xs">✓</span>
-                          )}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="mt-6 pt-4 pb-2">
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                <button
-                  onClick={handleUpdatePermissions}
-                  disabled={isUpdating}
-                  className="group relative flex-1 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transform hover:scale-[1.01] active:scale-[0.99]"
-                >
-                  {isUpdating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      <span>Updating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <IoLockClosed className="w-4 h-4" />
-                      <span>Update Permissions</span>
-                    </>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => {
-                    if (!isUpdating) {
-                      setIsPermissionsModalOpen(false);
-                      setPermissionsUser(null);
-                      setSelectedPermissions([]);
-                    }
-                  }}
-                  disabled={isUpdating}
-                  className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full flex items-center justify-center gap-2"
-            >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span>Cancel</span>
-            </button>
-          </div>
-        </div>
-          </div>
-        )}
-      </Modal>
+      {/* Per-user permissions UI removed: use /dashboard/permissions */}
 
       {/* View User Details Modal */}
       <Modal
@@ -1456,7 +1371,7 @@ export default function UsersPage() {
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Email Address</label>
                   <p className="text-sm text-gray-900 font-medium break-words">{viewingUser.email}</p>
                 </div>
-                {currentUserRole === "Admin" && (
+                {isAdmin() && (
                   <div className="bg-gray-50 rounded-lg p-3">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Password</label>
                     <p className="text-sm text-gray-900 font-mono break-words">

@@ -8,6 +8,8 @@ import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { pipelinesAPI, PipelineListItem, groupsAPI } from "@/lib/api";
 import { can, PERMISSIONS } from "@/lib/permissions";
+import { useRouter } from "next/navigation";
+import { defaultPipelineStageNames } from "@/lib/leadStages";
 
 function formatCreated(dateStr: string): string {
   const d = new Date(dateStr);
@@ -36,6 +38,7 @@ function getInitials(name: string): string {
 }
 
 export default function PipelinesPage() {
+  const router = useRouter();
   const [data, setData] = useState<PipelineListItem[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
@@ -46,13 +49,43 @@ export default function PipelinesPage() {
   const [editingPipeline, setEditingPipeline] = useState<PipelineListItem | null>(null);
   const [pipelineToDelete, setPipelineToDelete] = useState<PipelineListItem | null>(null);
   const [newPipelineName, setNewPipelineName] = useState("");
+  const [newPipelineDetails, setNewPipelineDetails] = useState("");
+  const [newStageInput, setNewStageInput] = useState("");
+  const [newStages, setNewStages] = useState<string[]>(() => defaultPipelineStageNames());
   const [editPipelineName, setEditPipelineName] = useState("");
+  const [editPipelineDetails, setEditPipelineDetails] = useState("");
+  const [editStageInput, setEditStageInput] = useState("");
+  const [editStages, setEditStages] = useState<string[]>([]);
   const [newGroupId, setNewGroupId] = useState<string>("");
   const [editGroupId, setEditGroupId] = useState<string>("");
   const [editAssignedTeam, setEditAssignedTeam] = useState<string[]>([]);
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
+
+  const addStageChip = (value: string, mode: "new" | "edit") => {
+    const v = String(value || "").trim();
+    if (!v) return;
+    const key = v.toLowerCase();
+    if (mode === "new") {
+      if (newStages.some((s) => s.toLowerCase() === key)) return;
+      setNewStages((prev) => [...prev, v]);
+      setNewStageInput("");
+      return;
+    }
+    if (editStages.some((s) => s.toLowerCase() === key)) return;
+    setEditStages((prev) => [...prev, v]);
+    setEditStageInput("");
+  };
+
+  const removeStageChip = (value: string, mode: "new" | "edit") => {
+    const key = value.toLowerCase();
+    if (mode === "new") {
+      setNewStages((prev) => prev.filter((s) => s.toLowerCase() !== key));
+      return;
+    }
+    setEditStages((prev) => prev.filter((s) => s.toLowerCase() !== key));
+  };
 
   useEffect(() => {
     const syncUserState = () => {
@@ -125,14 +158,23 @@ export default function PipelinesPage() {
       toast.error("Pipeline name is required");
       return;
     }
+    if (newStages.length === 0) {
+      toast.error("Please add at least 1 stage");
+      return;
+    }
     try {
       await pipelinesAPI.create({
         pipelineName: newPipelineName.trim(),
+        details: newPipelineDetails.trim(),
+        stages: newStages,
         groupId: newGroupId || null,
         addedBy: currentUserId,
       });
       setNewPipelineName("");
+      setNewPipelineDetails("");
       setNewGroupId("");
+      setNewStages(defaultPipelineStageNames());
+      setNewStageInput("");
       setIsAddModalOpen(false);
       fetchPipelines();
       toast.success("Pipeline created");
@@ -144,8 +186,11 @@ export default function PipelinesPage() {
   const handleEditPipeline = (row: PipelineListItem) => {
     setEditingPipeline(row);
     setEditPipelineName(row.pipelineName);
+    setEditPipelineDetails(row.details || "");
     setEditGroupId(row.groupId || "");
     setEditAssignedTeam(row.assignedTeam?.map((t) => t.id) || []);
+    setEditStages((row.stages || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((s) => s.name));
+    setEditStageInput("");
     setIsEditModalOpen(true);
   };
 
@@ -155,9 +200,15 @@ export default function PipelinesPage() {
       toast.error("Pipeline name is required");
       return;
     }
+    if (editStages.length === 0) {
+      toast.error("Please add at least 1 stage");
+      return;
+    }
     try {
       await pipelinesAPI.update(editingPipeline.id, {
         pipelineName: editPipelineName.trim(),
+        details: editPipelineDetails.trim(),
+        stages: editStages,
         groupId: editGroupId || null,
       });
       setEditingPipeline(null);
@@ -271,7 +322,14 @@ export default function PipelinesPage() {
                     className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/70 hover:bg-gray-100/70"}
                   >
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {row.pipelineName}
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/dashboard/pipelines/${row.id}`)}
+                        className="text-left hover:underline"
+                        title="Open pipeline board"
+                      >
+                        {row.pipelineName}
+                      </button>
                     </td>
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                       {row.groupName ?? "—"}
@@ -307,6 +365,14 @@ export default function PipelinesPage() {
                     </td>
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/dashboard/pipelines/${row.id}`)}
+                          className="px-2.5 py-1.5 text-xs font-medium bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
+                          title="Open board"
+                        >
+                          Board
+                        </button>
                         {canEdit && (
                           <AnimatedEditButton
                             onClick={() => handleEditPipeline(row)}
@@ -374,13 +440,28 @@ export default function PipelinesPage() {
                 <div className="flex flex-col gap-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{row.pipelineName}</p>
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/dashboard/pipelines/${row.id}`)}
+                        className="text-sm font-semibold text-gray-900 truncate text-left hover:underline w-full"
+                        title="Open pipeline board"
+                      >
+                        {row.pipelineName}
+                      </button>
                       <p className="text-xs text-gray-600 mt-0.5">{row.groupName ?? "—"}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         {row.leads} leads · {formatCreated(row.created)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/dashboard/pipelines/${row.id}`)}
+                        className="px-2.5 py-1.5 text-xs font-medium bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
+                        title="Open board"
+                      >
+                        Board
+                      </button>
                       {canEdit && (
                         <AnimatedEditButton
                           onClick={() => handleEditPipeline(row)}
@@ -453,7 +534,10 @@ export default function PipelinesPage() {
         onClose={() => {
           setIsAddModalOpen(false);
           setNewPipelineName("");
+          setNewPipelineDetails("");
           setNewGroupId("");
+          setNewStages(defaultPipelineStageNames());
+          setNewStageInput("");
         }}
         title="Add Pipeline"
         size="md"
@@ -467,6 +551,16 @@ export default function PipelinesPage() {
               onChange={(e) => setNewPipelineName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Enter pipeline name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+            <textarea
+              value={newPipelineDetails}
+              onChange={(e) => setNewPipelineDetails(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Optional notes about this pipeline"
+              rows={3}
             />
           </div>
           <div>
@@ -484,6 +578,50 @@ export default function PipelinesPage() {
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">The selected group&apos;s team will be used by default.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Stages *</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {newStages.map((s) => (
+                <span
+                  key={s}
+                  className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs border border-gray-200"
+                >
+                  {s}
+                  <button
+                    type="button"
+                    onClick={() => removeStageChip(s, "new")}
+                    className="text-gray-500 hover:text-gray-800"
+                    aria-label={`Remove stage ${s}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newStageInput}
+                onChange={(e) => setNewStageInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addStageChip(newStageInput, "new");
+                  }
+                }}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Type stage name and press Enter"
+              />
+              <button
+                type="button"
+                onClick={() => addStageChip(newStageInput, "new")}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                Add
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">These stages will be used in the pipeline board.</p>
           </div>
           <div className="flex gap-3 pt-2">
             <button
@@ -525,6 +663,16 @@ export default function PipelinesPage() {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+              <textarea
+                value={editPipelineDetails}
+                onChange={(e) => setEditPipelineDetails(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Optional notes about this pipeline"
+                rows={3}
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Group</label>
               <select
                 value={editGroupId}
@@ -539,6 +687,49 @@ export default function PipelinesPage() {
                 ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">The selected group&apos;s team is used by default.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stages *</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {editStages.map((s) => (
+                  <span
+                    key={s}
+                    className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs border border-gray-200"
+                  >
+                    {s}
+                    <button
+                      type="button"
+                      onClick={() => removeStageChip(s, "edit")}
+                      className="text-gray-500 hover:text-gray-800"
+                      aria-label={`Remove stage ${s}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={editStageInput}
+                  onChange={(e) => setEditStageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addStageChip(editStageInput, "edit");
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Type stage name and press Enter"
+                />
+                <button
+                  type="button"
+                  onClick={() => addStageChip(editStageInput, "edit")}
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
             </div>
             <div className="flex gap-3 pt-2">
               <button

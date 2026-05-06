@@ -12,17 +12,9 @@ import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
 import { isAdmin, getUserPermissions, can, PERMISSIONS } from "@/lib/permissions";
+import { LEAD_FUNNEL_STAGES } from "@/lib/leadStages";
 
-const stages: Lead["stage"][] = [
-  "New Lead",
-  "Lead Contacted",
-  "Meeting Scheduled",
-  "Meeting Completed",
-  "Quotation Sent",
-  "Manager Deliberation",
-  "Order Closed",
-  "Order Lost"
-];
+const stages: Lead["stage"][] = [...LEAD_FUNNEL_STAGES];
 
 // All Indian States and Union Territories
 const indianStates = [

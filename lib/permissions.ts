@@ -136,12 +136,33 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   ],
 };
 
-export function getEffectivePermissions(user: { role: string; permissions?: string[] }): string[] {
-  if (user.role === "Admin") return [...ALL_PERMISSIONS];
+export type PermissionSourceMode = "role" | "custom";
+
+export function resolvePermissionSource(user: {
+  permissionSource?: PermissionSourceMode;
+  permissions?: string[];
+}): PermissionSourceMode {
+  if (user.permissionSource === "role" || user.permissionSource === "custom") {
+    return user.permissionSource;
+  }
   const stored = user.permissions ?? [];
-  if (stored.length > 0) return stored;
-  const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role];
-  return fromRole ? [...fromRole] : [];
+  return stored.length > 0 ? "custom" : "role";
+}
+
+/** Align with backend: `role` = defaults for that role; `custom` = explicit list only. */
+export function getEffectivePermissions(user: {
+  role: string;
+  permissions?: string[];
+  permissionSource?: PermissionSourceMode;
+}): string[] {
+  if (user.role === "Admin") return [...ALL_PERMISSIONS];
+  const stored = (user.permissions ?? []).filter((p) => ALL_PERMISSIONS.includes(p));
+  const source = resolvePermissionSource(user);
+  if (source === "role") {
+    const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role];
+    return fromRole ? [...fromRole] : [];
+  }
+  return [...new Set(stored)];
 }
 
 // Check if user has permission (Admin always has access)
@@ -168,14 +189,14 @@ export const getUserPermissions = (): string[] => {
   return [];
 };
 
-// Check if user is Admin
+// Check if user is Admin (trimmed; backend enum is "Admin")
 export const isAdmin = (): boolean => {
   if (typeof window === "undefined") return false;
   try {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      return user?.role === "Admin";
+      return String(user?.role || "").trim() === "Admin";
     }
   } catch (e) {
     console.error("Failed to parse user role");

@@ -37,17 +37,26 @@ export default function DashboardPage() {
   const [allAMC, setAllAMC] = useState<any[]>([]);
   const [selectedStatCard, setSelectedStatCard] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData({ state: selectedState });
-  }, []);
-
-  // Poll dashboard data periodically so pipeline updates when lead status changes elsewhere.
+  // Poll summary stats only (full lead list can be large; cards need correct totals).
   useEffect(() => {
     const interval = setInterval(() => {
-      loadData({ state: selectedState }).catch(() => {});
-    }, 20000); // every 20s
+      leadsAPI
+        .getSummaryStats({ state: selectedState || undefined })
+        .then((summary) => {
+          setStats({
+            totalLeads: summary.total,
+            leadContacted: summary.leadContacted,
+            meetingScheduled: summary.meetingScheduled,
+            meetingsCompleted: summary.meetingsCompleted,
+            quotationSent: summary.quotationSent,
+            managerDeliberation: summary.managerDeliberation,
+            lostLeads: summary.lostLeads,
+          });
+        })
+        .catch(() => {});
+    }, 20000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedState]);
 
   // Load available states from backend (derived from leads collection)
   useEffect(() => {
@@ -119,40 +128,42 @@ export default function DashboardPage() {
     return null;
   };
 
+  /** Same filters as the leads API; merges every page (max 200/req) so the dashboard is not capped at page 1. */
+  const fetchAllLeadsForState = async (state: string) => {
+    const limit = 200;
+    const out: any[] = [];
+    let total = Infinity;
+    for (let page = 1; page <= 500 && out.length < total; page++) {
+      const raw = await leadsAPI.getAll({ state: state || undefined, page, limit });
+      const chunk = Array.isArray((raw as any)?.leads) ? (raw as any).leads : [];
+      total =
+        typeof (raw as any)?.total === "number"
+          ? (raw as any).total
+          : Math.max(chunk.length, out.length + chunk.length);
+      out.push(...chunk);
+      if (chunk.length < limit || chunk.length === 0) break;
+    }
+    return out;
+  };
+
   const loadData = async (opts?: { state?: string }) => {
     try {
       setLoading(true);
       const state = opts?.state !== undefined ? opts.state : selectedState;
-      const leadsResponse = await leadsAPI.getAll({ state: state || undefined });
-      const leadsData = Array.isArray(leadsResponse)
-        ? leadsResponse
-        : Array.isArray((leadsResponse as any)?.leads)
-          ? (leadsResponse as any).leads
-          : [];
 
-      // Calculate lead stage metrics from live data
-      const totalLeads = leadsData.length;
-      const leadContacted = leadsData.filter((l: any) => l.stage === "Lead Contacted").length;
-      const meetingScheduledLeads = leadsData.filter((l: any) => l.stage === "Meeting Scheduled");
-      const meetingScheduled = meetingScheduledLeads.length;
-      // Treat meetings as completed if either stage is "Meeting Completed" or an explicit meetingStatus flag exists.
-      const meetingsCompleted = leadsData.filter(
-        (l: any) =>
-          l.stage === "Meeting Completed" ||
-          (l.meetingStatus && String(l.meetingStatus).toLowerCase() === "completed")
-      ).length;
-      const quotationSent = leadsData.filter((l: any) => l.stage === "Quotation Sent").length;
-      const managerDeliberation = leadsData.filter((l: any) => l.stage === "Manager Deliberation").length;
-      const lostLeads = leadsData.filter((l: any) => l.stage === "Order Lost").length;
+      const [summary, leadsData] = await Promise.all([
+        leadsAPI.getSummaryStats({ state: state || undefined }),
+        fetchAllLeadsForState(state),
+      ]);
 
       setStats({
-        totalLeads,
-        leadContacted,
-        meetingScheduled,
-        meetingsCompleted,
-        quotationSent,
-        managerDeliberation,
-        lostLeads,
+        totalLeads: summary.total,
+        leadContacted: summary.leadContacted,
+        meetingScheduled: summary.meetingScheduled,
+        meetingsCompleted: summary.meetingsCompleted,
+        quotationSent: summary.quotationSent,
+        managerDeliberation: summary.managerDeliberation,
+        lostLeads: summary.lostLeads,
       });
       setRecentLeads(leadsData.slice(0, 3));
       // Store leads with parsed meeting dates

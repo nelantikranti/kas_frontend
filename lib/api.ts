@@ -104,7 +104,7 @@ export interface Lead {
   email: string;
   phone: string;
   source: string;
-  stage: "New Lead" | "Lead Contacted" | "Meeting Scheduled" | "Meeting Completed" | "Quotation Sent" | "Manager Deliberation" | "Order Closed" | "Order Lost";
+  stage: string;
   value: number;
   assignedTo: string;
   assignedToUserId?: string | null;
@@ -388,6 +388,23 @@ export const leadsAPI = {
     const query = qs.toString();
     return fetchAPI(`/leads${query ? `?${query}` : ""}`);
   },
+  /** Dashboard-friendly totals across all matching leads (same filters as GET /leads — not capped at page size). */
+  getSummaryStats: (params?: { state?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.state?.trim()) qs.set("state", params.state.trim());
+    const suffix = qs.toString() ? `?${qs}` : "";
+    return fetchAPI(`/leads/summary/stats${suffix}`) as Promise<{
+      total: number;
+      leadContacted: number;
+      meetingScheduled: number;
+      meetingsCompleted: number;
+      quotationSent: number;
+      managerDeliberation: number;
+      lostLeads: number;
+      newLead: number;
+      orderClosed: number;
+    }>;
+  },
   getById: (id: string) => fetchAPI(`/leads/${id}`),
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
@@ -664,6 +681,8 @@ export const groupsAPI = {
 export interface PipelineListItem {
   id: string;
   pipelineName: string;
+  details?: string;
+  stages?: { name: string; order: number }[];
   groupName: string | null;
   groupId: string | null;
   leads: number;
@@ -684,11 +703,23 @@ export const pipelinesAPI = {
     }>;
   },
   getById: (id: string) => fetchAPI(`/pipelines/${id}`) as Promise<PipelineListItem>,
-  create: (data: { pipelineName: string; groupId?: string | null; addedBy?: string }) =>
+  create: (data: { pipelineName: string; details?: string; stages?: Array<string | { name: string; order?: number }>; groupId?: string | null; addedBy?: string }) =>
     fetchAPI("/pipelines", { method: "POST", body: JSON.stringify(data) }) as Promise<PipelineListItem>,
-  update: (id: string, data: { pipelineName?: string; groupId?: string | null }) =>
+  update: (id: string, data: { pipelineName?: string; details?: string; stages?: Array<string | { name: string; order?: number }>; groupId?: string | null }) =>
     fetchAPI(`/pipelines/${id}`, { method: "PUT", body: JSON.stringify(data) }) as Promise<PipelineListItem>,
   delete: (id: string) => fetchAPI(`/pipelines/${id}`, { method: "DELETE" }),
+  getBoard: (id: string) =>
+    fetchAPI(`/pipelines/${id}/board`) as Promise<{
+      pipeline: {
+        id: string;
+        pipelineName: string;
+        details: string;
+        groupId: string | null;
+        groupName: string | null;
+        stages: { name: string; order: number }[];
+      };
+      leads: Lead[];
+    }>,
 };
 
 // Dashboard API

@@ -70,6 +70,7 @@ function TopbarImpl({ onSidebarToggle }: TopbarProps) {
                   ...userData,
                   role: updatedUser.role || userData.role,
                   permissions: updatedUser.permissions || userData.permissions || [],
+                  permissionSource: updatedUser.permissionSource ?? userData.permissionSource,
                 };
                 setUser(updatedUserData);
                 localStorage.setItem("user", JSON.stringify(updatedUserData));
