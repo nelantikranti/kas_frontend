@@ -145,8 +145,11 @@ export function resolvePermissionSource(user: {
   if (user.permissionSource === "role" || user.permissionSource === "custom") {
     return user.permissionSource;
   }
+  // If backend provided permissions but they're not in our known list, treat them as absent.
+  // This prevents users from being locked out when permission strings don't match expected keys.
   const stored = user.permissions ?? [];
-  return stored.length > 0 ? "custom" : "role";
+  const knownStored = stored.filter((p) => ALL_PERMISSIONS.includes(p));
+  return knownStored.length > 0 ? "custom" : "role";
 }
 
 /** Align with backend: `role` = defaults for that role; `custom` = explicit list only. */
@@ -159,6 +162,16 @@ export function getEffectivePermissions(user: {
   const stored = (user.permissions ?? []).filter((p) => ALL_PERMISSIONS.includes(p));
   const source = resolvePermissionSource(user);
   if (source === "role") {
+    // Prefer backend-provided role permissions when present.
+    // This allows Admin-managed role-permissions to reflect immediately for users,
+    // even if the frontend's DEFAULT_ROLE_PERMISSIONS list is out of date.
+    if (stored.length > 0) return [...new Set(stored)];
+    const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role];
+    return fromRole ? [...fromRole] : [];
+  }
+  // If custom mode is indicated but no valid permission keys exist, fall back to role defaults.
+  // This handles cases where backend stored human-readable labels instead of permission keys.
+  if (stored.length === 0) {
     const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role];
     return fromRole ? [...fromRole] : [];
   }

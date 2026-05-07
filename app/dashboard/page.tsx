@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
 import { leadsAPI, projectsAPI, amcAPI, settingsAPI } from "@/lib/api";
@@ -14,12 +14,17 @@ import {
   IoCloseCircle,
 } from "react-icons/io5";
 import SalesPipelineOverview from "@/components/dashboard/SalesPipelineOverview";
- 
+
 
 export default function DashboardPage() {
   const router = useRouter();
   const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedExecutive, setSelectedExecutive] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
   const [availableStates, setAvailableStates] = useState<string[]>([]);
+  const [availableExecutives, setAvailableExecutives] = useState<string[]>([]);
   const [stats, setStats] = useState({
     totalLeads: 0,
     leadContacted: 0,
@@ -37,26 +42,15 @@ export default function DashboardPage() {
   const [allAMC, setAllAMC] = useState<any[]>([]);
   const [selectedStatCard, setSelectedStatCard] = useState<string | null>(null);
 
-  // Poll summary stats only (full lead list can be large; cards need correct totals).
-  useEffect(() => {
-    const interval = setInterval(() => {
-      leadsAPI
-        .getSummaryStats({ state: selectedState || undefined })
-        .then((summary) => {
-          setStats({
-            totalLeads: summary.total,
-            leadContacted: summary.leadContacted,
-            meetingScheduled: summary.meetingScheduled,
-            meetingsCompleted: summary.meetingsCompleted,
-            quotationSent: summary.quotationSent,
-            managerDeliberation: summary.managerDeliberation,
-            lostLeads: summary.lostLeads,
-          });
-        })
-        .catch(() => {});
-    }, 20000);
-    return () => clearInterval(interval);
-  }, [selectedState]);
+  const computeStats = (leads: any[]) => ({
+    totalLeads: leads.length,
+    leadContacted: leads.filter((l) => l.stage === "Lead Contacted").length,
+    meetingScheduled: leads.filter((l) => l.stage === "Meeting Scheduled").length,
+    meetingsCompleted: leads.filter((l) => l.stage === "Meeting Completed").length,
+    quotationSent: leads.filter((l) => l.stage === "Quotation Sent").length,
+    managerDeliberation: leads.filter((l) => l.stage === "Manager Deliberation").length,
+    lostLeads: leads.filter((l) => l.stage === "Order Lost").length,
+  });
 
   // Load available states from backend (derived from leads collection)
   useEffect(() => {
@@ -75,13 +69,13 @@ export default function DashboardPage() {
   // Helper function to parse meeting date/time from notes
   const parseMeetingDateTime = (lead: any): string | null => {
     if (!lead.notes || lead.stage !== "Meeting Scheduled") return null;
-    
+
     try {
       // Look for meeting scheduled section
       const meetingMatch = lead.notes.match(/--- MEETING SCHEDULED ---([\s\S]*?)(?=---|\[|$)/i);
       if (meetingMatch) {
         const meetingSection = meetingMatch[1];
-        
+
         // Look for Next Follow-up Date
         const followUpMatch = meetingSection.match(/Next Follow-up Date:\s*(.+)/i);
         if (followUpMatch) {
@@ -102,7 +96,7 @@ export default function DashboardPage() {
           }
         }
       }
-      
+
       // Also check in NEXT ACTION section
       const nextActionMatch = lead.notes.match(/NEXT ACTION:[\s\S]*?Next Follow-up Date:\s*(.+)/i);
       if (nextActionMatch) {
@@ -124,7 +118,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error parsing meeting date:", error);
     }
-    
+
     return null;
   };
 
@@ -133,7 +127,9 @@ export default function DashboardPage() {
     const limit = 200;
     const out: any[] = [];
     let total = Infinity;
-    for (let page = 1; page <= 500 && out.length < total; page++) {
+    let page = 1;
+    // Fetch until backend reports no more records.
+    while (out.length < total) {
       const raw = await leadsAPI.getAll({ state: state || undefined, page, limit });
       const chunk = Array.isArray((raw as any)?.leads) ? (raw as any).leads : [];
       total =
@@ -142,6 +138,7 @@ export default function DashboardPage() {
           : Math.max(chunk.length, out.length + chunk.length);
       out.push(...chunk);
       if (chunk.length < limit || chunk.length === 0) break;
+      page += 1;
     }
     return out;
   };
@@ -151,20 +148,7 @@ export default function DashboardPage() {
       setLoading(true);
       const state = opts?.state !== undefined ? opts.state : selectedState;
 
-      const [summary, leadsData] = await Promise.all([
-        leadsAPI.getSummaryStats({ state: state || undefined }),
-        fetchAllLeadsForState(state),
-      ]);
-
-      setStats({
-        totalLeads: summary.total,
-        leadContacted: summary.leadContacted,
-        meetingScheduled: summary.meetingScheduled,
-        meetingsCompleted: summary.meetingsCompleted,
-        quotationSent: summary.quotationSent,
-        managerDeliberation: summary.managerDeliberation,
-        lostLeads: summary.lostLeads,
-      });
+      const leadsData = await fetchAllLeadsForState(state);
       setRecentLeads(leadsData.slice(0, 3));
       // Store leads with parsed meeting dates
       const leadsWithMeetingDates = leadsData.map((lead: any) => ({
@@ -172,7 +156,16 @@ export default function DashboardPage() {
         meetingDateTime: lead.stage === "Meeting Scheduled" ? parseMeetingDateTime(lead) : null
       }));
       setAllLeads(leadsWithMeetingDates);
-      
+      setStats(computeStats(leadsWithMeetingDates));
+      const executives = Array.from(
+        new Set(
+          leadsWithMeetingDates
+            .map((lead: any) => String(lead.assignedTo || "").trim())
+            .filter((v: string) => v.length > 0)
+        )
+      ).sort((a, b) => a.localeCompare(b));
+      setAvailableExecutives(executives);
+
       // Load projects and AMC for other sections
       try {
         const [projectsData, amcData] = await Promise.all([
@@ -180,8 +173,8 @@ export default function DashboardPage() {
           amcAPI.getAll().catch(() => []),
         ]);
         setRecentProjects(projectsData.slice(0, 3));
-      setAllProjects(projectsData);
-      setAllAMC(amcData || []);
+        setAllProjects(projectsData);
+        setAllAMC(amcData || []);
       } catch (err) {
         console.error("Failed to load projects/AMC:", err);
       }
@@ -194,9 +187,35 @@ export default function DashboardPage() {
 
   // Reload dashboard metrics when state filter changes
   useEffect(() => {
-    loadData({ state: selectedState }).catch(() => {});
+    loadData({ state: selectedState }).catch(() => { });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedState]);
+
+  const filteredLeads = useMemo(() => {
+    const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+    const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
+    return allLeads.filter((lead: any) => {
+      const assignedTo = String(lead.assignedTo || "").trim();
+      if (selectedExecutive && assignedTo !== selectedExecutive) return false;
+
+      const created = lead.createdAt ? new Date(lead.createdAt) : null;
+      if (selectedMonth) {
+        if (!created || Number.isNaN(created.getTime())) return false;
+        const monthKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}`;
+        if (monthKey !== selectedMonth) return false;
+      }
+
+      if ((from || to) && (!created || Number.isNaN(created.getTime()))) return false;
+      if (from && created && created < from) return false;
+      if (to && created && created > to) return false;
+      return true;
+    });
+  }, [allLeads, selectedExecutive, selectedMonth, fromDate, toDate]);
+
+  useEffect(() => {
+    setStats(computeStats(filteredLeads));
+    setRecentLeads(filteredLeads.slice(0, 3));
+  }, [filteredLeads]);
 
   const handleCardClick = (title: string) => {
     setSelectedStatCard(title);
@@ -209,9 +228,9 @@ export default function DashboardPage() {
 
   // Compute meeting scheduled trend text
   const getMeetingScheduledTrend = () => {
-    const scheduledLeads = allLeads.filter((l: any) => l.stage === "Meeting Scheduled");
+    const scheduledLeads = filteredLeads.filter((l: any) => l.stage === "Meeting Scheduled");
     if (scheduledLeads.length === 0) return "Meetings planned";
-    
+
     const dates = scheduledLeads
       .map((l: any) => {
         const dateTime = l.meetingDateTime || parseMeetingDateTime(l);
@@ -219,7 +238,7 @@ export default function DashboardPage() {
       })
       .filter((d: string | null) => d !== null && d !== "")
       .slice(0, 2); // Show max 2 dates
-    
+
     if (dates.length === 0) return "Meetings planned";
     return dates.join(" • ");
   };
@@ -282,10 +301,10 @@ export default function DashboardPage() {
       stage: "Manager Deliberation" as const,
     },
   ];
-  
+
   const currentSelectedStat = selectedStatCard ? statCards.find(s => s.title === selectedStatCard) : null;
   const filteredLeadsForModal = currentSelectedStat
-    ? (currentSelectedStat.stage === "All" ? allLeads : allLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage))
+    ? (currentSelectedStat.stage === "All" ? filteredLeads : filteredLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage))
     : [];
 
   if (loading) {
@@ -319,10 +338,10 @@ export default function DashboardPage() {
       percentage:
         allProjects.length > 0
           ? Math.round(
-              (allProjects.filter((p: any) => p.currentStage === "Order Confirmed").length /
-                Math.max(1, allProjects.length)) *
-                100
-            )
+            (allProjects.filter((p: any) => p.currentStage === "Order Confirmed").length /
+              Math.max(1, allProjects.length)) *
+            100
+          )
           : 0,
       color: "#f59e0b", // orange
     },
@@ -331,13 +350,13 @@ export default function DashboardPage() {
       percentage:
         allProjects.length > 0
           ? Math.round(
-              (allProjects.filter(
-                (p: any) =>
-                  p.currentStage === "Installed" || p.currentStage === "Installation Completed"
-              ).length /
-                Math.max(1, allProjects.length)) *
-                100
-            )
+            (allProjects.filter(
+              (p: any) =>
+                p.currentStage === "Installed" || p.currentStage === "Installation Completed"
+            ).length /
+              Math.max(1, allProjects.length)) *
+            100
+          )
           : 0,
       color: "#ef4444", // red
     },
@@ -345,30 +364,78 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div className="mb-6 sm:mb-8 flex flex-col gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Dashboard Overview</h1>
           <p className="text-sm sm:text-base text-gray-600">Welcome back! Here's what's happening with your business.</p>
         </div>
 
-        {/* State filter */}
-        {availableStates.length > 0 && (
-          <div className="w-full sm:w-48 md:w-56">
-            <label className="block text-xs font-medium text-gray-700 mb-1">State</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* State filter */}
+          {availableStates.length > 0 && (
+            <div className="w-full">
+              <label className="block text-xs font-medium text-gray-700 mb-1">State</label>
+              <select
+                value={selectedState}
+                onChange={(e) => setSelectedState(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="">All States</option>
+                {availableStates.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="w-full">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Sales Executive (BDM)</label>
             <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
+              value={selectedExecutive}
+              onChange={(e) => setSelectedExecutive(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
-              <option value="">All States</option>
-              {availableStates.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              <option value="">All Executives</option>
+              {availableExecutives.map((exec) => (
+                <option key={exec} value={exec}>
+                  {exec}
                 </option>
               ))}
             </select>
           </div>
-        )}
+
+          <div className="w-full">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Month</label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <div className="w-full">
+            <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+
+          <div className="w-full">
+            <label className="block text-xs font-medium text-gray-700 mb-1">State</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -383,7 +450,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      
+
 
       <div className="mb-6">
         <SalesPipelineOverview data={salesStages} showDebug={false} />

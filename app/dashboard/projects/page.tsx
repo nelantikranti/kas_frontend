@@ -113,6 +113,7 @@ export default function ProjectsPage() {
   const canEditExpense = can(PERMISSIONS.EXPENSE_EDIT, userPermissions);
   const canDeleteExpense = can(PERMISSIONS.EXPENSE_DELETE, userPermissions);
   const canViewProjects = can(PERMISSIONS.PROJECTS_VIEW, userPermissions);
+  const canCreateProjects = can(PERMISSIONS.PROJECTS_CREATE, userPermissions);
   const canDeleteProjects = can(PERMISSIONS.PROJECTS_DELETE, userPermissions);
   const canSeeExpenseList = canViewExpense || canDeleteExpense || canEditExpense;
   const addExpenseOnly = canAddExpense && !canViewExpense && !canEditExpense && !canDeleteExpense;
@@ -661,13 +662,15 @@ export default function ProjectsPage() {
               className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
             />
           </div>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap text-sm sm:text-base font-semibold"
-          >
-            <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>New Project</span>
-          </button>
+          {canCreateProjects && (
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap text-sm sm:text-base font-semibold"
+            >
+              <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>New Project</span>
+            </button>
+          )}
         </div>
       </div>
 

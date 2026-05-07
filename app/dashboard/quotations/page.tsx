@@ -14,6 +14,7 @@ export default function QuotationsPage() {
     setUserPermissions(getUserPermissions());
   }, []);
   const canViewQuotations = can(PERMISSIONS.QUOTATIONS_VIEW, userPermissions);
+  const canCreateQuotations = can(PERMISSIONS.QUOTATIONS_CREATE, userPermissions);
   const canDeleteQuotations =
     can(PERMISSIONS.QUOTATIONS_CREATE, userPermissions) ||
     can(PERMISSIONS.QUOTATIONS_APPROVE, userPermissions);
@@ -330,14 +331,16 @@ export default function QuotationsPage() {
               className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
             />
           </div>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap text-sm sm:text-base"
-          >
-            <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline">Create Quotation</span>
-            <span className="sm:hidden">Create</span>
-          </button>
+          {canCreateQuotations && (
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap text-sm sm:text-base"
+            >
+              <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Create Quotation</span>
+              <span className="sm:hidden">Create</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -464,7 +467,7 @@ export default function QuotationsPage() {
 
       {/* Create Quotation Modal - Comprehensive Form */}
       <Modal
-        isOpen={isCreateModalOpen}
+        isOpen={isCreateModalOpen && canCreateQuotations}
         onClose={() => setIsCreateModalOpen(false)}
         title="Create New Quotation"
         size="xl"

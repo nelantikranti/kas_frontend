@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { leadsAPI, projectsAPI, groupsAPI, type Lead } from "@/lib/api";
+import { leadsAPI, projectsAPI, groupsAPI, usersAPI, type Lead } from "@/lib/api";
 import { isAdmin } from "@/lib/permissions";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
@@ -58,6 +58,7 @@ export default function EditLeadPage() {
   const [canReassignLead, setCanReassignLead] = useState(false);
   const [originalStage, setOriginalStage] = useState<Lead["stage"]>("New Lead");
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
+  const [salesExecutives, setSalesExecutives] = useState<string[]>([]);
   const [leadData, setLeadData] = useState({
     // Basic Lead Details
     name: "",
@@ -123,6 +124,7 @@ export default function EditLeadPage() {
     if (leadId) {
       loadLead();
       loadGroups();
+      loadSalesExecutives();
     }
   }, [leadId]);
 
@@ -134,6 +136,25 @@ export default function EditLeadPage() {
     } catch (error) {
       console.error("Failed to load groups:", error);
       setGroups([]);
+    }
+  };
+
+  const loadSalesExecutives = async () => {
+    try {
+      const data = await usersAPI.getAll();
+      const users = Array.isArray(data) ? data : [];
+      const executives = Array.from(
+        new Set(
+          users
+            .filter((u: any) => String(u?.role || "").trim() === "Sales Executive")
+            .map((u: any) => String(u?.name || "").trim())
+            .filter((name: string) => name.length > 0)
+        )
+      ).sort((a, b) => a.localeCompare(b));
+      setSalesExecutives(executives);
+    } catch (error) {
+      console.error("Failed to load sales executives:", error);
+      setSalesExecutives([]);
     }
   };
 
@@ -1176,14 +1197,34 @@ SALES OWNER:
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Sales Executive Name *
                   </label>
-                  <input
-                    type="text"
-                    value={leadData.salesExecutiveName}
-                    onChange={(e) => setLeadData({ ...leadData, salesExecutiveName: e.target.value })}
-                    disabled={!canReassignLead}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-                    placeholder={canReassignLead ? "Enter sales executive name" : "Only admins can change this"}
-                  />
+                  {canReassignLead ? (
+                    <select
+                      value={leadData.salesExecutiveName}
+                      onChange={(e) => setLeadData({ ...leadData, salesExecutiveName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Sales Executive</option>
+                      {leadData.salesExecutiveName &&
+                        !salesExecutives.includes(leadData.salesExecutiveName) && (
+                          <option value={leadData.salesExecutiveName}>
+                            {leadData.salesExecutiveName}
+                          </option>
+                        )}
+                      {salesExecutives.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={leadData.salesExecutiveName}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                      placeholder="Only admins can change this"
+                    />
+                  )}
                   {!canReassignLead && (
                     <p className="mt-1 text-xs text-gray-500">
                       Lead reassignment is admin-only. Please contact an admin if this needs to change.

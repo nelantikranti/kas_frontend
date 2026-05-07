@@ -10,6 +10,8 @@ interface User {
   name: string;
   email: string;
   role: string;
+  permissions?: string[];
+  permissionSource?: "role" | "custom";
 }
 
 interface TopbarProps {
@@ -249,6 +251,7 @@ function TopbarImpl({ onSidebarToggle }: TopbarProps) {
       .slice(0, 2);
   };
 
+  const isAdminRole = String(user?.role || "").trim() === "Admin";
   return (
     <div className="h-16 bg-gradient-to-r from-white via-green-50/50 to-white border-b border-green-200/50 flex items-center justify-between px-3 sm:px-4 md:px-6 relative z-[60] shadow-sm">
       <div className="flex items-center gap-2 sm:gap-4">
@@ -354,6 +357,18 @@ function TopbarImpl({ onSidebarToggle }: TopbarProps) {
                 <p className="font-semibold text-gray-900">{user?.name || "User"}</p>
                 <p className="text-sm text-gray-500">{user?.email || ""}</p>
               </div>
+              {isAdminRole && (
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    router.push("/dashboard/permissions");
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <IoPerson className="w-4 h-4" />
+                  Role Permissions
+                </button>
+              )}
               <button
                 onClick={() => {
                   setShowUserMenu(false);
@@ -377,17 +392,6 @@ function TopbarImpl({ onSidebarToggle }: TopbarProps) {
           )}
         </div>
       </div>
-
-      {/* Click outside to close dropdowns */}
-      {(showNotifications || showUserMenu) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setShowNotifications(false);
-            setShowUserMenu(false);
-          }}
-        />
-      )}
     </div>
   );
 }
