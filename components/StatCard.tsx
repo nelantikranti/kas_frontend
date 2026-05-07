@@ -8,7 +8,7 @@ interface StatCardProps {
   value: string | number;
   icon: ReactNode;
   trend?: string;
-  color?: "blue" | "green" | "purple" | "orange";
+  color?: "blue" | "green" | "purple" | "orange" | "red";
 }
 
 export default function StatCard({ title, value, icon, trend, color = "blue" }: StatCardProps) {
@@ -17,6 +17,7 @@ export default function StatCard({ title, value, icon, trend, color = "blue" }: 
     green: "bg-green-50 text-green-600 border-green-200",
     purple: "bg-purple-50 text-purple-600 border-purple-200",
     orange: "bg-orange-50 text-orange-600 border-orange-200",
+    red: "bg-red-50 text-red-600 border-red-200",
   };
 
   return (
