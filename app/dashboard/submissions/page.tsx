@@ -13,6 +13,7 @@ interface Contact {
   name: string;
   email: string;
   phone: string;
+  city: string;
   subject: string;
   message: string;
   status: "New" | "Read" | "Replied";
@@ -248,6 +249,7 @@ export default function SubmissionsPage() {
         contact.name.toLowerCase().includes(query) ||
         contact.email.toLowerCase().includes(query) ||
         contact.phone.includes(query) ||
+        (contact.city?.toLowerCase().includes(query) ?? false) ||
         contact.subject.toLowerCase().includes(query) ||
         contact.message.toLowerCase().includes(query) ||
         contact.status.toLowerCase().includes(query) ||
@@ -766,6 +768,10 @@ export default function SubmissionsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                   <div className="text-gray-900">{selectedItem.phone}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <div className="text-gray-900">{selectedItem.city || "—"}</div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>

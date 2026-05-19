@@ -40,6 +40,7 @@ export default function ContactPage() {
     name: "",
     email: "",
     phone: "",
+    city: "",
     subject: "",
     message: "",
   });
@@ -81,7 +82,7 @@ export default function ContactPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+        setFormData({ name: "", email: "", phone: "", city: "", subject: "", message: "" });
         // Redirect to thank you page
         router.push("/thank-you");
       } else {
@@ -192,6 +193,20 @@ export default function ContactPage() {
                         {formData.phone && formData.phone.length !== 10 && (
                           <p className="text-xs text-red-600 mt-1">Phone number must be exactly 10 digits</p>
                         )}
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          City *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.city}
+                          onChange={(e) => handleTextChange("city", e.target.value, setFormData, formData)}
+                          className="w-full h-12 px-4 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-green-500/60 focus:border-green-300 transition-shadow"
+                          placeholder="Enter your city"
+                          pattern="[A-Za-z\s\.\-\'']+"
+                        />
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
