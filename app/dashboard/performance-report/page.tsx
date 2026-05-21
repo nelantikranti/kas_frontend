@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { performanceAPI } from "@/lib/api";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
+import { toast } from "@/components/Toast";
+import Link from "next/link";
 
 type Row = {
   userId: string;
@@ -15,6 +18,7 @@ type Row = {
 };
 
 export default function PerformanceReportPage() {
+  const canExport = can(PERMISSIONS.HR_PERFORMANCE_EXPORT, getUserPermissions());
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,8 +98,46 @@ export default function PerformanceReportPage() {
             >
               Reset
             </button>
+            {canExport && (
+              <>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await performanceAPI.exportReport({ from: from || undefined, to: to || undefined, format: "csv" });
+                      toast.success("CSV downloaded");
+                    } catch (e: unknown) {
+                      toast.error(e instanceof Error ? e.message : "Export failed");
+                    }
+                  }}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Export CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await performanceAPI.exportReport({ from: from || undefined, to: to || undefined, format: "pdf" });
+                      toast.success("PDF downloaded");
+                    } catch (e: unknown) {
+                      toast.error(e instanceof Error ? e.message : "Export failed");
+                    }
+                  }}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Export PDF
+                </button>
+              </>
+            )}
           </div>
         </div>
+        <p className="mt-2 text-xs text-gray-500">
+          <Link href="/dashboard/hr" className="text-green-600 hover:underline">
+            Open HR hub
+          </Link>{" "}
+          for leave, attendance, and timesheets.
+        </p>
 
         {error && (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

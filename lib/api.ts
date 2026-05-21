@@ -748,6 +748,107 @@ export const performanceAPI = {
       }>;
     }>;
   },
+  exportReport: async (params?: { from?: string; to?: string; format?: "csv" | "pdf" }) => {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set("from", params.from);
+    if (params?.to) qs.set("to", params.to);
+    qs.set("format", params?.format || "csv");
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const res = await fetch(`${API_BASE_URL}/performance-report/export?${qs}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error("Export failed");
+    const blob = await res.blob();
+    const ext = params?.format === "pdf" ? "pdf" : "csv";
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `performance-${Date.now()}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+};
+
+async function hrFetchFile(endpoint: string, formData: FormData) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = "Upload failed";
+    try {
+      const j = JSON.parse(text);
+      msg = j.error || msg;
+    } catch {
+      msg = text || msg;
+    }
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export const hrAPI = {
+  getDashboard: () => fetchAPI("/hr/dashboard"),
+  getEmployees: () => fetchAPI("/hr/employees"),
+  getEmployee: (id: string) => fetchAPI(`/hr/employees/${id}`),
+  updateProfile: (id: string, data: Record<string, unknown>) =>
+    fetchAPI(`/hr/employees/${id}/profile`, { method: "PUT", body: JSON.stringify(data) }),
+  toggleOnboarding: (id: string, key: string, completed: boolean) =>
+    fetchAPI(`/hr/employees/${id}/onboarding/${key}`, {
+      method: "PUT",
+      body: JSON.stringify({ completed }),
+    }),
+  uploadDocument: (id: string, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return hrFetchFile(`/hr/employees/${id}/documents`, fd);
+  },
+  deleteDocument: (id: string, docId: string) =>
+    fetchAPI(`/hr/employees/${id}/documents/${docId}`, { method: "DELETE" }),
+  getLeave: (params?: { status?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.status) qs.set("status", params.status);
+    return fetchAPI(`/hr/leave${qs.toString() ? `?${qs}` : ""}`);
+  },
+  requestLeave: (data: { type: string; startDate: string; endDate: string; reason: string }) =>
+    fetchAPI("/hr/leave", { method: "POST", body: JSON.stringify(data) }),
+  approveLeave: (id: string, reviewNote?: string) =>
+    fetchAPI(`/hr/leave/${id}/approve`, { method: "PUT", body: JSON.stringify({ reviewNote }) }),
+  rejectLeave: (id: string, reviewNote?: string) =>
+    fetchAPI(`/hr/leave/${id}/reject`, { method: "PUT", body: JSON.stringify({ reviewNote }) }),
+  getTodayAttendance: () => fetchAPI("/hr/attendance/today"),
+  getAttendance: (params?: { from?: string; to?: string; userId?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set("from", params.from);
+    if (params?.to) qs.set("to", params.to);
+    if (params?.userId) qs.set("userId", params.userId);
+    return fetchAPI(`/hr/attendance${qs.toString() ? `?${qs}` : ""}`);
+  },
+  checkIn: () => fetchAPI("/hr/attendance/check-in", { method: "POST", body: "{}" }),
+  checkOut: () => fetchAPI("/hr/attendance/check-out", { method: "POST", body: "{}" }),
+  recordAttendance: (data: Record<string, unknown>) =>
+    fetchAPI("/hr/attendance", { method: "POST", body: JSON.stringify(data) }),
+  getTimesheets: (params?: { from?: string; to?: string; status?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set("from", params.from);
+    if (params?.to) qs.set("to", params.to);
+    if (params?.status) qs.set("status", params.status);
+    return fetchAPI(`/hr/timesheets${qs.toString() ? `?${qs}` : ""}`);
+  },
+  createTimesheet: (data: Record<string, unknown>) =>
+    fetchAPI("/hr/timesheets", { method: "POST", body: JSON.stringify(data) }),
+  updateTimesheet: (id: string, data: Record<string, unknown>) =>
+    fetchAPI(`/hr/timesheets/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteTimesheet: (id: string) => fetchAPI(`/hr/timesheets/${id}`, { method: "DELETE" }),
+  getTasks: (assignedTo?: string) =>
+    fetchAPI(`/hr/tasks${assignedTo ? `?assignedTo=${assignedTo}` : ""}`),
+  createTask: (data: Record<string, unknown>) =>
+    fetchAPI("/hr/tasks", { method: "POST", body: JSON.stringify(data) }),
+  updateTask: (id: string, data: Record<string, unknown>) =>
+    fetchAPI(`/hr/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 };
 
 // Health check API
@@ -770,7 +871,7 @@ export interface Notification {
   id: string;
   userId?: string;
   message: string;
-  type: "demo" | "contact" | "quotation" | "project" | "amc" | "lead" | "signup" | "system";
+  type: "demo" | "contact" | "quotation" | "project" | "amc" | "lead" | "signup" | "leave" | "attendance" | "timesheet" | "hr" | "system";
   relatedId?: string;
   read: boolean;
   createdAt: string;

@@ -48,6 +48,20 @@ export const PERMISSIONS = {
 
   // Staff Performance
   VIEW_PERFORMANCE_REPORT: "view_performance_report",
+  HR_PERFORMANCE_EXPORT: "hr:performance_export",
+
+  HR_VIEW: "hr:view",
+  HR_EMPLOYEES_MANAGE: "hr:employees_manage",
+  HR_LEAVE_VIEW: "hr:leave_view",
+  HR_LEAVE_MANAGE: "hr:leave_manage",
+  HR_LEAVE_REQUEST: "hr:leave_request",
+  HR_ATTENDANCE_VIEW: "hr:attendance_view",
+  HR_ATTENDANCE_MANAGE: "hr:attendance_manage",
+  HR_ATTENDANCE_SELF: "hr:attendance_self",
+  HR_ONBOARDING_MANAGE: "hr:onboarding_manage",
+  HR_TIMESHEET_VIEW: "hr:timesheet_view",
+  HR_TIMESHEET_MANAGE: "hr:timesheet_manage",
+  HR_TIMESHEET_SUBMIT: "hr:timesheet_submit",
 } as const;
 
 // All permission values (Admin gets this list)
@@ -69,6 +83,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.GROUPS_CREATE,
     PERMISSIONS.GROUPS_EDIT,
     PERMISSIONS.GROUPS_DELETE,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
   ],
   "Service Engineer": [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -76,6 +93,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.DOCUMENT_UPLOAD,
     PERMISSIONS.AMC_VIEW,
     PERMISSIONS.AMC_UPDATE,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
   ],
   "Project Manager": [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -92,6 +112,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.EXPENSE_DELETE,
     PERMISSIONS.QUOTATIONS_VIEW,
     PERMISSIONS.QUOTATIONS_APPROVE,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
   ],
   Technician: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -99,6 +122,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.DOCUMENT_UPLOAD,
     PERMISSIONS.AMC_VIEW,
     PERMISSIONS.AMC_UPDATE,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
   ],
   Manager: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -111,6 +137,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.GROUPS_VIEW,
     PERMISSIONS.PIPELINES_VIEW,
     PERMISSIONS.VIEW_PERFORMANCE_REPORT,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
   ],
   Accounts: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -122,6 +151,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.EXPENSE_DELETE,
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.AMC_VIEW,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
   ],
   Accountant: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -133,6 +165,27 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.EXPENSE_DELETE,
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.AMC_VIEW,
+    PERMISSIONS.HR_LEAVE_REQUEST,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_SUBMIT,
+  ],
+  HR: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.HR_VIEW,
+    PERMISSIONS.USERS_VIEW,
+    PERMISSIONS.USERS_MANAGE,
+    PERMISSIONS.HR_EMPLOYEES_MANAGE,
+    PERMISSIONS.HR_ONBOARDING_MANAGE,
+    PERMISSIONS.HR_LEAVE_VIEW,
+    PERMISSIONS.HR_LEAVE_MANAGE,
+    PERMISSIONS.HR_ATTENDANCE_VIEW,
+    PERMISSIONS.HR_ATTENDANCE_MANAGE,
+    PERMISSIONS.HR_ATTENDANCE_SELF,
+    PERMISSIONS.HR_TIMESHEET_VIEW,
+    PERMISSIONS.HR_TIMESHEET_MANAGE,
+    PERMISSIONS.ACTIVITY_VIEW,
+    PERMISSIONS.VIEW_PERFORMANCE_REPORT,
+    PERMISSIONS.HR_PERFORMANCE_EXPORT,
   ],
 };
 
@@ -162,12 +215,10 @@ export function getEffectivePermissions(user: {
   const stored = (user.permissions ?? []).filter((p) => ALL_PERMISSIONS.includes(p));
   const source = resolvePermissionSource(user);
   if (source === "role") {
-    // Prefer backend-provided role permissions when present.
-    // This allows Admin-managed role-permissions to reflect immediately for users,
-    // even if the frontend's DEFAULT_ROLE_PERMISSIONS list is out of date.
-    if (stored.length > 0) return [...new Set(stored)];
-    const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role];
-    return fromRole ? [...fromRole] : [];
+    const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role] || [];
+    // Merge role defaults with stored overrides (backend role-permission table may be partial)
+    if (stored.length > 0) return [...new Set([...fromRole, ...stored])];
+    return [...fromRole];
   }
   // If custom mode is indicated but no valid permission keys exist, fall back to role defaults.
   // This handles cases where backend stored human-readable labels instead of permission keys.
@@ -201,6 +252,89 @@ export const getUserPermissions = (): string[] => {
 
   return [];
 };
+
+function hasPermInList(permission: string, userPermissions: string[], role: string): boolean {
+  if (String(role || "").trim() === "Admin") return true;
+  return userPermissions.includes(permission);
+}
+
+/** Landing route after login */
+export function getDashboardHomePath(role: string, userPermissions: string[] = []): string {
+  const r = String(role || "").trim();
+  if (r === "Admin") return "/dashboard";
+  if (r === "HR") return "/dashboard/hr";
+
+  const hasLeads =
+    hasPermInList(PERMISSIONS.LEADS_VIEW, userPermissions, r) ||
+    hasPermInList(PERMISSIONS.LEADS_VIEW_ALL, userPermissions, r);
+  const hasHrHub = hasPermInList(PERMISSIONS.HR_VIEW, userPermissions, r);
+
+  if (hasHrHub && !hasLeads) return "/dashboard/hr";
+
+  if (!hasLeads) {
+    if (hasPermInList(PERMISSIONS.PROJECTS_VIEW, userPermissions, r)) {
+      return "/dashboard/projects";
+    }
+    if (
+      hasPermInList(PERMISSIONS.EXPENSE_VIEW, userPermissions, r) &&
+      (r === "Accounts" || r === "Accountant")
+    ) {
+      return "/dashboard/expense";
+    }
+    if (
+      hasPermInList(PERMISSIONS.USERS_VIEW, userPermissions, r) ||
+      hasPermInList(PERMISSIONS.USERS_MANAGE, userPermissions, r)
+    ) {
+      return "/dashboard/users";
+    }
+    if (
+      hasPermInList(PERMISSIONS.HR_LEAVE_REQUEST, userPermissions, r) ||
+      hasPermInList(PERMISSIONS.HR_ATTENDANCE_SELF, userPermissions, r)
+    ) {
+      return "/dashboard/hr";
+    }
+  }
+
+  return "/dashboard";
+}
+
+export function canViewAttendanceList(role?: string, userPermissions: string[] = []): boolean {
+  if (String(role || "").trim() === "Admin") return true;
+  return (
+    userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_VIEW) ||
+    userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_MANAGE)
+  );
+}
+
+/** Roles that clock in/out (everyone except Admin) */
+export const EMPLOYEE_ATTENDANCE_ROLES = [
+  "Sales Executive",
+  "HR",
+  "Service Engineer",
+  "Project Manager",
+  "Technician",
+  "Manager",
+  "Accounts",
+  "Accountant",
+] as const;
+
+export function shouldShowEmployeeAttendanceCheckIn(role?: string): boolean {
+  const r = String(role || "").trim();
+  if (!r || r === "Admin") return false;
+  return (EMPLOYEE_ATTENDANCE_ROLES as readonly string[]).includes(r);
+}
+
+export function canEmployeeCheckInOut(role?: string, userPermissions: string[] = []): boolean {
+  if (String(role || "").trim() === "Admin") return false;
+  return (
+    shouldShowEmployeeAttendanceCheckIn(role) ||
+    userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_SELF)
+  );
+}
+
+export function usesSalesLeadsDashboard(role: string, userPermissions: string[] = []): boolean {
+  return getDashboardHomePath(role, userPermissions) === "/dashboard";
+}
 
 // Check if user is Admin (trimmed; backend enum is "Admin")
 export const isAdmin = (): boolean => {
@@ -330,6 +464,34 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.PIPELINES_CREATE, label: "Pipelines Create" },
       { key: PERMISSIONS.PIPELINES_EDIT, label: "Pipelines Edit" },
       { key: PERMISSIONS.PIPELINES_DELETE, label: "Pipelines Delete" },
+    ],
+  },
+  {
+    label: "Performance",
+    permissions: [
+      { key: PERMISSIONS.VIEW_PERFORMANCE_REPORT, label: "View Performance Report" },
+      { key: PERMISSIONS.HR_PERFORMANCE_EXPORT, label: "Export Performance (CSV/PDF)" },
+    ],
+  },
+  {
+    label: "Activity",
+    permissions: [{ key: PERMISSIONS.ACTIVITY_VIEW, label: "Activity View" }],
+  },
+  {
+    label: "HR",
+    permissions: [
+      { key: PERMISSIONS.HR_VIEW, label: "HR Hub Access" },
+      { key: PERMISSIONS.HR_EMPLOYEES_MANAGE, label: "Manage Employee Profiles" },
+      { key: PERMISSIONS.HR_ONBOARDING_MANAGE, label: "Manage Onboarding" },
+      { key: PERMISSIONS.HR_LEAVE_VIEW, label: "View All Leave" },
+      { key: PERMISSIONS.HR_LEAVE_MANAGE, label: "Approve/Reject Leave" },
+      { key: PERMISSIONS.HR_LEAVE_REQUEST, label: "Request Own Leave" },
+      { key: PERMISSIONS.HR_ATTENDANCE_VIEW, label: "View Attendance" },
+      { key: PERMISSIONS.HR_ATTENDANCE_MANAGE, label: "Manage Attendance" },
+      { key: PERMISSIONS.HR_ATTENDANCE_SELF, label: "Self Check-in/out" },
+      { key: PERMISSIONS.HR_TIMESHEET_VIEW, label: "View All Timesheets" },
+      { key: PERMISSIONS.HR_TIMESHEET_MANAGE, label: "Manage Timesheets" },
+      { key: PERMISSIONS.HR_TIMESHEET_SUBMIT, label: "Submit Own Timesheets" },
     ],
   },
 ];

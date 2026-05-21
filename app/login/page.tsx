@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { IoMail, IoLockClosed, IoEye, IoEyeOff, IoLogIn } from "react-icons/io5";
+import { getDashboardHomePath, getEffectivePermissions } from "@/lib/permissions";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function LoginPage() {
       if (data.token && data.user) {
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/dashboard");
+        router.push(getDashboardHomePath(data.user.role, getEffectivePermissions(data.user)));
       } else {
         setError("Login failed. Please try again.");
         setIsSubmitting(false);

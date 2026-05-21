@@ -24,7 +24,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Sales Executive" | "Service Engineer" | "Project Manager" | "Accounts" | "Manager" | "Technician" | "Accountant";
+  role: "Admin" | "HR" | "Sales Executive" | "Service Engineer" | "Project Manager" | "Accounts" | "Manager" | "Technician" | "Accountant";
   status: "Active" | "Inactive" | "Pending";
   lastLogin: string;
   password?: string;
@@ -1040,12 +1040,13 @@ export default function UsersPage() {
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
               style={{ color: '#111827', backgroundColor: '#ffffff' }}
             >
-              <option value="Sales Executive" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Sales Executive</option>
-              <option value="Manager" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Manager</option>
-              <option value="Service Engineer" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Service Engineer</option>
-              <option value="Project Manager" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Project Manager</option>
-              <option value="Technician" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Technician</option>
-              <option value="Accountant" style={{ color: '#1f2937', backgroundColor: '#ffffff' }}>Accountant</option>
+              <option value="HR">HR</option>
+              <option value="Sales Executive">Sales Executive</option>
+              <option value="Manager">Manager</option>
+              <option value="Service Engineer">Service Engineer</option>
+              <option value="Project Manager">Project Manager</option>
+              <option value="Technician">Technician</option>
+              <option value="Accountant">Accountant</option>
             </select>
           </div>
           <div className="flex gap-3 pt-4">
@@ -1241,6 +1242,7 @@ export default function UsersPage() {
                     disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || !isAdmin()}
             >
                     <option value="Admin">Admin</option>
+                    <option value="HR">HR</option>
                     <option value="Sales Executive">Sales Executive</option>
                     <option value="Manager">Manager</option>
                     <option value="Service Engineer">Service Engineer</option>

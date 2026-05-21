@@ -5,6 +5,7 @@ import Link from "next/link";
 import { projectsAPI, Project } from "@/lib/api";
 import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 import { IoWallet, IoTrendingUp, IoTrendingDown, IoFolder, IoArrowForward } from "react-icons/io5";
+import AttendanceTodayCard from "@/components/hr/AttendanceTodayCard";
 
 interface ProjectExpenseRow {
   project: Project;
@@ -114,6 +115,7 @@ export default function ExpensePage() {
 
   return (
     <div className="p-4 sm:p-6">
+      <AttendanceTodayCard />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Expense</h1>

@@ -22,8 +22,10 @@ import {
   IoWallet,
   IoList,
   IoStatsChart,
+  IoBriefcase,
+  IoClipboard,
 } from "react-icons/io5";
-import { PERMISSIONS, can, getEffectivePermissions } from "@/lib/permissions";
+import { PERMISSIONS, can, getEffectivePermissions, getDashboardHomePath } from "@/lib/permissions";
 
 interface NavItem {
   name: string;
@@ -60,6 +62,12 @@ const allNavItems: NavItem[] = [
     icon: <IoPerson className="w-5 h-5" />,
     requiredAnyOf: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE],
   },
+  {
+    name: "Attendance",
+    href: "/dashboard/hr/attendance",
+    icon: <IoClipboard className="w-5 h-5" />,
+    requiredAnyOf: [PERMISSIONS.HR_ATTENDANCE_VIEW, PERMISSIONS.HR_ATTENDANCE_MANAGE],
+  },
   { name: "Leads", href: "/dashboard/leads", icon: <IoPeople className="w-5 h-5" />, requiredPermission: PERMISSIONS.LEADS_VIEW },
   { name: "Groups", href: "/dashboard/groups", icon: <IoPeopleCircle className="w-5 h-5" />, requiredPermission: PERMISSIONS.GROUPS_VIEW },
   { name: "Leads Pipelines", href: "/dashboard/pipelines", icon: <IoList className="w-5 h-5" />, requiredPermission: PERMISSIONS.PIPELINES_VIEW },
@@ -72,6 +80,7 @@ const allNavItems: NavItem[] = [
   { name: "Demo Requests", href: "/dashboard/demo", icon: <IoVideocam className="w-5 h-5" />, requiredPermission: PERMISSIONS.DEMO_REQUESTS_VIEW },
   { name: "Blogs & Reviews", href: "/dashboard/blogs", icon: <IoNewspaper className="w-5 h-5" />, requiredPermission: PERMISSIONS.BLOGS_VIEW },
   { name: "Testimonials", href: "/dashboard/testimonials", icon: <IoChatbubbles className="w-5 h-5" />, requiredPermission: PERMISSIONS.TESTIMONIALS_VIEW },
+  { name: "HR", href: "/dashboard/hr", icon: <IoBriefcase className="w-5 h-5" />, requiredAnyOf: [PERMISSIONS.HR_VIEW, PERMISSIONS.HR_LEAVE_REQUEST, PERMISSIONS.HR_TIMESHEET_SUBMIT] },
   { name: "Performance Report", href: "/dashboard/performance-report", icon: <IoStatsChart className="w-5 h-5" />, requiredPermission: PERMISSIONS.VIEW_PERFORMANCE_REPORT },
   { name: "Settings", href: "/dashboard/settings", icon: <IoSettings className="w-5 h-5" />, requiredPermission: PERMISSIONS.SETTINGS_MANAGE },
   { name: "Activity", href: "/dashboard/activity", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.ACTIVITY_VIEW },
@@ -79,22 +88,39 @@ const allNavItems: NavItem[] = [
 
 // Helper function to get filtered nav items based on user permissions
 const getNavItems = (userRole: string | null, userPermissions: string[] = []): NavItem[] => {
-  
-  // Filter by permissions — Admin has access to all nav items
+  const homePath = getDashboardHomePath(userRole || "", userPermissions);
+
+  let items: NavItem[];
   if (isAdminRole(userRole)) {
-    return allNavItems;
+    items = [...allNavItems];
+  } else {
+    items = allNavItems.filter((item) => {
+      if (item.requiredAnyOf?.length) {
+        return item.requiredAnyOf.some((p) => can(p, userPermissions));
+      }
+      if (!item.requiredPermission) return true;
+      if (item.requiredPermission === PERMISSIONS.GROUPS_VIEW) {
+        return can(PERMISSIONS.GROUPS_VIEW, userPermissions) || can(PERMISSIONS.LEADS_VIEW, userPermissions);
+      }
+      return can(item.requiredPermission, userPermissions);
+    });
   }
-  return allNavItems.filter(item => {
-    if (item.requiredAnyOf?.length) {
-      return item.requiredAnyOf.some((p) => can(p, userPermissions));
-    }
-    if (!item.requiredPermission) return true;
-    // Groups: show if user has GROUPS_VIEW or LEADS_VIEW (groups are lead groups)
-    if (item.requiredPermission === PERMISSIONS.GROUPS_VIEW) {
-      return can(PERMISSIONS.GROUPS_VIEW, userPermissions) || can(PERMISSIONS.LEADS_VIEW, userPermissions);
-    }
-    return can(item.requiredPermission, userPermissions);
-  });
+
+  const canViewAllAttendance =
+    isAdminRole(userRole) ||
+    can(PERMISSIONS.HR_ATTENDANCE_VIEW, userPermissions) ||
+    can(PERMISSIONS.HR_ATTENDANCE_MANAGE, userPermissions);
+
+  return items
+    .map((item) => (item.name === "Dashboard" ? { ...item, href: homePath } : item))
+    .filter((item) => {
+      if (item.name === "Attendance") return canViewAllAttendance;
+      if (item.name !== "HR") return true;
+      // Admin uses leads dashboard + Users; HR hub is for HR role / staff self-service
+      if (isAdminRole(userRole)) return false;
+      // HR role home is /dashboard/hr — Dashboard nav already covers the hub
+      return homePath !== "/dashboard/hr";
+    });
 };
 
 function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
@@ -253,14 +279,27 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
         </div>
         <nav className={`flex-1 ${isOpen ? "p-3 sm:p-4" : "lg:p-2"} space-y-1 overflow-y-auto overflow-x-hidden`}>
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isHome = item.name === "Dashboard";
+            const isAttendanceNav =
+              item.href === "/dashboard/hr/attendance" ||
+              item.name === "Attendance" ||
+              item.name === "My Attendance";
+            const isActive =
+              pathname === item.href ||
+              (isAttendanceNav && pathname.startsWith("/dashboard/hr/attendance")) ||
+              (isHome &&
+                item.href === "/dashboard/hr" &&
+                pathname.startsWith("/dashboard/hr") &&
+                !pathname.startsWith("/dashboard/hr/attendance")) ||
+              (isHome && item.href === "/dashboard/projects" && pathname === "/dashboard/projects") ||
+              (isHome && item.href === "/dashboard/expense" && pathname.startsWith("/dashboard/expense"));
             return (
               <Link
-                key={item.href}
+                key={`${item.name}-${item.href}`}
                 href={item.href}
                 className={`flex items-center ${isOpen ? "gap-2 sm:gap-3 px-3 sm:px-4" : "lg:justify-center lg:px-2"} py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-sm sm:text-base ${
                   isActive
-                    ? "bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg shadow-green-500/50"
+                    ? "bg-gradient-to-r from-green-600 to-green-700 text-white"
                     : "text-gray-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white"
                 }`}
                 title={!isOpen ? item.name : undefined}

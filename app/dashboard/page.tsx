@@ -5,6 +5,7 @@ import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
 import { leadsAPI, projectsAPI, amcAPI, settingsAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { getEffectivePermissions, getDashboardHomePath } from "@/lib/permissions";
 import {
   IoPeople,
   IoCalendar,
@@ -14,10 +15,29 @@ import {
   IoCloseCircle,
 } from "react-icons/io5";
 import SalesPipelineOverview from "@/components/dashboard/SalesPipelineOverview";
+import AttendanceTodayCard from "@/components/hr/AttendanceTodayCard";
 
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [pageReady, setPageReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const user = raw ? JSON.parse(raw) : {};
+      const perms = getEffectivePermissions(user);
+      const home = getDashboardHomePath(user.role || "", perms);
+      if (home !== "/dashboard") {
+        router.replace(home);
+        return;
+      }
+      setPageReady(true);
+    } catch {
+      setPageReady(true);
+    }
+  }, [router]);
+
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedExecutive, setSelectedExecutive] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
@@ -54,6 +74,7 @@ export default function DashboardPage() {
 
   // Load available states from backend (derived from leads collection)
   useEffect(() => {
+    if (!pageReady) return;
     const loadStates = async () => {
       try {
         const res = await settingsAPI.getStates();
@@ -64,7 +85,7 @@ export default function DashboardPage() {
       }
     };
     loadStates();
-  }, []);
+  }, [pageReady]);
 
   // Helper function to parse meeting date/time from notes
   const parseMeetingDateTime = (lead: any): string | null => {
@@ -187,9 +208,10 @@ export default function DashboardPage() {
 
   // Reload dashboard metrics when state filter changes
   useEffect(() => {
+    if (!pageReady) return;
     loadData({ state: selectedState }).catch(() => { });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedState]);
+  }, [selectedState, pageReady]);
 
   const filteredLeads = useMemo(() => {
     const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
@@ -307,10 +329,28 @@ export default function DashboardPage() {
     ? (currentSelectedStat.stage === "All" ? filteredLeads : filteredLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage))
     : [];
 
+  if (!pageReady) {
+    return (
+      <div>
+        <AttendanceTodayCard />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Loading dashboard...</div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading dashboard...</div>
+      <div>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Dashboard Overview</h1>
+          <p className="text-sm sm:text-base text-gray-600">Welcome back! Here&apos;s what&apos;s happening with your business.</p>
+        </div>
+        <AttendanceTodayCard />
+        <div className="flex items-center justify-center h-48">
+          <div className="text-gray-500">Loading dashboard...</div>
+        </div>
       </div>
     );
   }
@@ -369,6 +409,8 @@ export default function DashboardPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Dashboard Overview</h1>
           <p className="text-sm sm:text-base text-gray-600">Welcome back! Here's what's happening with your business.</p>
         </div>
+
+        <AttendanceTodayCard />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* State filter */}

@@ -46,7 +46,7 @@ body {
   }
 }
 
-/* Custom styling for dropdown selected options */
+/* Native selects: keep closed control and list options readable (dark text on light bg) */
 select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
@@ -54,58 +54,21 @@ select {
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
+  color: #111827;
+  background-color: #ffffff;
 }
 
-select option:checked {
-  background: linear-gradient(to bottom, #16a34a, #15803d) !important; /* green-600 to green-700 */
-  color: white !important;
-  font-weight: 600;
-}
-
-select option:hover {
-  background-color: #22c55e !important; /* green-500 */
-  color: white !important;
-}
-
-/* Select element - always show dark text when closed */
-select {
-  color: #111827 !important; /* gray-900 - always dark text */
-  background-color: white !important;
-}
-
-/* All dropdown options - always visible with dark text */
 select option {
-  background-color: #ffffff !important;
-  color: #1f2937 !important; /* gray-800 - dark text for all options */
+  background-color: #ffffff;
+  color: #1f2937;
   padding: 8px 12px;
   font-weight: 400;
 }
 
-/* Selected option in dropdown list - green background only when dropdown is open */
-select:focus option:checked,
-select:focus option[selected] {
-  background: linear-gradient(to bottom, #16a34a, #15803d) !important;
-  color: white !important;
-  font-weight: 600;
-}
-
-/* Hover state for options in dropdown */
-select option:hover {
-  background-color: #22c55e !important; /* green-500 */
-  color: white !important;
-}
-
-/* Ensure select element text is always visible (when closed) */
-select:not(:focus),
-select:focus {
-  color: #111827 !important; /* Always dark text in select element itself */
-}
-
-/* Style the select element itself when focused */
 select:focus {
   border-color: #16a34a;
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
-  color: #111827 !important; /* Keep dark text even when focused */
+  color: #111827;
 }
 
 /* 3D Animated Icons */

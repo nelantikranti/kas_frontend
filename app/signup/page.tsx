@@ -265,6 +265,7 @@ export default function SignupPage() {
                         onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                         className="w-full pl-10 pr-10 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white/50 appearance-none cursor-pointer"
                       >
+                        <option value="HR">HR</option>
                         <option value="Sales Executive">Sales Executive</option>
                         <option value="Service Engineer">Service Engineer</option>
                         <option value="Project Manager">Project Manager</option>

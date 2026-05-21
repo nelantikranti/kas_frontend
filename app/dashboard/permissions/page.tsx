@@ -7,6 +7,7 @@ import { isAdmin, PERMISSION_GROUPS } from "@/lib/permissions";
 
 type RoleName =
   | "Admin"
+  | "HR"
   | "Sales Executive"
   | "Service Engineer"
   | "Project Manager"
