@@ -258,11 +258,38 @@ function hasPermInList(permission: string, userPermissions: string[], role: stri
   return userPermissions.includes(permission);
 }
 
+/** Technician & field engineers use /dashboard (operations overview), not leads pipeline */
+/** HR team managing people (not staff self-service only) */
+export function isHrManagerRole(role?: string, userPermissions: string[] = []): boolean {
+  const r = String(role || "").trim();
+  if (r === "HR") return true;
+  return (
+    userPermissions.includes(PERMISSIONS.HR_VIEW) ||
+    userPermissions.includes(PERMISSIONS.HR_EMPLOYEES_MANAGE) ||
+    userPermissions.includes(PERMISSIONS.HR_ONBOARDING_MANAGE)
+  );
+}
+
+export const HR_MANAGER_NAV_LABEL = "Human Resources";
+export const EMPLOYEE_SERVICES_NAV_LABEL = "My Services";
+
+export function getHrSidebarNavLabel(role?: string, userPermissions: string[] = []): string {
+  return isHrManagerRole(role, userPermissions)
+    ? HR_MANAGER_NAV_LABEL
+    : EMPLOYEE_SERVICES_NAV_LABEL;
+}
+
+export function usesFieldOperationsDashboard(role?: string): boolean {
+  const r = String(role || "").trim();
+  return r === "Technician" || r === "Service Engineer";
+}
+
 /** Landing route after login */
 export function getDashboardHomePath(role: string, userPermissions: string[] = []): string {
   const r = String(role || "").trim();
   if (r === "Admin") return "/dashboard";
   if (r === "HR") return "/dashboard/hr";
+  if (usesFieldOperationsDashboard(r)) return "/dashboard";
 
   const hasLeads =
     hasPermInList(PERMISSIONS.LEADS_VIEW, userPermissions, r) ||
@@ -333,6 +360,7 @@ export function canEmployeeCheckInOut(role?: string, userPermissions: string[] =
 }
 
 export function usesSalesLeadsDashboard(role: string, userPermissions: string[] = []): boolean {
+  if (usesFieldOperationsDashboard(role)) return false;
   return getDashboardHomePath(role, userPermissions) === "/dashboard";
 }
 

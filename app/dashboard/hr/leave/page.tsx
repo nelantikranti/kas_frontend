@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import HrNav from "@/components/hr/HrNav";
 import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
-import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
+import { can, getUserPermissions, isHrManagerRole, PERMISSIONS } from "@/lib/permissions";
 
 type LeaveRow = {
   id: string;
@@ -16,8 +16,18 @@ type LeaveRow = {
   status: string;
 };
 
+function readRole() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? String(JSON.parse(raw).role || "").trim() : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function HrLeavePage() {
   const perms = getUserPermissions();
+  const hrManager = isHrManagerRole(readRole(), perms);
   const canManage = can(PERMISSIONS.HR_LEAVE_MANAGE, perms);
   const canRequest = can(PERMISSIONS.HR_LEAVE_REQUEST, perms);
   const [rows, setRows] = useState<LeaveRow[]>([]);
@@ -77,7 +87,12 @@ export default function HrLeavePage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Leave</h1>
+      <h1 className="text-2xl font-bold text-gray-900">
+        {hrManager ? "Leave management" : "My leave"}
+      </h1>
+      <p className="text-sm text-gray-600 -mt-2">
+        {hrManager ? "Human Resources" : "My Services"}
+      </p>
       <HrNav />
 
       {canRequest && (

@@ -10,7 +10,6 @@ import { toast } from "@/components/Toast";
 import ProjectLineGraph from "@/components/ProjectLineGraph";
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
-import AttendanceTodayCard from "@/components/hr/AttendanceTodayCard";
 
 const projectStages: ProjectStage[] = [
   "First Technical Visit",
@@ -646,7 +645,6 @@ export default function ProjectsPage() {
 
   return (
     <div>
-      <AttendanceTodayCard />
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Projects & Installation</h1>

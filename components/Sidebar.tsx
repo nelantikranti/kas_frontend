@@ -25,7 +25,14 @@ import {
   IoBriefcase,
   IoClipboard,
 } from "react-icons/io5";
-import { PERMISSIONS, can, getEffectivePermissions, getDashboardHomePath } from "@/lib/permissions";
+import {
+  PERMISSIONS,
+  can,
+  getEffectivePermissions,
+  getDashboardHomePath,
+  getHrSidebarNavLabel,
+  isHrManagerRole,
+} from "@/lib/permissions";
 
 interface NavItem {
   name: string;
@@ -112,13 +119,22 @@ const getNavItems = (userRole: string | null, userPermissions: string[] = []): N
     can(PERMISSIONS.HR_ATTENDANCE_MANAGE, userPermissions);
 
   return items
-    .map((item) => (item.name === "Dashboard" ? { ...item, href: homePath } : item))
+    .map((item) => {
+      if (item.name === "Dashboard") return { ...item, href: homePath };
+      if (item.name === "HR") {
+        const manager = isHrManagerRole(userRole || "", userPermissions);
+        return {
+          ...item,
+          name: getHrSidebarNavLabel(userRole || "", userPermissions),
+          href: manager ? "/dashboard/hr" : "/dashboard/hr/leave",
+        };
+      }
+      return item;
+    })
     .filter((item) => {
       if (item.name === "Attendance") return canViewAllAttendance;
-      if (item.name !== "HR") return true;
-      // Admin uses leads dashboard + Users; HR hub is for HR role / staff self-service
+      if (item.name !== "Human Resources" && item.name !== "My Services") return true;
       if (isAdminRole(userRole)) return false;
-      // HR role home is /dashboard/hr — Dashboard nav already covers the hub
       return homePath !== "/dashboard/hr";
     });
 };
@@ -281,18 +297,48 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
           {navItems.map((item) => {
             const isHome = item.name === "Dashboard";
             const isAttendanceNav =
-              item.href === "/dashboard/hr/attendance" ||
-              item.name === "Attendance" ||
-              item.name === "My Attendance";
-            const isActive =
-              pathname === item.href ||
-              (isAttendanceNav && pathname.startsWith("/dashboard/hr/attendance")) ||
-              (isHome &&
-                item.href === "/dashboard/hr" &&
-                pathname.startsWith("/dashboard/hr") &&
-                !pathname.startsWith("/dashboard/hr/attendance")) ||
-              (isHome && item.href === "/dashboard/projects" && pathname === "/dashboard/projects") ||
-              (isHome && item.href === "/dashboard/expense" && pathname.startsWith("/dashboard/expense"));
+              item.href === "/dashboard/hr/attendance" || item.name === "Attendance";
+            const isEmployeeServicesNav = item.name === "My Services";
+            const anotherItemMatchesPath = navItems.some(
+              (other) => other.name !== "Dashboard" && other.href === pathname
+            );
+            const isActive = (() => {
+              if (isAttendanceNav && pathname.startsWith("/dashboard/hr/attendance")) {
+                return true;
+              }
+              if (isEmployeeServicesNav) {
+                return (
+                  pathname === "/dashboard/hr/leave" ||
+                  pathname.startsWith("/dashboard/hr/timesheets")
+                );
+              }
+              if (item.name === "Human Resources") {
+                return (
+                  pathname === "/dashboard/hr" ||
+                  (pathname.startsWith("/dashboard/hr/") &&
+                    !pathname.startsWith("/dashboard/hr/attendance") &&
+                    pathname !== "/dashboard/hr/leave" &&
+                    !pathname.startsWith("/dashboard/hr/timesheets"))
+                );
+              }
+              if (pathname === item.href) {
+                if (isHome && anotherItemMatchesPath) return false;
+                return true;
+              }
+              if (isHome && !anotherItemMatchesPath) {
+                if (
+                  item.href === "/dashboard/hr" &&
+                  pathname.startsWith("/dashboard/hr") &&
+                  !pathname.startsWith("/dashboard/hr/attendance")
+                ) {
+                  return true;
+                }
+                if (item.href === "/dashboard/expense" && pathname.startsWith("/dashboard/expense")) {
+                  return true;
+                }
+              }
+              return false;
+            })();
             return (
               <Link
                 key={`${item.name}-${item.href}`}

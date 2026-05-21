@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import HrNav from "@/components/hr/HrNav";
 import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
-import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
+import { can, getUserPermissions, isHrManagerRole, PERMISSIONS } from "@/lib/permissions";
 
 type Row = {
   id: string;
@@ -15,8 +15,18 @@ type Row = {
   status: string;
 };
 
+function readRole() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? String(JSON.parse(raw).role || "").trim() : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function HrTimesheetsPage() {
   const perms = getUserPermissions();
+  const hrManager = isHrManagerRole(readRole(), perms);
   const canSubmit = can(PERMISSIONS.HR_TIMESHEET_SUBMIT, perms);
   const canManage = can(PERMISSIONS.HR_TIMESHEET_MANAGE, perms);
   const [rows, setRows] = useState<Row[]>([]);
@@ -65,7 +75,12 @@ export default function HrTimesheetsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Timesheets</h1>
+      <h1 className="text-2xl font-bold text-gray-900">
+        {hrManager ? "Timesheets" : "My timesheets"}
+      </h1>
+      <p className="text-sm text-gray-600 -mt-2">
+        {hrManager ? "Human Resources" : "My Services"}
+      </p>
       <HrNav />
 
       {canSubmit && (

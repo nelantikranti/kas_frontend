@@ -3,8 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { hrAPI } from "@/lib/api";
+import { useRouter } from "next/navigation";
 import AttendanceTodayCard from "@/components/hr/AttendanceTodayCard";
-import { can, getUserPermissions, isAdmin, PERMISSIONS } from "@/lib/permissions";
+import {
+  can,
+  getEffectivePermissions,
+  getUserPermissions,
+  isAdmin,
+  isHrManagerRole,
+  PERMISSIONS,
+} from "@/lib/permissions";
 import {
   IoPeople,
   IoPersonAdd,
@@ -37,8 +45,24 @@ type QuickModule = {
 };
 
 export default function HrHubPage() {
+  const router = useRouter();
   const perms = getUserPermissions();
   const canManage = can(PERMISSIONS.HR_VIEW, perms);
+  const [userRole, setUserRole] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const user = raw ? JSON.parse(raw) : {};
+      const role = user.role || "";
+      setUserRole(role);
+      if (!isHrManagerRole(role, getEffectivePermissions(user))) {
+        router.replace("/dashboard/hr/leave");
+      }
+    } catch {
+      router.replace("/dashboard/hr/leave");
+    }
+  }, [router]);
   const [userName, setUserName] = useState("");
   const [stats, setStats] = useState<HrStats>({
     activeEmployees: 0,
@@ -206,9 +230,11 @@ export default function HrHubPage() {
     return items;
   }, [canManage, stats.pendingSignups, stats.pendingLeave]);
 
+  const showHrCheckIn = String(userRole).trim() === "HR" && !isAdmin();
+
   return (
     <div className="space-y-6 sm:space-y-8">
-      <AttendanceTodayCard />
+      {showHrCheckIn && <AttendanceTodayCard />}
       {/* <div className="rounded-xl bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 text-white p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

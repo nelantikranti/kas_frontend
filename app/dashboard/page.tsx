@@ -5,7 +5,12 @@ import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
 import { leadsAPI, projectsAPI, amcAPI, settingsAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { getEffectivePermissions, getDashboardHomePath } from "@/lib/permissions";
+import {
+  getEffectivePermissions,
+  getDashboardHomePath,
+  usesFieldOperationsDashboard,
+} from "@/lib/permissions";
+import FieldOperationsDashboard from "@/components/dashboard/FieldOperationsDashboard";
 import {
   IoPeople,
   IoCalendar,
@@ -21,17 +26,27 @@ import AttendanceTodayCard from "@/components/hr/AttendanceTodayCard";
 export default function DashboardPage() {
   const router = useRouter();
   const [pageReady, setPageReady] = useState(false);
+  const [isFieldDashboard, setIsFieldDashboard] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem("user");
       const user = raw ? JSON.parse(raw) : {};
+      const role = user.role || "";
       const perms = getEffectivePermissions(user);
-      const home = getDashboardHomePath(user.role || "", perms);
+
+      if (usesFieldOperationsDashboard(role)) {
+        setIsFieldDashboard(true);
+        setPageReady(true);
+        return;
+      }
+
+      const home = getDashboardHomePath(role, perms);
       if (home !== "/dashboard") {
         router.replace(home);
         return;
       }
+      setIsFieldDashboard(false);
       setPageReady(true);
     } catch {
       setPageReady(true);
@@ -74,7 +89,7 @@ export default function DashboardPage() {
 
   // Load available states from backend (derived from leads collection)
   useEffect(() => {
-    if (!pageReady) return;
+    if (!pageReady || isFieldDashboard) return;
     const loadStates = async () => {
       try {
         const res = await settingsAPI.getStates();
@@ -85,7 +100,7 @@ export default function DashboardPage() {
       }
     };
     loadStates();
-  }, [pageReady]);
+  }, [pageReady, isFieldDashboard]);
 
   // Helper function to parse meeting date/time from notes
   const parseMeetingDateTime = (lead: any): string | null => {
@@ -208,10 +223,10 @@ export default function DashboardPage() {
 
   // Reload dashboard metrics when state filter changes
   useEffect(() => {
-    if (!pageReady) return;
+    if (!pageReady || isFieldDashboard) return;
     loadData({ state: selectedState }).catch(() => { });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedState, pageReady]);
+  }, [selectedState, pageReady, isFieldDashboard]);
 
   const filteredLeads = useMemo(() => {
     const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
@@ -331,13 +346,14 @@ export default function DashboardPage() {
 
   if (!pageReady) {
     return (
-      <div>
-        <AttendanceTodayCard />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading dashboard...</div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading dashboard...</div>
       </div>
     );
+  }
+
+  if (isFieldDashboard) {
+    return <FieldOperationsDashboard />;
   }
 
   if (loading) {
