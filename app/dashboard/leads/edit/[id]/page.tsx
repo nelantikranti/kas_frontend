@@ -322,7 +322,7 @@ export default function EditLeadPage() {
         
         // Sales Owner
         salesExecutiveName: salesData['Sales Executive'] || lead.assignedTo || "",
-        remarks: salesData['Remarks'] || "",
+        remarks: salesData['Remarks'] || lead.contactReport?.salesOwner?.remarks || "",
         
         // Backend fields
         notes: notes,

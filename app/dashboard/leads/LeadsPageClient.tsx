@@ -13,8 +13,107 @@ import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
 import { isAdmin, getUserPermissions, can, PERMISSIONS } from "@/lib/permissions";
 import { LEAD_FUNNEL_STAGES } from "@/lib/leadStages";
+import { LEAD_CONTACT_STATUSES } from "@/lib/leadContactStatuses";
 
 const stages: Lead["stage"][] = [...LEAD_FUNNEL_STAGES];
+
+function buildContactReportNotes(lead: Lead, data: any): string {
+  return `
+BASIC LEAD DETAILS:
+- Lead Name: ${lead.name}
+- Mobile Number: ${lead.phone}
+- Email ID: ${lead.email}
+- Project Location: ${lead.company || "N/A"}
+- Lead Source: ${lead.source || "N/A"}
+
+CONTACT CONFIRMATION:
+- Contact Successful: ${data.contactSuccessful || "N/A"}
+
+CONTACT DETAILS:
+- Contact Mode: ${data.contactMode || "N/A"}
+- Date & Time: ${data.contactDateTime || "N/A"}
+- Spoken To: ${data.spokenTo || "N/A"}
+
+PROPERTY & REQUIREMENT:
+- Property Type: ${data.propertyType || "N/A"}
+- Total Floors: ${data.totalFloors || "N/A"}
+- Primary Usage: ${data.primaryUsage || "N/A"}
+
+SITE READINESS - PIT:
+- Pit Available: ${data.pitAvailable || "N/A"}
+- Pit Depth: ${data.pitDepth || "N/A"}
+
+SITE READINESS - SHAFT:
+- Shaft Available: ${data.shaftAvailable || "N/A"}
+- Shaft Type: ${data.shaftType || "N/A"}
+- Shaft Size: ${data.shaftSize || "N/A"}
+
+SITE READINESS - MACHINE ROOM:
+- Machine Room Available: ${data.machineRoom || "N/A"}
+
+ELEVATOR PREFERENCE:
+- Preferred Type: ${data.elevatorType || "N/A"}
+- Brand Expectation: ${data.brandExpectation || "N/A"}
+
+CLIENT INTENT & COMMERCIAL:
+- Interest Level: ${data.interestLevel || "N/A"}
+- Budget Discussion: ${data.budgetDiscussion || "N/A"}
+- Decision Timeline: ${data.decisionTimeline || "N/A"}
+
+NEXT ACTION:
+- Next Step: ${data.nextStep || "N/A"}
+- Expected Timeline: ${data.expectedMeetingTimeline || "N/A"}
+- Next Follow-up: ${data.nextFollowUpDate || "N/A"}
+
+SALES OWNER:
+- Sales Executive: ${data.salesExecutiveName || "N/A"}
+- Remarks: ${data.remarks || "N/A"}
+`.trim();
+}
+
+function mergeContactReportSections(
+  parsed: Record<string, Record<string, string>>,
+  contactReport?: Lead["contactReport"]
+) {
+  if (!contactReport) return parsed;
+
+  const cr = contactReport;
+  const setIfEmpty = (section: string, key: string, value?: string | boolean) => {
+    if (!value && value !== false) return;
+    const strValue = typeof value === "boolean" ? (value ? "Yes" : "No") : String(value);
+    if (!strValue.trim()) return;
+    if (!parsed[section]) parsed[section] = {};
+    if (!parsed[section][key]) parsed[section][key] = strValue;
+  };
+
+  setIfEmpty("contactConfirmation", "Contact Successful", cr.contactConfirmation?.successful);
+  setIfEmpty("contactDetails", "Contact Mode", cr.contactDetails?.mode);
+  setIfEmpty("contactDetails", "Date & Time", cr.contactDetails?.dateTime
+    ? new Date(cr.contactDetails.dateTime).toLocaleString()
+    : undefined);
+  setIfEmpty("contactDetails", "Spoken To", cr.contactDetails?.spokenTo);
+  setIfEmpty("propertyRequirement", "Property Type", cr.propertyDetails?.type);
+  setIfEmpty("propertyRequirement", "Total Floors", cr.propertyDetails?.floors);
+  setIfEmpty("propertyRequirement", "Primary Usage", cr.propertyDetails?.usage);
+  setIfEmpty("sitePit", "Pit Available", cr.siteReadiness?.pitAvailable);
+  setIfEmpty("sitePit", "Pit Depth", cr.siteReadiness?.pitDepth);
+  setIfEmpty("siteShaft", "Shaft Available", cr.siteReadiness?.shaftAvailable);
+  setIfEmpty("siteShaft", "Shaft Type", cr.siteReadiness?.shaftType);
+  setIfEmpty("siteShaft", "Shaft Size", cr.siteReadiness?.shaftSize);
+  setIfEmpty("siteMachineRoom", "Machine Room Available", cr.siteReadiness?.machineRoom);
+  setIfEmpty("elevatorPreference", "Preferred Type", cr.elevatorPreference?.type);
+  setIfEmpty("elevatorPreference", "Brand Expectation", cr.elevatorPreference?.brand);
+  setIfEmpty("clientIntent", "Interest Level", cr.clientIntent?.interestLevel);
+  setIfEmpty("clientIntent", "Budget Discussion", cr.clientIntent?.budget);
+  setIfEmpty("clientIntent", "Decision Timeline", cr.clientIntent?.timeline);
+  setIfEmpty("nextAction", "Next Step", cr.nextAction?.type);
+  setIfEmpty("nextAction", "Expected Timeline", cr.nextAction?.meetingTime);
+  setIfEmpty("nextAction", "Next Follow-up", cr.nextAction?.followUpDate);
+  setIfEmpty("salesOwner", "Sales Executive", cr.salesOwner?.name);
+  setIfEmpty("salesOwner", "Remarks", cr.salesOwner?.remarks);
+
+  return parsed;
+}
 
 // All Indian States and Union Territories
 const indianStates = [
@@ -164,6 +263,7 @@ export default function LeadsPage() {
   const [availableStates, setAvailableStates] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedBdmUserId, setSelectedBdmUserId] = useState<string>("");
+  const [selectedStageFilter, setSelectedStageFilter] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -320,11 +420,15 @@ export default function LeadsPage() {
     loadUser();
     // If coming from Groups page with a pre-selected groupId in URL, use it as initial filter
     const initialGroupId = searchParams.get("groupId") || "";
+    const initialStage = searchParams.get("stage") || "";
+    if (initialStage) {
+      setSelectedStageFilter(initialStage);
+    }
     if (initialGroupId) {
       setSelectedGroupId(initialGroupId);
-      loadLeads({ groupId: initialGroupId, page: 1 });
+      loadLeads({ groupId: initialGroupId, stage: initialStage || undefined, page: 1 });
     } else {
-      loadLeads({ page: 1 });
+      loadLeads({ stage: initialStage || undefined, page: 1 });
     }
 
     const loadGroups = async () => {
@@ -549,7 +653,7 @@ export default function LeadsPage() {
     loadStates();
   }, []);
 
-  const loadLeads = async (opts?: { groupId?: string; state?: string; assignedToUserId?: string; page?: number; search?: string; source?: string }) => {
+  const loadLeads = async (opts?: { groupId?: string; state?: string; stage?: string; assignedToUserId?: string; page?: number; search?: string; source?: string }) => {
     try {
       setLoading(true);
       const filterGroupId = opts?.groupId !== undefined ? opts.groupId : selectedGroupId;
@@ -557,11 +661,13 @@ export default function LeadsPage() {
       const search = opts?.search !== undefined ? opts.search : searchTerm;
       const source = opts?.source !== undefined ? opts.source : selectedSourceFilter;
       const state = opts?.state !== undefined ? opts.state : selectedState;
+      const stage = opts?.stage !== undefined ? opts.stage : selectedStageFilter;
       const assignedToUserId = opts?.assignedToUserId !== undefined ? opts.assignedToUserId : selectedBdmUserId;
 
       const response = await leadsAPI.getAll({
         groupId: filterGroupId || null,
         state: state || undefined,
+        stage: stage || undefined,
         assignedToUserId: assignedToUserId || undefined,
         page,
         limit: leadsPerPage,
@@ -675,6 +781,18 @@ export default function LeadsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBdmUserId]);
 
+  // Reload when stage filter changes (reset to page 1)
+  const stageInitialMount = useRef(true);
+  useEffect(() => {
+    if (stageInitialMount.current) {
+      stageInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+    loadLeads({ page: 1, stage: selectedStageFilter });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStageFilter]);
+
   // Reload when page size changes (reset to page 1)
   const pageSizeInitialMount = useRef(true);
   useEffect(() => {
@@ -719,9 +837,7 @@ export default function LeadsPage() {
       // If contact was not successful, keep stage as New Lead but save update
       const newStage: Lead["stage"] = data.contactSuccessful === "No" ? "New Lead" : "Lead Contacted";
 
-      const updateData: Partial<Lead> & { stage: Lead["stage"] } = {
-        stage: newStage,
-        contactReport: {
+      const contactReport = {
           contactConfirmation: {
             successful: data.contactSuccessful === "Yes"
           },
@@ -761,7 +877,17 @@ export default function LeadsPage() {
             name: data.salesExecutiveName,
             remarks: data.remarks
           }
-        },
+        };
+
+      const structuredNotes = buildContactReportNotes(leadForContact, data);
+      const updatedNotes = leadForContact.notes
+        ? `${leadForContact.notes}\n\n${structuredNotes}`
+        : structuredNotes;
+
+      const updateData: Partial<Lead> & { stage: Lead["stage"] } = {
+        stage: newStage,
+        contactReport,
+        notes: updatedNotes,
         // Also update legacy fields for compatibility/display if needed
         lastContact: new Date().toISOString()
       };
@@ -990,6 +1116,33 @@ export default function LeadsPage() {
     } catch (error) {
       console.error("Failed to update lead stage:", error);
       toast.error("Failed to update lead stage. Please try again.");
+    }
+  };
+
+  const handleContactStatusChange = async (leadId: string, contactStatus: string) => {
+    if (!canEditLeadActions) {
+      toast.error("You don't have permission to edit leads.");
+      return;
+    }
+
+    const validLeadId = leadId?.toString().trim();
+    if (!validLeadId) {
+      toast.error("Lead ID is missing. Please refresh the page.");
+      return;
+    }
+
+    try {
+      await leadsAPI.update(validLeadId, { contactStatus });
+      setLeadList((prev) =>
+        prev.map((lead) => {
+          const currentId = lead.id || (lead as any)._id?.toString?.() || "";
+          return currentId === validLeadId ? { ...lead, contactStatus } : lead;
+        })
+      );
+      toast.success(contactStatus ? "Status updated" : "Status cleared");
+    } catch (error) {
+      console.error("Failed to update lead status:", error);
+      toast.error("Failed to update status. Please try again.");
     }
   };
 
@@ -2058,6 +2211,20 @@ NEXT ACTION:
             ))}
           </select>
           <select
+            value={selectedStageFilter}
+            onChange={(e) => {
+              setSelectedStageFilter(e.target.value);
+            }}
+            className="w-full sm:w-40 md:w-52 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+          >
+            <option value="">All Stages</option>
+            {stages.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
             value={selectedState}
             onChange={(e) => {
               const v = e.target.value;
@@ -2155,6 +2322,9 @@ NEXT ACTION:
               {selectedState && (
                 <span className="ml-2">• State: <span className="font-semibold">{selectedState}</span></span>
               )}
+              {selectedStageFilter && (
+                <span className="ml-2">• Stage: <span className="font-semibold">{selectedStageFilter}</span></span>
+              )}
               {selectedBdmUserId && (
                 <span className="ml-2">• BDM: <span className="font-semibold">{users.find((u: any) => (u.id || u._id) === selectedBdmUserId)?.name ?? "—"}</span></span>
               )}
@@ -2164,11 +2334,13 @@ NEXT ACTION:
             </>
           ) : (
             <>
-              {selectedSourceFilter && !selectedGroupId && !searchTerm
+              {selectedSourceFilter && !selectedGroupId && !searchTerm && !selectedStageFilter
                 ? `No leads from ${selectedSourceFilter}`
-                : selectedGroupId && !searchTerm && !selectedSourceFilter
+                : selectedGroupId && !searchTerm && !selectedSourceFilter && !selectedStageFilter
                   ? "No leads assigned to this group"
-                  : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
+                  : selectedStageFilter && !searchTerm
+                    ? `No leads in ${selectedStageFilter} stage`
+                    : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
             </>
           )}
         </div>
@@ -2352,6 +2524,27 @@ NEXT ACTION:
                         </div>
                       )}
                     </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Assigned To</p>
+                      <p className="text-sm text-gray-900">{lead.assignedTo || "Unassigned"}</p>
+                    </div>
+                    <label className="text-xs font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      value={(lead as any).contactStatus || ""}
+                      disabled={!canEditLeadActions}
+                      onChange={(e) => {
+                        const id = lead.id || (lead as any)._id || "";
+                        if (id) handleContactStatusChange(id, e.target.value);
+                      }}
+                      className="text-sm border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select status</option>
+                      {LEAD_CONTACT_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
                     <div className="flex gap-2">
                       {canViewLeadActions && (
                         <button
@@ -2425,6 +2618,9 @@ NEXT ACTION:
                   Assigned To
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -2432,7 +2628,7 @@ NEXT ACTION:
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 lg:px-6 py-8 text-center text-gray-500">
+                  <td colSpan={11} className="px-4 lg:px-6 py-8 text-center text-gray-500">
                     {leadList.length === 0 ? "No leads yet" : "No results found"}
                   </td>
                 </tr>
@@ -2523,6 +2719,24 @@ NEXT ACTION:
                       </td>
                       <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden lg:table-cell">
                         {lead.assignedTo}
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
+                        <select
+                          value={(lead as any).contactStatus || ""}
+                          disabled={!canEditLeadActions}
+                          onChange={(e) => {
+                            const leadId = lead.id || (lead as any)._id || "";
+                            if (leadId) handleContactStatusChange(leadId, e.target.value);
+                          }}
+                          className="text-xs sm:text-sm border-2 border-gray-200 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white w-full min-w-[130px] sm:min-w-[150px] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                          <option value="">Select status</option>
+                          {LEAD_CONTACT_STATUSES.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                         <div className="flex items-center gap-3">
@@ -2874,6 +3088,30 @@ NEXT ACTION:
           const nextAction = parseSection('NEXT ACTION') || {};
           const salesOwner = parseSection('SALES OWNER') || {};
 
+          mergeContactReportSections(
+            {
+              contactConfirmation,
+              contactDetails,
+              propertyRequirement,
+              sitePit,
+              siteShaft,
+              siteMachineRoom,
+              elevatorPreference,
+              clientIntent,
+              nextAction,
+              salesOwner,
+            },
+            selectedLead.contactReport
+          );
+
+          const plainRemarks =
+            !notes.includes('BASIC LEAD DETAILS') &&
+            !notes.includes('SALES OWNER') &&
+            !notes.includes('---') &&
+            notes.trim()
+              ? notes.trim()
+              : '';
+
           return (
             <div className="space-y-6">
               <div className="space-y-6">
@@ -2930,6 +3168,21 @@ NEXT ACTION:
                     )}
                   </div>
                 </div>
+
+                {/* Standalone remarks (e.g. from new lead creation) */}
+                {(plainRemarks || salesOwner['Remarks']) && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <IoDocumentText className="w-5 h-5 text-green-600" />
+                      Remarks
+                    </h3>
+                    <div className="pb-4 border-b">
+                      <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                        {salesOwner['Remarks'] || plainRemarks}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Contact Confirmation */}
                 {contactConfirmation['Contact Successful'] && (
@@ -3155,25 +3408,17 @@ NEXT ACTION:
                 )}
 
                 {/* Sales Owner */}
-                {(salesOwner['Sales Executive'] || salesOwner['Remarks']) && (
+                {salesOwner['Sales Executive'] && (
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                       <IoPerson className="w-5 h-5 text-green-600" />
                       Sales Owner
                     </h3>
                     <div className="grid grid-cols-2 gap-4 pb-4 border-b">
-                      {salesOwner['Sales Executive'] && (
-                        <div>
-                          <p className="text-sm text-gray-500 mb-1">Sales Executive</p>
-                          <p className="font-medium text-gray-900">{salesOwner['Sales Executive']}</p>
-                        </div>
-                      )}
-                      {salesOwner['Remarks'] && (
-                        <div className="col-span-2">
-                          <p className="text-sm text-gray-500 mb-1">Remarks</p>
-                          <p className="font-medium text-gray-900">{salesOwner['Remarks']}</p>
-                        </div>
-                      )}
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Sales Executive</p>
+                        <p className="font-medium text-gray-900">{salesOwner['Sales Executive']}</p>
+                      </div>
                     </div>
                   </div>
                 )}

@@ -18,6 +18,9 @@ import {
   IoTime,
   IoBarChart,
   IoCloseCircle,
+  IoCall,
+  IoBan,
+  IoRemoveCircle,
 } from "react-icons/io5";
 import SalesPipelineOverview from "@/components/dashboard/SalesPipelineOverview";
 import AttendanceTodayCard from "@/components/hr/AttendanceTodayCard";
@@ -68,6 +71,9 @@ export default function DashboardPage() {
     quotationSent: 0,
     managerDeliberation: 0,
     lostLeads: 0,
+    askToCallBack: 0,
+    dnp: 0,
+    notRequired: 0,
   });
   const [loading, setLoading] = useState(true);
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
@@ -85,6 +91,9 @@ export default function DashboardPage() {
     quotationSent: leads.filter((l) => l.stage === "Quotation Sent").length,
     managerDeliberation: leads.filter((l) => l.stage === "Manager Deliberation").length,
     lostLeads: leads.filter((l) => l.stage === "Order Lost").length,
+    askToCallBack: leads.filter((l) => l.contactStatus === "Ask To call back").length,
+    dnp: leads.filter((l) => l.contactStatus === "DNP").length,
+    notRequired: leads.filter((l) => l.contactStatus === "Not required").length,
   });
 
   // Load available states from backend (derived from leads collection)
@@ -337,11 +346,39 @@ export default function DashboardPage() {
       color: "purple" as const,
       stage: "Manager Deliberation" as const,
     },
+    {
+      title: "Ask To call back",
+      value: stats.askToCallBack,
+      icon: <IoCall className="w-6 h-6" />,
+      trend: "Callback requested",
+      color: "orange" as const,
+      contactStatus: "Ask To call back" as const,
+    },
+    {
+      title: "DNP",
+      value: stats.dnp,
+      icon: <IoBan className="w-6 h-6" />,
+      trend: "Did not pick up",
+      color: "red" as const,
+      contactStatus: "DNP" as const,
+    },
+    {
+      title: "Not required",
+      value: stats.notRequired,
+      icon: <IoRemoveCircle className="w-6 h-6" />,
+      trend: "Not interested",
+      color: "blue" as const,
+      contactStatus: "Not required" as const,
+    },
   ];
 
   const currentSelectedStat = selectedStatCard ? statCards.find(s => s.title === selectedStatCard) : null;
   const filteredLeadsForModal = currentSelectedStat
-    ? (currentSelectedStat.stage === "All" ? filteredLeads : filteredLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage))
+    ? ("contactStatus" in currentSelectedStat && currentSelectedStat.contactStatus)
+      ? filteredLeads.filter((lead: any) => lead.contactStatus === currentSelectedStat.contactStatus)
+      : currentSelectedStat.stage === "All"
+        ? filteredLeads
+        : filteredLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage)
     : [];
 
   if (!pageReady) {
@@ -496,14 +533,14 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {statCards.map((stat) => (
           <div
             key={stat.title}
             onClick={() => handleCardClick(stat.title)}
             className="cursor-pointer"
           >
-            <StatCard {...stat} />
+            <StatCard {...stat} compact />
           </div>
         ))}
       </div>
@@ -519,7 +556,13 @@ export default function DashboardPage() {
         <Modal
           isOpen={selectedStatCard !== null}
           onClose={() => setSelectedStatCard(null)}
-          title={currentSelectedStat.stage === "All" ? "All Leads" : `${currentSelectedStat.title} Leads`}
+          title={
+            "contactStatus" in currentSelectedStat && currentSelectedStat.contactStatus
+              ? `${currentSelectedStat.title} Leads`
+              : currentSelectedStat.stage === "All"
+                ? "All Leads"
+                : `${currentSelectedStat.title} Leads`
+          }
           size="lg"
         >
           <div className="space-y-4">
@@ -533,7 +576,11 @@ export default function DashboardPage() {
               {filteredLeadsForModal.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">
-                    {currentSelectedStat.stage === "All" ? "No leads found" : `No leads in ${currentSelectedStat.title} stage`}
+                    {"contactStatus" in currentSelectedStat && currentSelectedStat.contactStatus
+                      ? `No leads with status "${currentSelectedStat.title}"`
+                      : currentSelectedStat.stage === "All"
+                        ? "No leads found"
+                        : `No leads in ${currentSelectedStat.title} stage`}
                   </p>
                 </div>
               ) : (
@@ -568,9 +615,16 @@ export default function DashboardPage() {
                             </p>
                           )}
                         </div>
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full whitespace-nowrap flex-shrink-0">
-                          {lead.stage}
-                        </span>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full whitespace-nowrap">
+                            {lead.stage}
+                          </span>
+                          {lead.contactStatus && (
+                            <span className="text-xs px-2 py-1 bg-amber-100 text-amber-800 rounded-full whitespace-nowrap">
+                              {lead.contactStatus}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

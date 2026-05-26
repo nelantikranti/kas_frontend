@@ -105,6 +105,7 @@ export interface Lead {
   phone: string;
   source: string;
   stage: string;
+  contactStatus?: string;
   value: number;
   assignedTo: string;
   assignedToUserId?: string | null;
@@ -370,6 +371,7 @@ export const leadsAPI = {
   getAll: (params?: {
     groupId?: string | null;
     state?: string;
+    stage?: string;
     assignedToUserId?: string;
     page?: number;
     limit?: number;
@@ -380,6 +382,7 @@ export const leadsAPI = {
     const qs = new URLSearchParams();
     if (p.groupId) qs.set("groupId", p.groupId);
     if (p.state) qs.set("state", p.state);
+    if (p.stage) qs.set("stage", p.stage);
     if (p.assignedToUserId) qs.set("assignedToUserId", p.assignedToUserId);
     if (p.page) qs.set("page", String(p.page));
     if (p.limit) qs.set("limit", String(p.limit));
@@ -403,6 +406,9 @@ export const leadsAPI = {
       lostLeads: number;
       newLead: number;
       orderClosed: number;
+      askToCallBack: number;
+      dnp: number;
+      notRequired: number;
     }>;
   },
   getById: (id: string) => fetchAPI(`/leads/${id}`),
