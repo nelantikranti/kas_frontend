@@ -372,6 +372,7 @@ export const leadsAPI = {
     groupId?: string | null;
     state?: string;
     stage?: string;
+    contactStatus?: string;
     assignedToUserId?: string;
     page?: number;
     limit?: number;
@@ -383,6 +384,7 @@ export const leadsAPI = {
     if (p.groupId) qs.set("groupId", p.groupId);
     if (p.state) qs.set("state", p.state);
     if (p.stage) qs.set("stage", p.stage);
+    if (p.contactStatus) qs.set("contactStatus", p.contactStatus);
     if (p.assignedToUserId) qs.set("assignedToUserId", p.assignedToUserId);
     if (p.page) qs.set("page", String(p.page));
     if (p.limit) qs.set("limit", String(p.limit));

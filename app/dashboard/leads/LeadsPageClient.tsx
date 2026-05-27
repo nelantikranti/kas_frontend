@@ -264,6 +264,7 @@ export default function LeadsPage() {
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedBdmUserId, setSelectedBdmUserId] = useState<string>("");
   const [selectedStageFilter, setSelectedStageFilter] = useState<string>("");
+  const [selectedContactStatusFilter, setSelectedContactStatusFilter] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -653,7 +654,7 @@ export default function LeadsPage() {
     loadStates();
   }, []);
 
-  const loadLeads = async (opts?: { groupId?: string; state?: string; stage?: string; assignedToUserId?: string; page?: number; search?: string; source?: string }) => {
+  const loadLeads = async (opts?: { groupId?: string; state?: string; stage?: string; contactStatus?: string; assignedToUserId?: string; page?: number; search?: string; source?: string }) => {
     try {
       setLoading(true);
       const filterGroupId = opts?.groupId !== undefined ? opts.groupId : selectedGroupId;
@@ -662,12 +663,14 @@ export default function LeadsPage() {
       const source = opts?.source !== undefined ? opts.source : selectedSourceFilter;
       const state = opts?.state !== undefined ? opts.state : selectedState;
       const stage = opts?.stage !== undefined ? opts.stage : selectedStageFilter;
+      const contactStatus = opts?.contactStatus !== undefined ? opts.contactStatus : selectedContactStatusFilter;
       const assignedToUserId = opts?.assignedToUserId !== undefined ? opts.assignedToUserId : selectedBdmUserId;
 
       const response = await leadsAPI.getAll({
         groupId: filterGroupId || null,
         state: state || undefined,
         stage: stage || undefined,
+        contactStatus: contactStatus || undefined,
         assignedToUserId: assignedToUserId || undefined,
         page,
         limit: leadsPerPage,
@@ -792,6 +795,18 @@ export default function LeadsPage() {
     loadLeads({ page: 1, stage: selectedStageFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStageFilter]);
+
+  // Reload when contact status filter changes (reset to page 1)
+  const contactStatusInitialMount = useRef(true);
+  useEffect(() => {
+    if (contactStatusInitialMount.current) {
+      contactStatusInitialMount.current = false;
+      return;
+    }
+    setCurrentPage(1);
+    loadLeads({ page: 1, contactStatus: selectedContactStatusFilter });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedContactStatusFilter]);
 
   // Reload when page size changes (reset to page 1)
   const pageSizeInitialMount = useRef(true);
@@ -2177,126 +2192,144 @@ NEXT ACTION:
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Leads</h1>
-          <p className="text-sm sm:text-base text-gray-600">Track and manage all your sales leads</p>
+      <div className="mb-6 sm:mb-8 space-y-4">
+        {/* Title + actions */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Leads</h1>
+            <p className="text-sm sm:text-base text-gray-600">Track and manage all your sales leads</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              disabled={backendConnected === false}
+              className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${backendConnected === false
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+            >
+              <IoAdd className="w-4 h-4 shrink-0" />
+              Add Lead
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".xlsx,.xls"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={backendConnected === false || isImporting}
+              className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${backendConnected === false || isImporting
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-green-600 text-white hover:bg-green-700"
+                }`}
+            >
+              <IoCloudUpload className="w-4 h-4 shrink-0" />
+              {isImporting ? "Importing..." : "Import Excel"}
+            </button>
+            <button
+              onClick={handleSyncFacebook}
+              disabled={backendConnected === false || syncingFacebook || !facebookConfigured}
+              title="Sync leads from Facebook Lead Ads (configure in Settings)"
+              className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${backendConnected === false || syncingFacebook || !facebookConfigured
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                }`}
+            >
+              <IoRefresh className="w-4 h-4 shrink-0" />
+              {syncingFacebook ? "Syncing..." : "Sync Facebook"}
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
-          <div className="relative w-full sm:w-48 md:w-56">
-            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+
+        {/* Filters */}
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-3 sm:p-4">
+          <div className="relative mb-3">
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search leads..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
+              className="w-full h-10 pl-9 pr-4 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
-          <select
-            value={selectedGroupId}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSelectedGroupId(v);
-              setCurrentPage(1);
-              loadLeads({ groupId: v || undefined, page: 1 });
-            }}
-            className="w-full sm:w-40 md:w-48 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-          >
-            <option value="">All Groups</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.groupName}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedStageFilter}
-            onChange={(e) => {
-              setSelectedStageFilter(e.target.value);
-            }}
-            className="w-full sm:w-40 md:w-52 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-          >
-            <option value="">All Stages</option>
-            {stages.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedState}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSelectedState(v);
-            }}
-            className="w-full sm:w-40 md:w-48 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-          >
-            <option value="">All States</option>
-            {(availableStates.length > 0 ? availableStates : indianStates).map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedBdmUserId}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSelectedBdmUserId(v);
-            }}
-            className="w-full sm:w-40 md:w-48 px-3 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-          >
-            <option value="">All BDM</option>
-            {users
-              .filter((u: any) => (u?.role || "") !== "Admin")
-              .map((u: any) => (
-                <option key={u.id || u._id} value={u.id || u._id}>
-                  {u.name || u.email || "User"}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <select
+              value={selectedGroupId}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedGroupId(v);
+                setCurrentPage(1);
+                loadLeads({ groupId: v || undefined, page: 1 });
+              }}
+              className="h-10 w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              aria-label="Filter by group"
+            >
+              <option value="">All Groups</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.groupName}
                 </option>
               ))}
-          </select>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            disabled={backendConnected === false}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false
-              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
-          >
-            <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
-            Add Lead
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".xlsx,.xls"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={backendConnected === false || isImporting}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false || isImporting
-              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-              : "bg-green-600 text-white hover:bg-green-700"
-              }`}
-          >
-            <IoCloudUpload className="w-4 h-4 sm:w-5 sm:h-5" />
-            {isImporting ? "Importing..." : "Import Excel"}
-          </button>
-          <button
-            onClick={handleSyncFacebook}
-            disabled={backendConnected === false || syncingFacebook || !facebookConfigured}
-            title="Sync leads from Facebook Lead Ads (configure in Settings)"
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm sm:text-base ${backendConnected === false || syncingFacebook || !facebookConfigured
-              ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-              : "bg-indigo-600 text-white hover:bg-indigo-700"
-              }`}
-          >
-            <IoRefresh className="w-4 h-4 sm:w-5 sm:h-5" />
-            {syncingFacebook ? "Syncing..." : "Sync Facebook"}
-          </button>
+            </select>
+            <select
+              value={selectedStageFilter}
+              onChange={(e) => setSelectedStageFilter(e.target.value)}
+              className="h-10 w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              aria-label="Filter by stage"
+            >
+              <option value="">All Stages</option>
+              {stages.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedContactStatusFilter}
+              onChange={(e) => setSelectedContactStatusFilter(e.target.value)}
+              className="h-10 w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              aria-label="Filter by status"
+            >
+              <option value="">All Statuses</option>
+              {LEAD_CONTACT_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="h-10 w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              aria-label="Filter by state"
+            >
+              <option value="">All States</option>
+              {(availableStates.length > 0 ? availableStates : indianStates).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedBdmUserId}
+              onChange={(e) => setSelectedBdmUserId(e.target.value)}
+              className="h-10 w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:col-span-2 lg:col-span-1"
+              aria-label="Filter by BDM"
+            >
+              <option value="">All BDM</option>
+              {users
+                .filter((u: any) => (u?.role || "") !== "Admin")
+                .map((u: any) => (
+                  <option key={u.id || u._id} value={u.id || u._id}>
+                    {u.name || u.email || "User"}
+                  </option>
+                ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -2325,6 +2358,9 @@ NEXT ACTION:
               {selectedStageFilter && (
                 <span className="ml-2">• Stage: <span className="font-semibold">{selectedStageFilter}</span></span>
               )}
+              {selectedContactStatusFilter && (
+                <span className="ml-2">• Status: <span className="font-semibold">{selectedContactStatusFilter}</span></span>
+              )}
               {selectedBdmUserId && (
                 <span className="ml-2">• BDM: <span className="font-semibold">{users.find((u: any) => (u.id || u._id) === selectedBdmUserId)?.name ?? "—"}</span></span>
               )}
@@ -2334,13 +2370,15 @@ NEXT ACTION:
             </>
           ) : (
             <>
-              {selectedSourceFilter && !selectedGroupId && !searchTerm && !selectedStageFilter
+              {selectedSourceFilter && !selectedGroupId && !searchTerm && !selectedStageFilter && !selectedContactStatusFilter
                 ? `No leads from ${selectedSourceFilter}`
-                : selectedGroupId && !searchTerm && !selectedSourceFilter && !selectedStageFilter
+                : selectedGroupId && !searchTerm && !selectedSourceFilter && !selectedStageFilter && !selectedContactStatusFilter
                   ? "No leads assigned to this group"
-                  : selectedStageFilter && !searchTerm
+                  : selectedStageFilter && !searchTerm && !selectedContactStatusFilter
                     ? `No leads in ${selectedStageFilter} stage`
-                    : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
+                    : selectedContactStatusFilter && !searchTerm
+                      ? `No leads with status "${selectedContactStatusFilter}"`
+                      : `No leads found${searchTerm ? ` matching "${searchTerm}"` : ""}`}
             </>
           )}
         </div>
