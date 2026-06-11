@@ -2174,7 +2174,7 @@ NEXT ACTION:
   }
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       {/* Connection issue: generic message only (no dev instructions) */}
       {backendConnected === false && (
         <div className="mb-4 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-lg">
@@ -2454,7 +2454,7 @@ NEXT ACTION:
         );
       })()}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-w-0 max-w-full">
 
         {/* Mobile Card View */}
         <div className="block md:hidden divide-y divide-gray-200">
@@ -2615,9 +2615,9 @@ NEXT ACTION:
           )}
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto -mx-4 sm:mx-0">
-          <table className="w-full min-w-[800px]">
+        {/* Desktop Table View — horizontal scroll when columns exceed viewport */}
+        <div className="hidden md:block w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+          <table className="w-full min-w-[1500px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
@@ -2666,7 +2666,7 @@ NEXT ACTION:
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 lg:px-6 py-8 text-center text-gray-500">
+                  <td colSpan={12} className="px-4 lg:px-6 py-8 text-center text-gray-500">
                     {leadList.length === 0 ? "No leads yet" : "No results found"}
                   </td>
                 </tr>
@@ -2814,7 +2814,8 @@ NEXT ACTION:
 
       {/* Pagination Controls */}
       {totalLeads > 0 && (
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-4 w-full min-w-0 max-w-full overflow-x-auto [scrollbar-width:thin]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 min-w-max sm:min-w-0">
           <p className="text-sm text-gray-600">
             Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
             <span className="ml-2 text-gray-400">
@@ -2879,6 +2880,7 @@ NEXT ACTION:
               </button>
             </div>
           )}
+        </div>
         </div>
       )}
 

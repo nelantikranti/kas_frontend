@@ -8,7 +8,7 @@
   "theme_color": "#16a34a",
   "icons": [
     {
-      "src": "/kas img.png",
+      "src": "/kas_img.png",
       "sizes": "32x32",
       "type": "image/png"
     }

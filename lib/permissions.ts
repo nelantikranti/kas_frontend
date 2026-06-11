@@ -62,6 +62,11 @@ export const PERMISSIONS = {
   HR_TIMESHEET_VIEW: "hr:timesheet_view",
   HR_TIMESHEET_MANAGE: "hr:timesheet_manage",
   HR_TIMESHEET_SUBMIT: "hr:timesheet_submit",
+  HR_PAYROLL_VIEW: "hr:payroll_view",
+  HR_PAYROLL_MANAGE: "hr:payroll_manage",
+  HR_PAYROLL_GENERATE: "hr:payroll_generate",
+  HR_OFFER_MANAGE: "hr:offer_manage",
+  HR_PAYSLIP_SELF: "hr:payslip_self",
 } as const;
 
 // All permission values (Admin gets this list)
@@ -86,6 +91,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
     PERMISSIONS.HR_TIMESHEET_SUBMIT,
+    PERMISSIONS.HR_PAYSLIP_SELF,
   ],
   "Service Engineer": [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -96,6 +102,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
     PERMISSIONS.HR_TIMESHEET_SUBMIT,
+    PERMISSIONS.HR_PAYSLIP_SELF,
   ],
   "Project Manager": [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -115,6 +122,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
     PERMISSIONS.HR_TIMESHEET_SUBMIT,
+    PERMISSIONS.HR_PAYSLIP_SELF,
   ],
   Technician: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -125,6 +133,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
     PERMISSIONS.HR_TIMESHEET_SUBMIT,
+    PERMISSIONS.HR_PAYSLIP_SELF,
   ],
   Manager: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -140,6 +149,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
     PERMISSIONS.HR_TIMESHEET_SUBMIT,
+    PERMISSIONS.HR_PAYSLIP_SELF,
   ],
   Accounts: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -168,6 +178,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
     PERMISSIONS.HR_TIMESHEET_SUBMIT,
+    PERMISSIONS.HR_PAYSLIP_SELF,
   ],
   HR: [
     PERMISSIONS.DASHBOARD_VIEW,
@@ -186,6 +197,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.ACTIVITY_VIEW,
     PERMISSIONS.VIEW_PERFORMANCE_REPORT,
     PERMISSIONS.HR_PERFORMANCE_EXPORT,
+    PERMISSIONS.HR_PAYROLL_VIEW,
+    PERMISSIONS.HR_PAYROLL_MANAGE,
+    PERMISSIONS.HR_PAYROLL_GENERATE,
+    PERMISSIONS.HR_OFFER_MANAGE,
   ],
 };
 
@@ -331,6 +346,19 @@ export function canViewAttendanceList(role?: string, userPermissions: string[] =
     userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_VIEW) ||
     userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_MANAGE)
   );
+}
+
+/** Admin may edit anyone; HR may edit others only (not own attendance). */
+export function canEditAttendanceTimes(
+  editorRole?: string,
+  editorId?: string,
+  targetUserId?: string
+): boolean {
+  const role = String(editorRole || "").trim();
+  if (role !== "Admin" && role !== "HR") return false;
+  if (role === "Admin") return true;
+  if (!editorId || !targetUserId) return false;
+  return editorId !== targetUserId;
 }
 
 /** Roles that clock in/out (everyone except Admin) */
@@ -520,6 +548,11 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.HR_TIMESHEET_VIEW, label: "View All Timesheets" },
       { key: PERMISSIONS.HR_TIMESHEET_MANAGE, label: "Manage Timesheets" },
       { key: PERMISSIONS.HR_TIMESHEET_SUBMIT, label: "Submit Own Timesheets" },
+      { key: PERMISSIONS.HR_PAYROLL_VIEW, label: "View Payroll" },
+      { key: PERMISSIONS.HR_PAYROLL_MANAGE, label: "Manage Salaries" },
+      { key: PERMISSIONS.HR_PAYROLL_GENERATE, label: "Generate Payroll" },
+      { key: PERMISSIONS.HR_OFFER_MANAGE, label: "Offer Letters" },
+      { key: PERMISSIONS.HR_PAYSLIP_SELF, label: "View Own Payslip" },
     ],
   },
 ];

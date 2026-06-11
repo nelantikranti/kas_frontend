@@ -58,7 +58,7 @@ export default function EditLeadPage() {
   const [canReassignLead, setCanReassignLead] = useState(false);
   const [originalStage, setOriginalStage] = useState<Lead["stage"]>("New Lead");
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
-  const [salesExecutives, setSalesExecutives] = useState<string[]>([]);
+  const [assignableUsers, setAssignableUsers] = useState<{ id: string; name: string }[]>([]);
   const [leadData, setLeadData] = useState({
     // Basic Lead Details
     name: "",
@@ -114,6 +114,7 @@ export default function EditLeadPage() {
     stage: "New Lead" as Lead["stage"],
     value: "",
     assignedTo: "",
+    assignedToUserId: "",
     notes: "",
     company: "",
     groupId: "",
@@ -124,7 +125,7 @@ export default function EditLeadPage() {
     if (leadId) {
       loadLead();
       loadGroups();
-      loadSalesExecutives();
+      loadAssignableUsers();
     }
   }, [leadId]);
 
@@ -139,22 +140,23 @@ export default function EditLeadPage() {
     }
   };
 
-  const loadSalesExecutives = async () => {
+  const loadAssignableUsers = async () => {
     try {
       const data = await usersAPI.getAll();
       const users = Array.isArray(data) ? data : [];
-      const executives = Array.from(
-        new Set(
-          users
-            .filter((u: any) => String(u?.role || "").trim() === "Sales Executive")
-            .map((u: any) => String(u?.name || "").trim())
-            .filter((name: string) => name.length > 0)
-        )
-      ).sort((a, b) => a.localeCompare(b));
-      setSalesExecutives(executives);
+      setAssignableUsers(
+        users
+          .filter((u: any) => String(u?.role || "").trim() !== "Admin")
+          .map((u: any) => ({
+            id: String(u?.id || u?._id || ""),
+            name: String(u?.name || "").trim(),
+          }))
+          .filter((u) => u.id && u.name)
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
     } catch (error) {
-      console.error("Failed to load sales executives:", error);
-      setSalesExecutives([]);
+      console.error("Failed to load assignable users:", error);
+      setAssignableUsers([]);
     }
   };
 
@@ -280,6 +282,7 @@ export default function EditLeadPage() {
         stage: lead.stage || "New Lead", // Use stage from backend
         value: valueInLakhs,
         assignedTo: lead.assignedTo || "",
+        assignedToUserId: lead.assignedToUserId || "",
         
         // Contact Confirmation (separate section)
         contactSuccessful: contactConfirmation['Contact Successful'] || "",
@@ -320,8 +323,8 @@ export default function EditLeadPage() {
         expectedMeetingTimeline: actionData['Expected Timeline'] || "",
         nextFollowUpDate: formatDateLocal(actionData['Next Follow-up'] || ""),
         
-        // Sales Owner
-        salesExecutiveName: salesData['Sales Executive'] || lead.assignedTo || "",
+        // Sales Owner — prefer DB assignee over parsed notes
+        salesExecutiveName: lead.assignedTo || salesData['Sales Executive'] || "",
         remarks: salesData['Remarks'] || lead.contactReport?.salesOwner?.remarks || "",
         
         // Backend fields
@@ -435,10 +438,19 @@ SALES OWNER:
         source: leadData.source,
         stage: leadData.stage, // Use the stage selected in the form (editable)
         value: leadData.value ? Math.round(parseFloat(leadData.value) * 100000) : 0,
-        assignedTo: canReassignLead ? leadData.salesExecutiveName : leadData.assignedTo || leadData.salesExecutiveName,
         notes: notes,
         lastContact: leadData.contactDateTime || new Date().toISOString(),
       };
+
+      if (canReassignLead) {
+        const assigneeName = leadData.salesExecutiveName.trim();
+        const matchedUser = assignableUsers.find(
+          (u) => u.name.toLowerCase() === assigneeName.toLowerCase()
+        );
+        updateData.assignedTo = assigneeName;
+        // Backend resolves assignee by user id first — must send the new id or it keeps the previous owner.
+        updateData.assignedToUserId = matchedUser?.id || leadData.assignedToUserId || "";
+      }
 
       // Always send groupId so backend can clear group when user selects "Select Group"
       updateData.groupId = leadData.groupId || null;
@@ -561,6 +573,7 @@ SALES OWNER:
         toast.success("Lead updated successfully");
       }
       
+      router.refresh();
       router.push("/dashboard/leads");
     } catch (error: any) {
       console.error("Failed to update lead:", error);
@@ -1200,19 +1213,32 @@ SALES OWNER:
                   {canReassignLead ? (
                     <select
                       value={leadData.salesExecutiveName}
-                      onChange={(e) => setLeadData({ ...leadData, salesExecutiveName: e.target.value })}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        const matchedUser = assignableUsers.find(
+                          (u) => u.name.toLowerCase() === name.toLowerCase()
+                        );
+                        setLeadData({
+                          ...leadData,
+                          salesExecutiveName: name,
+                          assignedTo: name,
+                          assignedToUserId: matchedUser?.id || "",
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="">Select Sales Executive</option>
+                      <option value="">Select assignee</option>
                       {leadData.salesExecutiveName &&
-                        !salesExecutives.includes(leadData.salesExecutiveName) && (
+                        !assignableUsers.some(
+                          (u) => u.name.toLowerCase() === leadData.salesExecutiveName.toLowerCase()
+                        ) && (
                           <option value={leadData.salesExecutiveName}>
                             {leadData.salesExecutiveName}
                           </option>
                         )}
-                      {salesExecutives.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
+                      {assignableUsers.map((user) => (
+                        <option key={user.id} value={user.name}>
+                          {user.name}
                         </option>
                       ))}
                     </select>

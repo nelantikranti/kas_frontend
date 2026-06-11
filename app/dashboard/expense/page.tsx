@@ -154,9 +154,9 @@ export default function ExpensePage() {
       </div>
 
       {/* Table - view-only or edit-expense: no Project cost or Profit/Loss columns */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm min-w-0 max-w-full">
+        <div className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+          <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Project</th>

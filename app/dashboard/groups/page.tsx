@@ -270,8 +270,8 @@ export default function GroupsPage() {
       </div>
 
       {/* Desktop: table (md and up) */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 min-w-0 max-w-full">
+        <div className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
           <table className="w-full min-w-[640px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>

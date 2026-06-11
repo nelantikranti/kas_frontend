@@ -24,6 +24,9 @@ import {
   IoStatsChart,
   IoBriefcase,
   IoClipboard,
+  IoReceipt,
+  IoFolderOpen,
+  IoShieldCheckmark,
 } from "react-icons/io5";
 import {
   PERMISSIONS,
@@ -31,17 +34,29 @@ import {
   getEffectivePermissions,
   getDashboardHomePath,
   getHrSidebarNavLabel,
+  HR_MANAGER_NAV_LABEL,
+  EMPLOYEE_SERVICES_NAV_LABEL,
   isHrManagerRole,
 } from "@/lib/permissions";
+
+/** HR hub link is redundant when Attendance / Payroll / Documents already appear in the sidebar */
+function hasDedicatedHrSidebarLinks(userPermissions: string[]): boolean {
+  return (
+    can(PERMISSIONS.HR_ATTENDANCE_VIEW, userPermissions) ||
+    can(PERMISSIONS.HR_ATTENDANCE_MANAGE, userPermissions) ||
+    can(PERMISSIONS.HR_PAYROLL_VIEW, userPermissions) ||
+    can(PERMISSIONS.HR_PAYROLL_MANAGE, userPermissions) ||
+    can(PERMISSIONS.HR_PAYROLL_GENERATE, userPermissions) ||
+    can(PERMISSIONS.HR_OFFER_MANAGE, userPermissions)
+  );
+}
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
   adminOnly?: boolean;
-  /** User needs this permission (unless requiredAnyOf is set) */
   requiredPermission?: string;
-  /** If set, user needs at least one of these permissions */
   requiredAnyOf?: string[];
 }
 
@@ -70,6 +85,12 @@ const allNavItems: NavItem[] = [
     requiredAnyOf: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE],
   },
   {
+    name: "Roles",
+    href: "/dashboard/roles",
+    icon: <IoShieldCheckmark className="w-5 h-5" />,
+    requiredPermission: PERMISSIONS.USERS_MANAGE,
+  },
+  {
     name: "Attendance",
     href: "/dashboard/hr/attendance",
     icon: <IoClipboard className="w-5 h-5" />,
@@ -87,7 +108,42 @@ const allNavItems: NavItem[] = [
   { name: "Demo Requests", href: "/dashboard/demo", icon: <IoVideocam className="w-5 h-5" />, requiredPermission: PERMISSIONS.DEMO_REQUESTS_VIEW },
   { name: "Blogs & Reviews", href: "/dashboard/blogs", icon: <IoNewspaper className="w-5 h-5" />, requiredPermission: PERMISSIONS.BLOGS_VIEW },
   { name: "Testimonials", href: "/dashboard/testimonials", icon: <IoChatbubbles className="w-5 h-5" />, requiredPermission: PERMISSIONS.TESTIMONIALS_VIEW },
-  { name: "HR", href: "/dashboard/hr", icon: <IoBriefcase className="w-5 h-5" />, requiredAnyOf: [PERMISSIONS.HR_VIEW, PERMISSIONS.HR_LEAVE_REQUEST, PERMISSIONS.HR_TIMESHEET_SUBMIT] },
+  {
+    name: "HR",
+    href: "/dashboard/hr",
+    icon: <IoBriefcase className="w-5 h-5" />,
+    requiredAnyOf: [
+      PERMISSIONS.HR_VIEW,
+      PERMISSIONS.HR_EMPLOYEES_MANAGE,
+      PERMISSIONS.HR_ONBOARDING_MANAGE,
+      PERMISSIONS.HR_LEAVE_VIEW,
+      PERMISSIONS.HR_LEAVE_MANAGE,
+      PERMISSIONS.HR_LEAVE_REQUEST,
+      PERMISSIONS.HR_ATTENDANCE_VIEW,
+      PERMISSIONS.HR_ATTENDANCE_MANAGE,
+      PERMISSIONS.HR_ATTENDANCE_SELF,
+      PERMISSIONS.HR_TIMESHEET_VIEW,
+      PERMISSIONS.HR_TIMESHEET_MANAGE,
+      PERMISSIONS.HR_TIMESHEET_SUBMIT,
+      PERMISSIONS.HR_PAYROLL_VIEW,
+      PERMISSIONS.HR_PAYROLL_MANAGE,
+      PERMISSIONS.HR_PAYROLL_GENERATE,
+      PERMISSIONS.HR_OFFER_MANAGE,
+      PERMISSIONS.HR_PAYSLIP_SELF,
+    ],
+  },
+  {
+    name: "Payroll",
+    href: "/dashboard/hr/payroll",
+    icon: <IoReceipt className="w-5 h-5" />,
+    requiredAnyOf: [PERMISSIONS.HR_PAYROLL_VIEW, PERMISSIONS.HR_PAYROLL_MANAGE, PERMISSIONS.HR_PAYROLL_GENERATE],
+  },
+  {
+    name: "Documents",
+    href: "/dashboard/hr/offers",
+    icon: <IoFolderOpen className="w-5 h-5" />,
+    requiredAnyOf: [PERMISSIONS.HR_OFFER_MANAGE],
+  },
   { name: "Performance Report", href: "/dashboard/performance-report", icon: <IoStatsChart className="w-5 h-5" />, requiredPermission: PERMISSIONS.VIEW_PERFORMANCE_REPORT },
   { name: "Settings", href: "/dashboard/settings", icon: <IoSettings className="w-5 h-5" />, requiredPermission: PERMISSIONS.SETTINGS_MANAGE },
   { name: "Activity", href: "/dashboard/activity", icon: <IoDocumentText className="w-5 h-5" />, requiredPermission: PERMISSIONS.ACTIVITY_VIEW },
@@ -113,11 +169,6 @@ const getNavItems = (userRole: string | null, userPermissions: string[] = []): N
     });
   }
 
-  const canViewAllAttendance =
-    isAdminRole(userRole) ||
-    can(PERMISSIONS.HR_ATTENDANCE_VIEW, userPermissions) ||
-    can(PERMISSIONS.HR_ATTENDANCE_MANAGE, userPermissions);
-
   return items
     .map((item) => {
       if (item.name === "Dashboard") return { ...item, href: homePath };
@@ -132,10 +183,10 @@ const getNavItems = (userRole: string | null, userPermissions: string[] = []): N
       return item;
     })
     .filter((item) => {
-      if (item.name === "Attendance") return canViewAllAttendance;
-      if (item.name !== "Human Resources" && item.name !== "My Services") return true;
-      if (isAdminRole(userRole)) return false;
-      return homePath !== "/dashboard/hr";
+      const isHrHub =
+        item.name === HR_MANAGER_NAV_LABEL || item.name === EMPLOYEE_SERVICES_NAV_LABEL;
+      if (!isHrHub) return true;
+      return !hasDedicatedHrSidebarLinks(userPermissions);
     });
 };
 
@@ -295,21 +346,25 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
         </div>
         <nav className={`flex-1 ${isOpen ? "p-3 sm:p-4" : "lg:p-2"} space-y-1 overflow-y-auto overflow-x-hidden`}>
           {navItems.map((item) => {
+            const href = item.href;
             const isHome = item.name === "Dashboard";
             const isAttendanceNav =
-              item.href === "/dashboard/hr/attendance" || item.name === "Attendance";
+              href === "/dashboard/hr/attendance" || item.name === "Attendance";
+            const isPayrollNav = item.name === "Payroll";
+            const isDocumentsNav = item.name === "Documents";
             const isEmployeeServicesNav = item.name === "My Services";
             const anotherItemMatchesPath = navItems.some(
               (other) => other.name !== "Dashboard" && other.href === pathname
             );
             const isActive = (() => {
-              if (isAttendanceNav && pathname.startsWith("/dashboard/hr/attendance")) {
-                return true;
-              }
+              if (isPayrollNav && pathname.startsWith("/dashboard/hr/payroll")) return true;
+              if (isDocumentsNav && pathname.startsWith("/dashboard/hr/offers")) return true;
+              if (isAttendanceNav && pathname.startsWith("/dashboard/hr/attendance")) return true;
               if (isEmployeeServicesNav) {
                 return (
                   pathname === "/dashboard/hr/leave" ||
-                  pathname.startsWith("/dashboard/hr/timesheets")
+                  pathname.startsWith("/dashboard/hr/timesheets") ||
+                  pathname.startsWith("/dashboard/hr/payslip")
                 );
               }
               if (item.name === "Human Resources") {
@@ -317,23 +372,28 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
                   pathname === "/dashboard/hr" ||
                   (pathname.startsWith("/dashboard/hr/") &&
                     !pathname.startsWith("/dashboard/hr/attendance") &&
+                    !pathname.startsWith("/dashboard/hr/payroll") &&
+                    !pathname.startsWith("/dashboard/hr/offers") &&
                     pathname !== "/dashboard/hr/leave" &&
-                    !pathname.startsWith("/dashboard/hr/timesheets"))
+                    !pathname.startsWith("/dashboard/hr/timesheets") &&
+                    pathname !== "/dashboard/hr/payslip")
                 );
               }
-              if (pathname === item.href) {
+              if (pathname === href) {
                 if (isHome && anotherItemMatchesPath) return false;
                 return true;
               }
               if (isHome && !anotherItemMatchesPath) {
                 if (
-                  item.href === "/dashboard/hr" &&
+                  href === "/dashboard/hr" &&
                   pathname.startsWith("/dashboard/hr") &&
-                  !pathname.startsWith("/dashboard/hr/attendance")
+                  !pathname.startsWith("/dashboard/hr/attendance") &&
+                  !pathname.startsWith("/dashboard/hr/payroll") &&
+                  !pathname.startsWith("/dashboard/hr/offers")
                 ) {
                   return true;
                 }
-                if (item.href === "/dashboard/expense" && pathname.startsWith("/dashboard/expense")) {
+                if (href === "/dashboard/expense" && pathname.startsWith("/dashboard/expense")) {
                   return true;
                 }
               }
@@ -341,8 +401,8 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
             })();
             return (
               <Link
-                key={`${item.name}-${item.href}`}
-                href={item.href}
+                key={`${item.name}-${href}`}
+                href={href}
                 className={`flex items-center ${isOpen ? "gap-2 sm:gap-3 px-3 sm:px-4" : "lg:justify-center lg:px-2"} py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-sm sm:text-base ${
                   isActive
                     ? "bg-gradient-to-r from-green-600 to-green-700 text-white"
@@ -353,8 +413,8 @@ function SidebarImpl({ isOpen, onToggle }: SidebarProps) {
                 <span className="flex-shrink-0">{item.icon}</span>
                 {isOpen && (
                   <span className="font-medium transition-all truncate block flex-1">
-                  {item.name}
-                </span>
+                    {item.name}
+                  </span>
                 )}
               </Link>
             );

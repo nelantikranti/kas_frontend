@@ -15,7 +15,7 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", sizes: "any" },
     ],
     apple: [
-      { url: "/kas img.png", sizes: "180x180", type: "image/png" },
+      { url: "/kas_img.png", sizes: "180x180", type: "image/png" },
     ],
     shortcut: "/favicon.ico",
   },

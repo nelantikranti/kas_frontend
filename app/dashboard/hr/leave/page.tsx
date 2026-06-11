@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import HrNav from "@/components/hr/HrNav";
 import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
-import { can, getUserPermissions, isHrManagerRole, PERMISSIONS } from "@/lib/permissions";
+import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
+import { can, getUserPermissions, isAdmin, isHrManagerRole, PERMISSIONS } from "@/lib/permissions";
 
 type LeaveRow = {
   id: string;
   userName: string;
+  userRole?: string;
+  employeeId?: string;
   type: string;
   startDate: string;
   endDate: string;
@@ -30,6 +33,14 @@ export default function HrLeavePage() {
   const hrManager = isHrManagerRole(readRole(), perms);
   const canManage = can(PERMISSIONS.HR_LEAVE_MANAGE, perms);
   const canRequest = can(PERMISSIONS.HR_LEAVE_REQUEST, perms);
+  const viewerIsAdmin = isAdmin();
+  const viewerRole = readRole();
+
+  const canReviewLeave = (row: LeaveRow) => {
+    if (row.status !== "pending") return false;
+    if (row.userRole === "HR") return viewerIsAdmin;
+    return canManage;
+  };
   const [rows, setRows] = useState<LeaveRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
@@ -140,7 +151,11 @@ export default function HrLeavePage() {
             ) : (
               rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="px-4 py-3 font-medium">{r.userName}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium">{r.userName}</div>
+                    <EmployeeCodeBadge code={r.employeeId} />
+                    {r.userRole && <div className="text-xs text-gray-500">{r.userRole}</div>}
+                  </td>
                   <td className="px-4 py-3 capitalize">{r.type}</td>
                   <td className="px-4 py-3">
                     {r.startDate} → {r.endDate}
@@ -160,7 +175,7 @@ export default function HrLeavePage() {
                   </td>
                   {canManage && (
                     <td className="px-4 py-3 text-right space-x-2">
-                      {r.status === "pending" && (
+                      {canReviewLeave(r) && (
                         <>
                           <button onClick={() => approve(r.id)} className="text-green-600 font-medium hover:underline">
                             Approve
@@ -169,6 +184,9 @@ export default function HrLeavePage() {
                             Reject
                           </button>
                         </>
+                      )}
+                      {r.status === "pending" && r.userRole === "HR" && !viewerIsAdmin && viewerRole === "HR" && (
+                        <span className="text-xs text-gray-500">Admin approval required</span>
                       )}
                     </td>
                   )}

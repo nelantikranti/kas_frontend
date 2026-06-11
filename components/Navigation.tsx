@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { COMPANY_LOGO_SRC } from "@/components/hr/hrDocumentUtils";
 import {
   IoMenu,
   IoClose,
@@ -29,12 +31,14 @@ export default function Navigation() {
                   <span className="text-gray-900 sm:hidden">ELEVATORS</span>
                 </div>
               ) : (
-                <img 
-                  src="/kas%20img.png" 
-                  alt="KAS Home Elevators Logo" 
+                <Image
+                  src={COMPANY_LOGO_SRC}
+                  alt="KAS Home Elevators Logo"
+                  width={180}
+                  height={64}
                   className="h-12 sm:h-14 md:h-16 w-auto object-contain cursor-pointer group-hover:scale-105 transition-transform duration-300"
                   onError={() => setLogoError(true)}
-                  style={{ maxHeight: '64px' }}
+                  priority
                 />
               )}
             </Link>

@@ -1,24 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import HrNav from "@/components/hr/HrNav";
 import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
 import {
+  canEditAttendanceTimes,
   canViewAttendanceList,
   getEffectivePermissions,
   getDashboardHomePath,
   getUserPermissions,
   isAdmin,
 } from "@/lib/permissions";
-import { IoTime, IoPeople, IoCalendar } from "react-icons/io5";
+import { todayLocalDate } from "@/lib/dateLocal";
+import { IoTime, IoPeople, IoCalendar, IoCreateOutline } from "react-icons/io5";
+import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
+import HrListFilters from "@/components/hr/HrListFilters";
+import Modal from "@/components/Modal";
 
 type Row = {
   id: string;
   userId: string;
   userName: string;
-  department?: string;
+  role?: string;
+  employeeId?: string;
   date: string;
   checkIn?: string;
   checkOut?: string;
@@ -42,6 +48,28 @@ function workDuration(checkIn?: string, checkOut?: string) {
   return `${h}h ${m}m`;
 }
 
+function readCurrentUser(): { id: string; role: string } {
+  try {
+    const raw = localStorage.getItem("user");
+    const user = raw ? JSON.parse(raw) : {};
+    return { id: String(user.id || user._id || ""), role: String(user.role || "") };
+  } catch {
+    return { id: "", role: "" };
+  }
+}
+
+function isoToTimeInput(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function timeInputToIso(dateStr: string, timeStr: string) {
+  if (!timeStr) return null;
+  const d = new Date(`${dateStr}T${timeStr}:00`);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 export default function HrAttendancePage() {
   const router = useRouter();
   const perms = getUserPermissions();
@@ -51,7 +79,20 @@ export default function HrAttendancePage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedRef = useRef(false);
+  const [editRow, setEditRow] = useState<Row | null>(null);
+  const [checkInTime, setCheckInTime] = useState("");
+  const [checkOutTime, setCheckOutTime] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const currentUser = readCurrentUser();
+  const canEditTimes = (rowUserId: string) =>
+    canEditAttendanceTimes(currentUser.role, currentUser.id, rowUserId);
 
   useEffect(() => {
     if (!canViewAll) {
@@ -65,19 +106,86 @@ export default function HrAttendancePage() {
     }
   }, [canViewAll, router]);
 
-  const load = useCallback(() => {
-    if (!canViewAll) return;
-    setLoading(true);
-    hrAPI
-      .getAttendance({ from: from || undefined, to: to || undefined })
-      .then((list) => setRows(Array.isArray(list) ? list : []))
-      .catch((e: Error) => toast.error(e.message))
-      .finally(() => setLoading(false));
-  }, [from, to, canViewAll]);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (!canViewAll) return;
+
+    const controller = new AbortController();
+    const isFirstLoad = !hasLoadedRef.current;
+    if (isFirstLoad) setInitialLoading(true);
+    else setRefreshing(true);
+
+    hrAPI
+      .getAttendance(
+        {
+          from: from || undefined,
+          to: to || undefined,
+          search: debouncedSearch || undefined,
+          role: roleFilter || undefined,
+        },
+        { signal: controller.signal }
+      )
+      .then((list) => {
+        setRows(Array.isArray(list) ? list : []);
+        hasLoadedRef.current = true;
+      })
+      .catch((e: Error & { name?: string }) => {
+        if (e.name === "AbortError") return;
+        toast.error(e.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setInitialLoading(false);
+          setRefreshing(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [from, to, debouncedSearch, roleFilter, canViewAll]);
+
+  const openEdit = (row: Row) => {
+    setEditRow(row);
+    setCheckInTime(isoToTimeInput(row.checkIn));
+    setCheckOutTime(isoToTimeInput(row.checkOut));
+  };
+
+  const closeEdit = () => {
+    if (saving) return;
+    setEditRow(null);
+    setCheckInTime("");
+    setCheckOutTime("");
+  };
+
+  const clearFilters = () => {
+    setFrom("");
+    setTo("");
+    setSearch("");
+    setRoleFilter("");
+  };
+
+  const saveTimes = async () => {
+    if (!editRow) return;
+    setSaving(true);
+    try {
+      const updated = (await hrAPI.updateAttendanceTimes(editRow.id, {
+        checkIn: checkInTime ? timeInputToIso(editRow.date, checkInTime) : null,
+        checkOut: checkOutTime ? timeInputToIso(editRow.date, checkOutTime) : null,
+      })) as Row;
+      setRows((prev) => prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)));
+      toast.success("Attendance times updated");
+      setEditRow(null);
+      setCheckInTime("");
+      setCheckOutTime("");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update times");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!canViewAll) {
     return (
@@ -104,7 +212,7 @@ export default function HrAttendancePage() {
           </div>
           <div>
             <p className="text-xs text-gray-500">Records in range</p>
-            <p className="text-xl font-bold text-gray-900">{loading ? "…" : rows.length}</p>
+            <p className="text-xl font-bold text-gray-900">{rows.length}</p>
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
@@ -114,12 +222,7 @@ export default function HrAttendancePage() {
           <div>
             <p className="text-xs text-gray-500">Checked in today</p>
             <p className="text-xl font-bold text-gray-900">
-              {loading
-                ? "…"
-                : rows.filter(
-                    (r) =>
-                      r.date === new Date().toISOString().split("T")[0] && r.checkIn
-                  ).length}
+              {rows.filter((r) => r.date === todayLocalDate() && r.checkIn).length}
             </p>
           </div>
         </div>
@@ -130,14 +233,11 @@ export default function HrAttendancePage() {
           <div>
             <p className="text-xs text-gray-500">Completed today</p>
             <p className="text-xl font-bold text-gray-900">
-              {loading
-                ? "…"
-                : rows.filter(
-                    (r) =>
-                      r.date === new Date().toISOString().split("T")[0] &&
-                      r.checkIn &&
-                      r.checkOut
-                  ).length}
+              {
+                rows.filter(
+                  (r) => r.date === todayLocalDate() && r.checkIn && r.checkOut
+                ).length
+              }
             </p>
           </div>
         </div>
@@ -162,53 +262,69 @@ export default function HrAttendancePage() {
             className="block mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
         </div>
+        <HrListFilters
+          search={search}
+          role={roleFilter}
+          onSearchChange={setSearch}
+          onRoleChange={setRoleFilter}
+          size="sm"
+          hideLabels
+        />
         <button
-          onClick={load}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+          type="button"
+          onClick={clearFilters}
+          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shrink-0"
         >
-          Apply filter
+          Clear filter
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm min-w-0 max-w-full">
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-gray-800">All employee attendance</h2>
+          {refreshing && (
+            <span className="text-xs text-gray-400 animate-pulse">Updating…</span>
+          )}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+          <table className={`w-full min-w-[960px] text-sm transition-opacity duration-200 ${refreshing ? "opacity-60" : ""}`}>
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Employee
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Department
+                  Role
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check in</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check out</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {loading ? (
+              {initialLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-10 text-center text-gray-500">
                     Loading attendance…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-10 text-center text-gray-500">
                     No attendance records for this period.
                   </td>
                 </tr>
               ) : (
                 rows.map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50/80">
-                    <td className="px-4 py-3 font-medium text-gray-900">{r.userName || "—"}</td>
-                    <td className="px-4 py-3 text-gray-600">{r.department || "—"}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900">{r.userName || "—"}</div>
+                      <EmployeeCodeBadge code={r.employeeId} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{r.role || "—"}</td>
                     <td className="px-4 py-3">{r.date}</td>
                     <td className="px-4 py-3">{formatTime(r.checkIn)}</td>
                     <td className="px-4 py-3">{formatTime(r.checkOut)}</td>
@@ -226,6 +342,21 @@ export default function HrAttendancePage() {
                         {r.status}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      {canEditTimes(r.userId) ? (
+                        <button
+                          type="button"
+                          onClick={() => openEdit(r)}
+                          className="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-green-700 hover:bg-green-50 border border-transparent hover:border-green-200"
+                          title="Edit check-in / check-out times"
+                          aria-label={`Edit attendance for ${r.userName}`}
+                        >
+                          <IoCreateOutline className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
@@ -233,6 +364,60 @@ export default function HrAttendancePage() {
           </table>
         </div>
       </div>
+
+      <Modal
+        isOpen={!!editRow}
+        onClose={closeEdit}
+        title={editRow ? `Edit times — ${editRow.userName}` : "Edit times"}
+        size="sm"
+      >
+        {editRow && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              {editRow.date} · {editRow.role || "Employee"}
+            </p>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Check in</label>
+              <input
+                type="time"
+                value={checkInTime}
+                onChange={(e) => setCheckInTime(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Check out</label>
+              <input
+                type="time"
+                value={checkOutTime}
+                onChange={(e) => setCheckOutTime(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              Only check-in and check-out times can be changed. Clear a field to remove that time.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={closeEdit}
+                disabled={saving}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveTimes}
+                disabled={saving}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

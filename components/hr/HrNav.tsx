@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -24,6 +25,7 @@ const hrManagerLinks = [
 const employeeServiceLinks = [
   { href: "/dashboard/hr/leave", label: "Leave", anyOf: [PERMISSIONS.HR_LEAVE_REQUEST] },
   { href: "/dashboard/hr/timesheets", label: "Timesheets", anyOf: [PERMISSIONS.HR_TIMESHEET_SUBMIT] },
+  { href: "/dashboard/hr/payslip", label: "Payslip", perm: PERMISSIONS.HR_PAYSLIP_SELF },
 ];
 
 function readUserRole(): string {
@@ -36,41 +38,48 @@ function readUserRole(): string {
   }
 }
 
-export default function HrNav() {
+type HrNavProps = {
+  trailing?: ReactNode;
+};
+
+export default function HrNav({ trailing }: HrNavProps) {
   const pathname = usePathname();
   const perms = getUserPermissions();
   const role = readUserRole();
   const hrManager = isHrManagerRole(role, perms);
 
-  if (isAdmin()) return null;
+  if (isAdmin() && !trailing) return null;
 
   const linkSet = hrManager ? hrManagerLinks : employeeServiceLinks;
   const visible = linkSet.filter((l) => {
     if (l.anyOf) return l.anyOf.some((p) => can(p, perms));
     if (l.perm) return can(l.perm, perms);
-    return true;
+    return false;
   });
 
-  if (visible.length === 0) return null;
+  if (visible.length === 0 && !trailing) return null;
 
   return (
-    <nav className="flex flex-wrap gap-2 border-b border-gray-200 pb-3 mb-4">
-      {visible.map((l) => {
-        const active =
-          pathname === l.href ||
-          (l.href !== "/dashboard/hr" && pathname.startsWith(l.href));
-        return (
-          <Link
-            key={l.href}
-            href={l.href}
-            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-              active ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            {l.label}
-          </Link>
-        );
-      })}
+    <nav className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3 mb-4">
+      <div className="flex flex-wrap gap-2 flex-1 min-w-0">
+        {visible.map((l) => {
+          const active =
+            pathname === l.href ||
+            (l.href !== "/dashboard/hr" && pathname.startsWith(l.href));
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                active ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {l.label}
+            </Link>
+          );
+        })}
+      </div>
+      {trailing ? <div className="flex flex-wrap items-center gap-2 shrink-0">{trailing}</div> : null}
     </nav>
   );
 }

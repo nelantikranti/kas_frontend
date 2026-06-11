@@ -96,6 +96,26 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
   }
 }
 
+async function fetchBlob(endpoint: string, options?: RequestInit): Promise<Blob> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+  const headers: HeadersInit = { ...options?.headers };
+  if (token) (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+  if (!response.ok) {
+    const text = await response.text();
+    let message = text || response.statusText;
+    try {
+      const data = JSON.parse(text);
+      message = data.error || message;
+    } catch {
+      /* plain text */
+    }
+    if (response.status === 403) message = "You don't have access.";
+    throw new Error(message);
+  }
+  return response.blob();
+}
+
 // Type definitions
 export interface Lead {
   id: string;
@@ -800,7 +820,12 @@ async function hrFetchFile(endpoint: string, formData: FormData) {
 
 export const hrAPI = {
   getDashboard: () => fetchAPI("/hr/dashboard"),
-  getEmployees: () => fetchAPI("/hr/employees"),
+  getEmployees: (params?: { search?: string; role?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set("search", params.search);
+    if (params?.role) qs.set("role", params.role);
+    return fetchAPI(`/hr/employees${qs.toString() ? `?${qs}` : ""}`);
+  },
   getEmployee: (id: string) => fetchAPI(`/hr/employees/${id}`),
   updateProfile: (id: string, data: Record<string, unknown>) =>
     fetchAPI(`/hr/employees/${id}/profile`, { method: "PUT", body: JSON.stringify(data) }),
@@ -828,17 +853,27 @@ export const hrAPI = {
   rejectLeave: (id: string, reviewNote?: string) =>
     fetchAPI(`/hr/leave/${id}/reject`, { method: "PUT", body: JSON.stringify({ reviewNote }) }),
   getTodayAttendance: () => fetchAPI("/hr/attendance/today"),
-  getAttendance: (params?: { from?: string; to?: string; userId?: string }) => {
+  getAttendance: (
+    params?: { from?: string; to?: string; userId?: string; search?: string; role?: string },
+    init?: RequestInit
+  ) => {
     const qs = new URLSearchParams();
     if (params?.from) qs.set("from", params.from);
     if (params?.to) qs.set("to", params.to);
     if (params?.userId) qs.set("userId", params.userId);
-    return fetchAPI(`/hr/attendance${qs.toString() ? `?${qs}` : ""}`);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.role) qs.set("role", params.role);
+    return fetchAPI(`/hr/attendance${qs.toString() ? `?${qs}` : ""}`, init);
   },
   checkIn: () => fetchAPI("/hr/attendance/check-in", { method: "POST", body: "{}" }),
   checkOut: () => fetchAPI("/hr/attendance/check-out", { method: "POST", body: "{}" }),
   recordAttendance: (data: Record<string, unknown>) =>
     fetchAPI("/hr/attendance", { method: "POST", body: JSON.stringify(data) }),
+  updateAttendanceTimes: (
+    id: string,
+    data: { checkIn?: string | null; checkOut?: string | null }
+  ) =>
+    fetchAPI(`/hr/attendance/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   getTimesheets: (params?: { from?: string; to?: string; status?: string }) => {
     const qs = new URLSearchParams();
     if (params?.from) qs.set("from", params.from);
@@ -857,6 +892,74 @@ export const hrAPI = {
     fetchAPI("/hr/tasks", { method: "POST", body: JSON.stringify(data) }),
   updateTask: (id: string, data: Record<string, unknown>) =>
     fetchAPI(`/hr/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  getSalaries: () => fetchAPI("/hr/payroll/salaries"),
+  getEmployeeSalary: (userId: string) => fetchAPI(`/hr/payroll/salaries/${userId}`),
+  saveSalary: (userId: string, data: Record<string, unknown>) =>
+    fetchAPI(`/hr/payroll/salaries/${userId}`, { method: "PUT", body: JSON.stringify(data) }),
+  getPayslips: (opts?: { status?: string; month?: string; search?: string; role?: string }) => {
+    const q = new URLSearchParams();
+    if (opts?.status) q.set("status", opts.status);
+    if (opts?.month) q.set("month", opts.month);
+    if (opts?.search) q.set("search", opts.search);
+    if (opts?.role) q.set("role", opts.role);
+    const qs = q.toString();
+    return fetchAPI(`/hr/payroll/payslips${qs ? `?${qs}` : ""}`);
+  },
+  getPayslip: (id: string) => fetchAPI(`/hr/payroll/payslips/${id}`),
+  getMyPayslip: () => fetchAPI("/hr/payroll/my-payslip"),
+  calculatePayroll: (userId: string, month: string) =>
+    fetchAPI("/hr/payroll/calculate", { method: "POST", body: JSON.stringify({ userId, month }) }),
+  savePayrollDraft: (
+    userId: string,
+    month: string,
+    overrides?: {
+      earnings?: Record<string, number>;
+      deductionsDetail?: Record<string, number>;
+      presentDays?: number;
+      absentDays?: number;
+    }
+  ) =>
+    fetchAPI("/hr/payroll/draft", {
+      method: "POST",
+      body: JSON.stringify({ userId, month, ...overrides }),
+    }),
+  publishAllPayslips: (month: string) =>
+    fetchAPI("/hr/payroll/publish-all", { method: "POST", body: JSON.stringify({ month }) }),
+  publishPayslip: (id: string) =>
+    fetchAPI(`/hr/payroll/payslips/${id}/publish`, { method: "POST", body: "{}" }),
+  deletePayslipDraft: (id: string) =>
+    fetchAPI(`/hr/payroll/payslips/${id}`, { method: "DELETE" }),
+  emailPayslip: (id: string) =>
+    fetchAPI(`/hr/payroll/payslips/${id}/email`, { method: "POST", body: "{}" }),
+  getMailStatus: () => fetchAPI("/hr/payroll/mail-status"),
+  getPayslipPdf: (id: string) => fetchBlob(`/hr/payroll/payslips/${id}/pdf`),
+  previewPayslipPdf: (data: Record<string, unknown>) =>
+    fetchBlob("/hr/payroll/preview-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }),
+  getMyPayslipPdf: () => fetchBlob("/hr/payroll/my-payslip/pdf"),
+  getOffers: () => fetchAPI("/hr/offers"),
+  getOfferPrefill: (userId: string) => fetchAPI(`/hr/offers/prefill/${userId}`),
+  sendOffer: (data: Record<string, unknown>) =>
+    fetchAPI("/hr/offers/send", { method: "POST", body: JSON.stringify(data) }),
+  previewOfferPdf: (data: Record<string, unknown>) =>
+    fetchBlob("/hr/offers/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }),
+};
+
+export const rolesAPI = {
+  list: () => fetchAPI("/roles"),
+  getNames: () => fetchAPI("/roles/names"),
+  create: (data: { name: string; permissions?: string[] }) =>
+    fetchAPI("/roles", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: { name?: string; permissions?: string[] }) =>
+    fetchAPI(`/roles/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: string) => fetchAPI(`/roles/${id}`, { method: "DELETE" }),
 };
 
 // Health check API

@@ -182,7 +182,7 @@ export default function DashboardLayout({
       <Sidebar isOpen={isSidebarOpen} onToggle={handleToggleSidebar} />
       <div className="flex-1 flex flex-col w-full lg:w-auto relative z-10 min-w-0 overflow-hidden">
         <Topbar onSidebarToggle={handleToggleSidebar} />
-        <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-white via-green-50/20 to-white min-w-0 w-full">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-x-auto overflow-y-auto bg-gradient-to-br from-white via-green-50/20 to-white min-w-0 w-full">
           <div className="w-full max-w-full min-w-0">
             {children}
           </div>

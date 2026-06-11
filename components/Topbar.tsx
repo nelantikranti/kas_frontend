@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IoNotifications, IoLogOut, IoPerson, IoSettings, IoMenu, IoTrash, IoClose } from "react-icons/io5";
 import { notificationsAPI, Notification } from "@/lib/api";
+import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 
 interface User {
   id: string;
@@ -357,7 +358,7 @@ function TopbarImpl({ onSidebarToggle }: TopbarProps) {
                 <p className="font-semibold text-gray-900">{user?.name || "User"}</p>
                 <p className="text-sm text-gray-500">{user?.email || ""}</p>
               </div>
-              {isAdminRole && (
+              {can(PERMISSIONS.USERS_MANAGE, getUserPermissions()) && (
                 <button
                   onClick={() => {
                     setShowUserMenu(false);

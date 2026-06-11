@@ -9,6 +9,8 @@ import { IoAdd, IoPerson, IoSearch, IoEye, IoShieldCheckmark, IoCheckmarkCircle,
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { usersAPI } from "@/lib/api";
+import { useRoles } from "@/hooks/useRoles";
+import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
 import {
   PERMISSION_GROUPS,
   can,
@@ -24,7 +26,9 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "HR" | "Sales Executive" | "Service Engineer" | "Project Manager" | "Accounts" | "Manager" | "Technician" | "Accountant";
+  role: string;
+  employeeId?: string;
+  employeeCode?: string;
   status: "Active" | "Inactive" | "Pending";
   lastLogin: string;
   password?: string;
@@ -34,6 +38,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const { roles: roleOptions } = useRoles();
   const router = useRouter();
   const currentUserPermissions = getUserPermissions();
   const canViewUsers = can(PERMISSIONS.USERS_VIEW, currentUserPermissions) || can(PERMISSIONS.USERS_MANAGE, currentUserPermissions);
@@ -54,6 +59,7 @@ export default function UsersPage() {
   const [userToReject, setUserToReject] = useState<User | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
 
   /** Read synchronously so first paint matches admin checks (fixes missing Permissions button for Admin). */
   const readSessionUserRoleId = (): { role: string; id: string } => {
@@ -658,21 +664,22 @@ export default function UsersPage() {
     setUserToReject(null);
   };
 
-  // Filter users based on search query
   const filteredUsers = useMemo(() => {
-    if (!searchQuery.trim()) return users;
     const query = searchQuery.toLowerCase().trim();
     return users.filter((user) => {
+      if (roleFilter && user.role !== roleFilter) return false;
+      if (!query) return true;
+      const code = (user.employeeId || user.employeeCode || "").toLowerCase();
       return (
-        user.id.toLowerCase().includes(query) ||
+        code.includes(query) ||
         user.name.toLowerCase().includes(query) ||
         user.email.toLowerCase().includes(query) ||
         user.role.toLowerCase().includes(query) ||
         user.status.toLowerCase().includes(query) ||
-        user.lastLogin.includes(query)
+        user.lastLogin.toLowerCase().includes(query)
       );
     });
-  }, [users, searchQuery]);
+  }, [users, searchQuery, roleFilter]);
 
   return (
     <div>
@@ -682,16 +689,29 @@ export default function UsersPage() {
           <p className="text-sm sm:text-base text-gray-600">Manage system users and their permissions</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {/* Search Bar */}
-          <div className="relative w-48 md:w-56">
-            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-40 sm:w-44">
+              <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="search"
+                placeholder="Search name or code…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+              />
+            </div>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="w-32 sm:w-36 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="">All roles</option>
+              {roleOptions.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -700,16 +720,27 @@ export default function UsersPage() {
             <IoAdd className="w-4 h-4 sm:w-5 sm:h-5" />
             Add User
           </button>
-          {isAdmin() && (
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard/permissions")}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors whitespace-nowrap text-sm sm:text-base"
-              title="Manage permissions by role"
-            >
-              <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
-              Permissions
-            </button>
+          {canManageUsers && (
+            <>
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard/roles")}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors whitespace-nowrap text-sm sm:text-base"
+                title="Manage roles"
+              >
+                <IoShieldCheckmark className="w-4 h-4 sm:w-5 sm:h-5" />
+                Roles
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard/permissions")}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors whitespace-nowrap text-sm sm:text-base"
+                title="Manage permissions by role"
+              >
+                <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
+                Permissions
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -809,7 +840,7 @@ export default function UsersPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-semibold text-gray-900 truncate">{user.name}</h3>
-                  <p className="text-xs text-gray-500 truncate">{user.id}</p>
+                  <EmployeeCodeBadge code={user.employeeId || user.employeeCode} />
                 </div>
                 <StatusBadge status={user.status} />
               </div>
@@ -872,9 +903,9 @@ export default function UsersPage() {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 min-w-0 max-w-full">
+        <div className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -923,7 +954,7 @@ export default function UsersPage() {
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-medium text-gray-900 truncate">{user.name}</div>
-                        <div className="text-sm text-gray-500 truncate">{user.id}</div>
+                        <EmployeeCodeBadge code={user.employeeId || user.employeeCode} className="text-xs" />
                       </div>
                     </div>
                   </td>
@@ -1040,13 +1071,13 @@ export default function UsersPage() {
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
               style={{ color: '#111827', backgroundColor: '#ffffff' }}
             >
-              <option value="HR">HR</option>
-              <option value="Sales Executive">Sales Executive</option>
-              <option value="Manager">Manager</option>
-              <option value="Service Engineer">Service Engineer</option>
-              <option value="Project Manager">Project Manager</option>
-              <option value="Technician">Technician</option>
-              <option value="Accountant">Accountant</option>
+              {roleOptions
+                .filter((r) => r !== "Admin")
+                .map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
             </select>
           </div>
           <div className="flex gap-3 pt-4">
@@ -1241,14 +1272,11 @@ export default function UsersPage() {
                     className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 font-medium"
                     disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || !isAdmin()}
             >
-                    <option value="Admin">Admin</option>
-                    <option value="HR">HR</option>
-                    <option value="Sales Executive">Sales Executive</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Service Engineer">Service Engineer</option>
-                    <option value="Project Manager">Project Manager</option>
-                    <option value="Technician">Technician</option>
-                    <option value="Accountant">Accountant</option>
+                    {roleOptions.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
             </select>
             {editingUser && editingUser.id === currentUserId && (
               <p className="text-sm text-red-600 mt-1">You cannot change your own role</p>
@@ -1381,10 +1409,12 @@ export default function UsersPage() {
                     </p>
                   </div>
                 )}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">User ID</label>
-                  <p className="text-xs text-gray-600 font-mono break-all">{viewingUser.id}</p>
-                </div>
+                {(viewingUser.employeeId || viewingUser.employeeCode) && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Employee Code</label>
+                    <EmployeeCodeBadge code={viewingUser.employeeId || viewingUser.employeeCode} className="text-sm" />
+                  </div>
+                )}
                 <div className="bg-gray-50 rounded-lg p-3">
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Last Login</label>
                   <p className="text-sm text-gray-900 font-medium">{viewingUser.lastLogin || "Never"}</p>

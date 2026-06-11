@@ -3,32 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
-import { isAdmin, PERMISSION_GROUPS } from "@/lib/permissions";
-
-type RoleName =
-  | "Admin"
-  | "HR"
-  | "Sales Executive"
-  | "Service Engineer"
-  | "Project Manager"
-  | "Accounts"
-  | "Manager"
-  | "Technician"
-  | "Accountant";
+import { can, getUserPermissions, isAdmin, PERMISSION_GROUPS, PERMISSIONS } from "@/lib/permissions";
 
 const getApiUrl = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function RolePermissionsPage() {
-  const [roles, setRoles] = useState<RoleName[]>([]);
+  const [roles, setRoles] = useState<string[]>([]);
   const [rolePermissionsByRole, setRolePermissionsByRole] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [mode, setMode] = useState<"view" | "edit">("edit");
-  const [activeRole, setActiveRole] = useState<RoleName | "">("");
+  const [activeRole, setActiveRole] = useState<string>("");
 
-  const canAccess = isAdmin(); // route is still protected server-side by users:manage
+  const canAccess = can(PERMISSIONS.USERS_MANAGE, getUserPermissions());
 
   const grouped = useMemo(() => PERMISSION_GROUPS, []);
 
@@ -44,11 +33,11 @@ export default function RolePermissionsPage() {
     });
     if (!res.ok) throw new Error("Failed to load roles");
     const data = await res.json();
-    const list = Array.isArray(data?.roles) ? (data.roles as RoleName[]) : [];
+    const list = Array.isArray(data?.roles) ? (data.roles as string[]) : [];
     setRoles(list);
   };
 
-  const loadRolePermissions = async (role: RoleName) => {
+  const loadRolePermissions = async (role: string) => {
     const token = localStorage.getItem("authToken");
     const apiUrl = getApiUrl();
     const res = await fetch(`${apiUrl}/role-permissions/${encodeURIComponent(role)}`, {
