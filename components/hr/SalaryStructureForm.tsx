@@ -8,6 +8,7 @@ export type SalaryFormData = {
   hra: string;
   da: string;
   allowances: string;
+  incentive: string;
   pf: string;
   esi: string;
   tds: string;
@@ -19,6 +20,7 @@ export const emptySalaryForm: SalaryFormData = {
   hra: "",
   da: "",
   allowances: "",
+  incentive: "",
   pf: "",
   esi: "",
   tds: "",
@@ -42,6 +44,7 @@ export default function SalaryStructureForm({ initial, onSave, disabled }: Props
         hra: initial.hra != null ? String(initial.hra) : "",
         da: initial.da != null ? String(initial.da) : "",
         allowances: initial.allowances != null ? String(initial.allowances) : "",
+        incentive: initial.incentive != null ? String(initial.incentive) : "",
         pf: initial.pf != null ? String(initial.pf) : "",
         esi: initial.esi != null ? String(initial.esi) : "",
         tds: initial.tds != null ? String(initial.tds) : "",
@@ -54,7 +57,7 @@ export default function SalaryStructureForm({ initial, onSave, disabled }: Props
 
   const gross = useMemo(() => {
     const n = (v: string) => Number(v) || 0;
-    return n(form.basic) + n(form.hra) + n(form.da) + n(form.allowances);
+    return n(form.basic) + n(form.hra) + n(form.da) + n(form.allowances) + n(form.incentive);
   }, [form]);
 
   const field = (label: string, key: keyof SalaryFormData, required?: boolean) => (
@@ -96,6 +99,7 @@ export default function SalaryStructureForm({ initial, onSave, disabled }: Props
           {field("HRA", "hra")}
           {field("DA", "da")}
           {field("Allowances", "allowances")}
+          {field("Incentive", "incentive")}
         </div>
         <p className="mt-2 text-sm text-gray-700">
           Gross salary: <strong>{formatInr(gross)}</strong>

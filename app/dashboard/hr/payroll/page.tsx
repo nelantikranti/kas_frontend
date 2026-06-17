@@ -16,7 +16,7 @@ import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
 import { downloadBlob } from "@/lib/hrShare";
 import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
-import { formatInr, formatPayrollMonth } from "@/components/hr/hrDocumentUtils";
+import { formatInr, formatLetterDate, formatPayrollMonth } from "@/components/hr/hrDocumentUtils";
 import PayslipEditPanel from "@/components/hr/PayslipEditPanel";
 import HrListFilters from "@/components/hr/HrListFilters";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
@@ -28,16 +28,29 @@ function lastMonth() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-type Employee = { id: string; name: string; email: string; role: string; department?: string; employeeId?: string };
+type Employee = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  employeeId?: string;
+  joinDate?: string | null;
+  accountNumber?: string;
+  panNumber?: string;
+  uanNumber?: string;
+};
 type Payslip = {
   id: string;
   userId: string;
   month: string;
   employeeName: string;
   employeeId?: string;
-  department?: string;
   role?: string;
   email?: string;
+  joinDate?: string;
+  accountNumber?: string;
+  panNumber?: string;
+  uanNumber?: string;
   grossPay: number;
   deductions: number;
   netPay: number;
@@ -74,14 +87,17 @@ function payslipToCalculation(slip: Payslip): CalculationData {
     month: slip.month,
     employeeName: slip.employeeName,
     employeeId: slip.employeeId,
-    department: slip.department,
     role: slip.role,
     email: slip.email,
+    joinDate: slip.joinDate,
+    accountNumber: slip.accountNumber,
+    panNumber: slip.panNumber,
+    uanNumber: slip.uanNumber,
     workingDays: slip.workingDays ?? 0,
     presentDays: slip.presentDays ?? 0,
     unpaidLeaveDays: slip.unpaidLeaveDays ?? 0,
     absentDays: slip.absentDays ?? 0,
-    earnings: slip.earnings ?? { basic: 0, hra: 0, da: 0, allowances: 0, total: slip.grossPay },
+    earnings: slip.earnings ?? { basic: 0, hra: 0, da: 0, allowances: 0, incentive: 0, total: slip.grossPay },
     deductionsDetail: slip.deductionsDetail ?? {
       pf: 0,
       esi: 0,
@@ -107,6 +123,10 @@ function buildPdfPayload(calc: CalculationData, role?: string) {
     employeeName: calc.employeeName,
     employeeId: calc.employeeId,
     role: calc.role || role,
+    joinDate: calc.joinDate,
+    accountNumber: calc.accountNumber,
+    panNumber: calc.panNumber,
+    uanNumber: calc.uanNumber,
     workingDays: calc.workingDays,
     presentDays: calc.presentDays,
     unpaidLeaveDays: calc.unpaidLeaveDays,
@@ -124,8 +144,11 @@ function calculationToDocument(c: CalculationData): PayslipDocumentData {
     month: c.month,
     employeeName: c.employeeName,
     employeeId: c.employeeId,
-    department: c.department,
     role: c.role,
+    joinDate: c.joinDate,
+    accountNumber: c.accountNumber,
+    panNumber: c.panNumber,
+    uanNumber: c.uanNumber,
     grossPay: c.grossPay,
     deductions: c.deductions,
     netPay: c.netPay,
@@ -200,8 +223,11 @@ export default function HrPayrollPage() {
             name: e.name,
             email: e.email,
             role: e.role,
-            department: e.department,
             employeeId: e.employeeId,
+            joinDate: e.joinDate,
+            accountNumber: e.accountNumber,
+            panNumber: e.panNumber,
+            uanNumber: e.uanNumber,
           }))
       );
     } catch (e: unknown) {
@@ -234,15 +260,34 @@ export default function HrPayrollPage() {
       .finally(() => setSalaryLoading(false));
   }, [employeeId, month, payslips]);
 
+  const enrichCalculation = useCallback(
+    (calc: CalculationData): CalculationData => {
+      const emp = employees.find((e) => e.id === employeeId);
+      return {
+        ...calc,
+        employeeId: calc.employeeId || emp?.employeeId,
+        joinDate: calc.joinDate || emp?.joinDate || undefined,
+        accountNumber: calc.accountNumber || emp?.accountNumber,
+        panNumber: calc.panNumber || emp?.panNumber,
+        uanNumber: calc.uanNumber || emp?.uanNumber,
+        earnings: {
+          ...calc.earnings,
+          incentive: calc.earnings.incentive ?? 0,
+        },
+      };
+    },
+    [employees, employeeId]
+  );
+
   useEffect(() => {
     if (!employeeId || !salaryConfigured || salaryLoading) {
       if (!employeeId) setCalculation(null);
       return;
     }
     if (savedSlip) {
-      setCalculation(payslipToCalculation(savedSlip));
+      setCalculation(enrichCalculation(payslipToCalculation(savedSlip)));
     }
-  }, [employeeId, month, salaryConfigured, salaryLoading, savedSlip]);
+  }, [employeeId, month, salaryConfigured, salaryLoading, savedSlip, enrichCalculation]);
 
   useEffect(() => {
     if (!employeeId || !salaryConfigured || salaryLoading || savedSlip) return;
@@ -250,7 +295,7 @@ export default function HrPayrollPage() {
     hrAPI
       .calculatePayroll(employeeId, month)
       .then((calc) => {
-        if (!cancelled) setCalculation(calc as CalculationData);
+        if (!cancelled) setCalculation(enrichCalculation(calc as CalculationData));
       })
       .catch(() => {
         if (!cancelled) setCalculation(null);
@@ -258,7 +303,7 @@ export default function HrPayrollPage() {
     return () => {
       cancelled = true;
     };
-  }, [employeeId, month, salaryConfigured, salaryLoading, savedSlip]);
+  }, [employeeId, month, salaryConfigured, salaryLoading, savedSlip, enrichCalculation]);
 
   const runConfirm = (cfg: Omit<ConfirmState, "open">) => {
     setConfirm({ ...cfg, open: true });
@@ -334,8 +379,8 @@ export default function HrPayrollPage() {
 
   const livePdfPayload = useMemo(() => {
     if (!calculation) return null;
-    return buildPdfPayload(calculation, selectedEmployee?.role);
-  }, [calculation, selectedEmployee]);
+    return buildPdfPayload(enrichCalculation(calculation), selectedEmployee?.role);
+  }, [calculation, selectedEmployee, enrichCalculation]);
 
   const isLivePayslipEdit = useCallback(
     (slip: Payslip) =>
@@ -373,7 +418,7 @@ export default function HrPayrollPage() {
 
   const previewDocument = useMemo((): PayslipDocumentData | null => {
     if (calculation) {
-      const doc = calculationToDocument(calculation);
+      const doc = calculationToDocument(enrichCalculation(calculation));
       if (!doc.role && selectedEmployee?.role) doc.role = selectedEmployee.role;
       return doc;
     }
@@ -383,7 +428,7 @@ export default function HrPayrollPage() {
       return doc;
     }
     return null;
-  }, [calculation, currentDraft, selectedEmployee]);
+  }, [calculation, currentDraft, selectedEmployee, enrichCalculation]);
 
   return (
     <div className="space-y-6">
@@ -447,44 +492,124 @@ export default function HrPayrollPage() {
                   ))}
                 </select>
               </div>
-              {selectedEmployee && (
-                <div className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 space-y-1">
-                  <EmployeeCodeBadge code={selectedEmployee.employeeId} />
-                  <p>{selectedEmployee.email}</p>
-                  <p>Role: {selectedEmployee.role}</p>
-                  {salaryLoading ? (
-                    <p>Checking salary structure…</p>
-                  ) : salaryConfigured ? (
-                    <p>
-                      Salary structure: <strong>Configured</strong>
-                      {salaryStatus?.salary?.monthlyGross != null && (
-                        <> · Gross {formatInr(salaryStatus.salary.monthlyGross)}</>
-                      )}
-                    </p>
-                  ) : (
-                    <div className="flex gap-2 items-start text-amber-800">
-                      <IoWarningOutline className="w-4 h-4 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold">Salary structure not configured</p>
-                        <p className="mt-0.5">
-                          Configure under{" "}
-                          <Link href="/dashboard/hr/employees" className="underline font-medium">
-                            HR → Employees → Salary structure
-                          </Link>{" "}
-                          before generating payroll.
-                        </p>
-                        {salaryStatus?.errors?.length ? (
-                          <ul className="list-disc list-inside mt-1">
-                            {salaryStatus.errors.map((err) => (
-                              <li key={err}>{err}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </div>
+              {selectedEmployee && (() => {
+                const profileConfigured = Boolean(
+                  selectedEmployee.joinDate &&
+                    selectedEmployee.accountNumber?.trim() &&
+                    selectedEmployee.panNumber?.trim() &&
+                    selectedEmployee.uanNumber?.trim()
+                );
+                return (
+                <div className="rounded-lg border border-gray-200 bg-gray-50/80 overflow-hidden text-sm">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-white">
+                    <p className="font-semibold text-gray-900">{selectedEmployee.name}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
+                      <EmployeeCodeBadge code={selectedEmployee.employeeId} className="text-xs" />
+                      <span>{selectedEmployee.email}</span>
+                      <span>Role: {selectedEmployee.role}</span>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="px-4 py-3 space-y-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                        Profile details (for payslip)
+                      </p>
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                        <div className="flex justify-between sm:block gap-2">
+                          <dt className="text-gray-500">Joining date</dt>
+                          <dd className="font-medium text-gray-900 sm:mt-0.5">
+                            {selectedEmployee.joinDate
+                              ? formatLetterDate(selectedEmployee.joinDate)
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between sm:block gap-2">
+                          <dt className="text-gray-500">Account no.</dt>
+                          <dd className="font-medium text-gray-900 sm:mt-0.5">
+                            {selectedEmployee.accountNumber || "—"}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between sm:block gap-2">
+                          <dt className="text-gray-500">PAN</dt>
+                          <dd className="font-medium text-gray-900 sm:mt-0.5">
+                            {selectedEmployee.panNumber || "—"}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between sm:block gap-2">
+                          <dt className="text-gray-500">UAN</dt>
+                          <dd className="font-medium text-gray-900 sm:mt-0.5">
+                            {selectedEmployee.uanNumber || "—"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-200">
+                      {profileConfigured ? (
+                        <div className="flex items-center gap-2 text-xs text-green-800">
+                          <IoCheckmarkCircle className="w-4 h-4 shrink-0" />
+                          <p>
+                            Profile details: <strong>Configured</strong>
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2 items-start text-amber-800 text-xs">
+                          <IoWarningOutline className="w-4 h-4 shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="font-semibold">Profile details not configured</p>
+                            <p>
+                              Store or update phone, joining date, account, PAN, UAN and manager under{" "}
+                              <Link href="/dashboard/hr/employees" className="underline font-medium">
+                                HR → Employees → Edit profile
+                              </Link>
+                              .
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-200">
+                      {salaryLoading ? (
+                        <p className="text-xs text-gray-500">Checking salary structure…</p>
+                      ) : salaryConfigured ? (
+                        <div className="flex items-center gap-2 text-xs text-green-800">
+                          <IoCheckmarkCircle className="w-4 h-4 shrink-0" />
+                          <p>
+                            Salary structure: <strong>Configured</strong>
+                            {salaryStatus?.salary?.monthlyGross != null && (
+                              <> · Monthly gross {formatInr(salaryStatus.salary.monthlyGross)}</>
+                            )}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2 items-start text-amber-800 text-xs">
+                          <IoWarningOutline className="w-4 h-4 shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="font-semibold">Salary structure not configured</p>
+                            <p>
+                              Configure under{" "}
+                              <Link href="/dashboard/hr/employees" className="underline font-medium">
+                                HR → Employees → Salary structure
+                              </Link>{" "}
+                              before generating payroll.
+                            </p>
+                            {salaryStatus?.errors?.length ? (
+                              <ul className="list-disc list-inside">
+                                {salaryStatus.errors.map((err) => (
+                                  <li key={err}>{err}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
+                );
+              })()}
             </div>
           </div>
 

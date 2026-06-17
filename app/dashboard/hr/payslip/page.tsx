@@ -16,7 +16,6 @@ type Payslip = {
   month: string;
   employeeName: string;
   employeeId?: string;
-  department?: string;
   grossPay: number;
   deductions: number;
   netPay: number;

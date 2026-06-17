@@ -272,7 +272,7 @@ export default function HrOffersPage() {
               {field("Department", "department")}
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              {field("Total package / Monthly gross (Rs.)", "monthlyGross", { type: "number", required: true })}
+              {field("Monthly Gross Salary (Rs.)", "monthlyGross", { type: "number", required: true })}
               {field("Joining date", "joinDate", { type: "date", required: true })}
             </div>
             {form.employeeId ? (
@@ -328,7 +328,7 @@ export default function HrOffersPage() {
             {previewMode === "document" ? "Letter preview" : "PDF preview"}
           </p>
           {previewMode === "document" ? (
-            <OfferLetterDocument data={{ ...payload, inHandSalary: salarySummary.inHand }} />
+            <OfferLetterDocument data={payload} />
           ) : (
             <PdfPreviewPanel title="Offer letter PDF" loadPdf={loadPdf} refreshKey={pdfKey} emptyHint="Click Preview PDF" />
           )}

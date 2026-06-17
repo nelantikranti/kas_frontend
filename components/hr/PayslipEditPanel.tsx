@@ -18,6 +18,7 @@ const fields = [
   { key: "hra", label: "HRA", section: "earnings" as const },
   { key: "da", label: "DA", section: "earnings" as const },
   { key: "allowances", label: "Allowances", section: "earnings" as const },
+  { key: "incentive", label: "Incentive", section: "earnings" as const },
   { key: "pf", label: "Provident Fund", section: "deductions" as const },
   { key: "esi", label: "ESI", section: "deductions" as const },
   { key: "tds", label: "TDS", section: "deductions" as const },
@@ -75,6 +76,7 @@ function scaleEarningsForPresentChange(prev: CalculationData, next: CalculationD
       hra: round2(prev.earnings.hra * scale),
       da: round2(prev.earnings.da * scale),
       allowances: round2(prev.earnings.allowances * scale),
+      incentive: round2((prev.earnings.incentive ?? 0) * scale),
       total: 0,
     };
   }

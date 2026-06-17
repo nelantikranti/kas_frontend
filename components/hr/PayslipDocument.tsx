@@ -1,7 +1,7 @@
 "use client";
 
 import HrDocumentLetterhead from "./HrDocumentLetterhead";
-import { COMPANY_NAME, formatInr, formatPayrollMonth } from "./hrDocumentUtils";
+import { COMPANY_NAME, formatInr, formatLetterDate, formatPayrollMonth } from "./hrDocumentUtils";
 import { normalizePayslipDocument, resolvePayslipDeductions, resolvePayslipEarnings } from "./payslipNormalize";
 
 export type PayslipEarnings = {
@@ -9,6 +9,7 @@ export type PayslipEarnings = {
   hra: number;
   da: number;
   allowances: number;
+  incentive: number;
   total: number;
 };
 
@@ -25,8 +26,11 @@ export type PayslipDocumentData = {
   month: string;
   employeeName: string;
   employeeId?: string;
-  department?: string;
   role?: string;
+  joinDate?: string;
+  accountNumber?: string;
+  panNumber?: string;
+  uanNumber?: string;
   grossPay: number;
   deductions: number;
   netPay: number;
@@ -56,12 +60,15 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
         <div className="space-y-1">
           <p><span className="font-semibold">Employee Name:</span> {slip.employeeName}</p>
           <p><span className="font-semibold">Employee ID:</span> {slip.employeeId || "—"}</p>
-          <p><span className="font-semibold">Role:</span> {slip.role || "—"}</p>
+          <p><span className="font-semibold">Account Number:</span> {slip.accountNumber || "—"}</p>
+          <p><span className="font-semibold">Pan Number:</span> {slip.panNumber || "—"}</p>
+          <p><span className="font-semibold">UAN Number:</span> {slip.uanNumber || "—"}</p>
         </div>
         <div className="space-y-1 sm:text-right">
+          <p><span className="font-semibold">Joining Date:</span> {slip.joinDate ? formatLetterDate(slip.joinDate) : "—"}</p>
           <p><span className="font-semibold">Pay Period:</span> {period}</p>
           <p>
-            <span className="font-semibold">Working Days:</span> {slip.presentDays ?? "—"}
+            <span className="font-semibold">Attendance:</span> {slip.presentDays ?? 0} present / {slip.workingDays ?? 0} working days
           </p>
           <p>
             <span className="font-semibold">LOP Days:</span> {slip.absentDays ?? 0}
@@ -79,6 +86,7 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
                 ["HRA", earnings.hra],
                 ["DA", earnings.da],
                 ["Allowances", earnings.allowances],
+                ["Incentive", earnings.incentive],
               ].map(([label, amount]) => (
                 <tr key={String(label)}>
                   <td className="py-1.5 text-gray-800 pr-4">{label}</td>

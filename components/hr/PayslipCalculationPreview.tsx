@@ -1,14 +1,17 @@
 "use client";
 
 import HrDocumentLetterhead from "./HrDocumentLetterhead";
-import { formatInr, formatPayrollMonth } from "./hrDocumentUtils";
+import { formatInr, formatLetterDate, formatPayrollMonth } from "./hrDocumentUtils";
 
 export type CalculationData = {
   employeeName: string;
   employeeId?: string;
-  department?: string;
   role?: string;
   email?: string;
+  joinDate?: string;
+  accountNumber?: string;
+  panNumber?: string;
+  uanNumber?: string;
   month: string;
   monthLabel?: string;
   workingDays: number;
@@ -16,7 +19,7 @@ export type CalculationData = {
   unpaidLeaveDays: number;
   absentDays: number;
   attendanceRatio?: number;
-  earnings: { basic: number; hra: number; da: number; allowances: number; total: number };
+  earnings: { basic: number; hra: number; da: number; allowances: number; incentive: number; total: number };
   deductionsDetail: { pf: number; esi: number; tds: number; professionalTax: number; lop: number; total: number };
   grossPay: number;
   deductions: number;
@@ -34,12 +37,16 @@ export default function PayslipCalculationPreview({ data }: { data: CalculationD
 
       <div className="px-6 py-4 grid sm:grid-cols-2 gap-3 text-sm border-b border-gray-200">
         <div>
-          <p><span className="font-semibold">Employee:</span> {data.employeeName}</p>
-          <p><span className="font-semibold">ID:</span> {data.employeeId || "—"}</p>
-          <p><span className="font-semibold">Role:</span> {data.role || "—"}</p>
+          <p><span className="font-semibold">Employee Name:</span> {data.employeeName}</p>
+          <p><span className="font-semibold">Employee ID:</span> {data.employeeId || "—"}</p>
+          <p><span className="font-semibold">Account Number:</span> {data.accountNumber || "—"}</p>
+          <p><span className="font-semibold">Pan Number:</span> {data.panNumber || "—"}</p>
+          <p><span className="font-semibold">UAN Number:</span> {data.uanNumber || "—"}</p>
         </div>
         <div>
-          <p><span className="font-semibold">Working Days:</span> {data.workingDays}</p>
+          <p><span className="font-semibold">Joining Date:</span> {data.joinDate ? formatLetterDate(data.joinDate) : "—"}</p>
+          <p><span className="font-semibold">Pay Period:</span> {period}</p>
+          <p><span className="font-semibold">Attendance:</span> {data.presentDays} present / {data.workingDays} working days</p>
           <p><span className="font-semibold">LOP Days:</span> {data.absentDays}</p>
         </div>
       </div>
@@ -54,6 +61,7 @@ export default function PayslipCalculationPreview({ data }: { data: CalculationD
                 ["HRA", data.earnings.hra],
                 ["DA", data.earnings.da],
                 ["Allowances", data.earnings.allowances],
+                ["Incentive", data.earnings.incentive],
               ].map(([l, v]) => (
                 <tr key={String(l)}>
                   <td className="py-1 text-gray-700">{l}</td>

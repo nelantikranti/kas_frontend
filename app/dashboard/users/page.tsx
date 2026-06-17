@@ -77,6 +77,12 @@ export default function UsersPage() {
   const [currentUserRole, setCurrentUserRole] = useState<string>(() => readSessionUserRoleId().role);
   const [currentUserId, setCurrentUserId] = useState<string>(() => readSessionUserRoleId().id);
 
+  const canReviewSignups =
+    isAdmin() ||
+    currentUserRole === "HR" ||
+    can(PERMISSIONS.USERS_MANAGE, currentUserPermissions) ||
+    can(PERMISSIONS.HR_VIEW, currentUserPermissions);
+
   useEffect(() => {
     const { role, id } = readSessionUserRoleId();
     setCurrentUserRole(role);
@@ -130,7 +136,12 @@ export default function UsersPage() {
       setUsers(fetchedUsers.filter((u) => u.status !== "Pending"));
       setPendingUsers(fetchedUsers.filter((u) => u.status === "Pending"));
 
-      if (isAdmin) {
+      const canFetchPending =
+        role === "Admin" ||
+        role === "HR" ||
+        can(PERMISSIONS.USERS_MANAGE, getUserPermissions()) ||
+        can(PERMISSIONS.HR_VIEW, getUserPermissions());
+      if (canFetchPending) {
         const pendingResponse = await fetch(`${apiUrl}/users/pending`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -421,12 +432,14 @@ export default function UsersPage() {
     }
   };
 
+  const canChangeUserRole = isAdmin() || currentUserRole === "HR";
+
   const handleUpdateUser = async () => {
     if (!editingUser) return;
     
-    // Only Admin can change roles
-    if (editUser.role !== editingUser.role && !isAdmin()) {
-      toast.error("Only administrators can change user roles.");
+    // Admin and HR can change roles
+    if (editUser.role !== editingUser.role && !canChangeUserRole) {
+      toast.error("Only administrators and HR can change user roles.");
       return;
     }
     
@@ -453,8 +466,8 @@ export default function UsersPage() {
         status: editUser.status,
       };
       
-      // Only include role if Admin is changing someone else's role
-      if (isAdmin() && editingUser.id !== currentUserId && editUser.role) {
+      // Include role when Admin/HR changes someone else's role
+      if (canChangeUserRole && editingUser.id !== currentUserId && editUser.role) {
         updateData.role = editUser.role;
       }
       
@@ -745,8 +758,8 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Pending Signup Requests Section - Only for Admin */}
-      {isAdmin() && (
+      {/* Pending Signup Requests — Admin & HR */}
+      {canReviewSignups && (
         <div className={`mb-6 ${pendingUsers.length > 0 ? "bg-yellow-50 border-2 border-yellow-200" : "bg-gray-50 border-2 border-gray-200"} rounded-lg p-4`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -1270,7 +1283,7 @@ export default function UsersPage() {
               value={editUser.role}
               onChange={(e) => setEditUser({ ...editUser, role: e.target.value as User["role"] })}
                     className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 font-medium"
-                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || !isAdmin()}
+                    disabled={isUpdating || (editingUser && editingUser.id === currentUserId) || !canChangeUserRole}
             >
                     {roleOptions.map((r) => (
                       <option key={r} value={r}>
@@ -1281,8 +1294,8 @@ export default function UsersPage() {
             {editingUser && editingUser.id === currentUserId && (
               <p className="text-sm text-red-600 mt-1">You cannot change your own role</p>
             )}
-            {!isAdmin() && (
-              <p className="text-sm text-red-600 mt-1">Only administrators can change user roles</p>
+            {!canChangeUserRole && (
+              <p className="text-sm text-red-600 mt-1">Only administrators and HR can change user roles</p>
             )}
           </div>
           <div>

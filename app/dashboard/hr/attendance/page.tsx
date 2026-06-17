@@ -14,10 +14,16 @@ import {
   isAdmin,
 } from "@/lib/permissions";
 import { todayLocalDate } from "@/lib/dateLocal";
-import { IoTime, IoPeople, IoCalendar, IoCreateOutline } from "react-icons/io5";
+import { downloadBlob } from "@/lib/hrShare";
+import {
+  buildAttendanceWorkbook,
+  resolveExportRange,
+  type AttendanceExportRow,
+} from "@/lib/attendanceExport";
+import { IoTime, IoPeople, IoCalendar, IoCreateOutline, IoDownloadOutline } from "react-icons/io5";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
-import HrListFilters from "@/components/hr/HrListFilters";
 import Modal from "@/components/Modal";
+import { useRoles } from "@/hooks/useRoles";
 
 type Row = {
   id: string;
@@ -30,6 +36,32 @@ type Row = {
   checkOut?: string;
   status: string;
 };
+
+type EmployeeOption = {
+  id: string;
+  name: string;
+  employeeId?: string;
+  role: string;
+  joinDate?: string | null;
+};
+
+function formatReportDate(dateStr: string) {
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function effectiveRangeLabel(from: string, to: string) {
+  const end = to || todayLocalDate();
+  const start =
+    from ||
+    (() => {
+      const d = new Date(end);
+      d.setDate(d.getDate() - 30);
+      return d.toISOString().split("T")[0];
+    })();
+  return `${formatReportDate(start)} - ${formatReportDate(end)}`;
+}
 
 function formatTime(iso?: string | null) {
   if (!iso) return "—";
@@ -72,18 +104,22 @@ function timeInputToIso(dateStr: string, timeStr: string) {
 
 export default function HrAttendancePage() {
   const router = useRouter();
+  const { roles, loading: rolesLoading } = useRoles();
   const perms = getUserPermissions();
   const admin = isAdmin();
   const canViewAll = canViewAttendanceList(undefined, perms) || admin;
 
   const [rows, setRows] = useState<Row[]>([]);
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const hasLoadedRef = useRef(false);
   const [editRow, setEditRow] = useState<Row | null>(null);
   const [checkInTime, setCheckInTime] = useState("");
@@ -113,6 +149,24 @@ export default function HrAttendancePage() {
 
   useEffect(() => {
     if (!canViewAll) return;
+    hrAPI
+      .getEmployees()
+      .then((list) =>
+        setEmployees(
+          (Array.isArray(list) ? list : []).map((e: EmployeeOption) => ({
+            id: e.id,
+            name: e.name,
+            employeeId: e.employeeId,
+            role: e.role,
+            joinDate: e.joinDate ?? null,
+          }))
+        )
+      )
+      .catch(() => {});
+  }, [canViewAll]);
+
+  useEffect(() => {
+    if (!canViewAll) return;
 
     const controller = new AbortController();
     const isFirstLoad = !hasLoadedRef.current;
@@ -124,6 +178,7 @@ export default function HrAttendancePage() {
         {
           from: from || undefined,
           to: to || undefined,
+          userId: employeeId || undefined,
           search: debouncedSearch || undefined,
           role: roleFilter || undefined,
         },
@@ -145,7 +200,7 @@ export default function HrAttendancePage() {
       });
 
     return () => controller.abort();
-  }, [from, to, debouncedSearch, roleFilter, canViewAll]);
+  }, [from, to, debouncedSearch, employeeId, roleFilter, canViewAll]);
 
   const openEdit = (row: Row) => {
     setEditRow(row);
@@ -164,7 +219,115 @@ export default function HrAttendancePage() {
     setFrom("");
     setTo("");
     setSearch("");
+    setEmployeeId("");
     setRoleFilter("");
+  };
+
+  const downloadAttendanceExcel = async () => {
+    setDownloading(true);
+    try {
+      const today = todayLocalDate();
+      const hasDateFilter = !!(from || to);
+
+      let exportEmployees = employees;
+      if (employeeId) {
+        exportEmployees = employees.filter((e) => e.id === employeeId);
+      } else if (roleFilter) {
+        exportEmployees = employees.filter((e) => e.role === roleFilter);
+      }
+      if (debouncedSearch.trim()) {
+        const q = debouncedSearch.trim().toLowerCase();
+        exportEmployees = exportEmployees.filter(
+          (e) =>
+            e.name.toLowerCase().includes(q) ||
+            (e.employeeId || "").toLowerCase().includes(q)
+        );
+      }
+
+      let start: string;
+      let end: string;
+      if (hasDateFilter) {
+        ({ start, end } = resolveExportRange(from, to, today));
+      } else {
+        end = today;
+        const joinDates = exportEmployees
+          .map((e) => e.joinDate)
+          .filter((d): d is string => !!d);
+        const allHaveJoinDate =
+          exportEmployees.length > 0 && joinDates.length === exportEmployees.length;
+        if (allHaveJoinDate) {
+          start = joinDates.reduce((min, d) => (d < min ? d : min));
+        } else {
+          start = "2000-01-01";
+        }
+      }
+
+      const [attendanceData, leaveData] = await Promise.all([
+        hrAPI.getAttendance({
+          from: start,
+          to: end,
+          userId: employeeId || undefined,
+          search: debouncedSearch || undefined,
+          role: roleFilter || undefined,
+        }),
+        hrAPI.getLeave({ status: "approved" }),
+      ]);
+
+      const attendanceRows = (Array.isArray(attendanceData) ? attendanceData : []) as AttendanceExportRow[];
+      const leaves = (Array.isArray(leaveData) ? leaveData : []) as Array<{
+        userId: string;
+        startDate: string;
+        endDate: string;
+        type: string;
+        status: string;
+      }>;
+
+      const employeeIds = new Set(exportEmployees.map((e) => e.id));
+      const filteredAttendance = attendanceRows.filter((r) => employeeIds.has(r.userId));
+
+      const titleEmployee = employeeId
+        ? exportEmployees[0]?.name || "Employee"
+        : "All Employees";
+      const title = hasDateFilter
+        ? `Attendance Report — ${titleEmployee} — ${effectiveRangeLabel(start, end)}`
+        : `Attendance Report — ${titleEmployee}`;
+
+      const buffer = await buildAttendanceWorkbook({
+        title,
+        employees: exportEmployees,
+        attendance: filteredAttendance,
+        leaves,
+        from: start,
+        to: end,
+        perEmployeeRange: !hasDateFilter,
+        fallbackTo: today,
+      });
+
+      const fileRange =
+        from && to
+          ? `${from}_to_${to}`
+          : from
+            ? `from-${from}`
+            : to
+              ? `to-${to}`
+              : "";
+      const baseName = employeeId
+        ? `attendance-${(exportEmployees[0]?.name || "employee").replace(/\s+/g, "-")}`
+        : "attendance-all-employees";
+      const fileName = fileRange ? `${baseName}-${fileRange}.xlsx` : `${baseName}.xlsx`;
+
+      downloadBlob(
+        new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }),
+        fileName
+      );
+      toast.success("Attendance downloaded");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Download failed");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const saveTimes = async () => {
@@ -245,6 +408,16 @@ export default function HrAttendancePage() {
 
       <div className="flex flex-wrap gap-3 items-end bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
         <div>
+          <label className="text-xs font-medium text-gray-600">Search</label>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name or employee code…"
+            className="block mt-1 w-[11.5rem] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          />
+        </div>
+        <div>
           <label className="text-xs font-medium text-gray-600">From</label>
           <input
             type="date"
@@ -262,14 +435,47 @@ export default function HrAttendancePage() {
             className="block mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
         </div>
-        <HrListFilters
-          search={search}
-          role={roleFilter}
-          onSearchChange={setSearch}
-          onRoleChange={setRoleFilter}
-          size="sm"
-          hideLabels
-        />
+        <div>
+          <label className="text-xs font-medium text-gray-600">Employee</label>
+          <select
+            value={employeeId}
+            onChange={(e) => setEmployeeId(e.target.value)}
+            className="block mt-1 w-[12rem] px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="">All employees</option>
+            {employees.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.employeeId ? `${e.employeeId} · ` : ""}
+                {e.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-gray-600">Role</label>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            disabled={rolesLoading}
+            className="block mt-1 w-[9.5rem] px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="">All roles</option>
+            {roles.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="button"
+          onClick={downloadAttendanceExcel}
+          disabled={downloading}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+        >
+          <IoDownloadOutline className="w-4 h-4" />
+          {downloading ? "Downloading…" : "Download"}
+        </button>
         <button
           type="button"
           onClick={clearFilters}

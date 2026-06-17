@@ -19,8 +19,10 @@ type Employee = {
   status: string;
   phone: string;
   employeeId: string;
-  department: string;
   joinDate: string | null;
+  accountNumber: string;
+  panNumber: string;
+  uanNumber: string;
   managerId: string | null;
   managerName: string | null;
 };
@@ -43,7 +45,14 @@ export default function HrEmployeesPage() {
   const [salaryLoading, setSalaryLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [form, setForm] = useState({ phone: "", department: "", joinDate: "", managerId: "" });
+  const [form, setForm] = useState({
+    phone: "",
+    joinDate: "",
+    accountNumber: "",
+    panNumber: "",
+    uanNumber: "",
+    managerId: "",
+  });
 
   const load = () => {
     setLoading(true);
@@ -62,8 +71,10 @@ export default function HrEmployeesPage() {
     setEdit(emp);
     setForm({
       phone: emp.phone || "",
-      department: emp.department || "",
       joinDate: emp.joinDate || "",
+      accountNumber: emp.accountNumber || "",
+      panNumber: emp.panNumber || "",
+      uanNumber: emp.uanNumber || "",
       managerId: emp.managerId || "",
     });
   };
@@ -102,6 +113,7 @@ export default function HrEmployeesPage() {
       hra: Number(data.hra) || 0,
       da: Number(data.da) || 0,
       allowances: Number(data.allowances) || 0,
+      incentive: Number(data.incentive) || 0,
       pf: Number(data.pf) || 0,
       esi: Number(data.esi) || 0,
       tds: Number(data.tds) || 0,
@@ -186,7 +198,7 @@ export default function HrEmployeesPage() {
       <Modal isOpen={!!edit} onClose={() => setEdit(null)} title="Employee profile">
         <div className="space-y-3">
           <p className="text-sm text-gray-600">
-            {edit?.name} — {edit?.email}
+            {edit?.name} • {edit?.email}
           </p>
           <input
             placeholder="Phone"
@@ -200,15 +212,27 @@ export default function HrEmployeesPage() {
             </p>
           )}
           <input
-            placeholder="Department"
-            value={form.department}
-            onChange={(ev) => setForm({ ...form, department: ev.target.value })}
-            className="w-full px-3 py-2 border rounded-lg"
-          />
-          <input
             type="date"
             value={form.joinDate}
             onChange={(ev) => setForm({ ...form, joinDate: ev.target.value })}
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            placeholder="Account Number"
+            value={form.accountNumber}
+            onChange={(ev) => setForm({ ...form, accountNumber: ev.target.value })}
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            placeholder="PAN Number"
+            value={form.panNumber}
+            onChange={(ev) => setForm({ ...form, panNumber: ev.target.value })}
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <input
+            placeholder="UAN Number"
+            value={form.uanNumber}
+            onChange={(ev) => setForm({ ...form, uanNumber: ev.target.value })}
             className="w-full px-3 py-2 border rounded-lg"
           />
           <label className="text-xs text-gray-500">Manager (user ID)</label>
@@ -245,7 +269,6 @@ export default function HrEmployeesPage() {
             <div className="text-sm text-gray-600 border-b pb-3">
               <p className="font-semibold text-gray-900">{salaryEmp.name}</p>
               <p>{salaryEmp.email}</p>
-              {salaryEmp.department && <p>Department: {salaryEmp.department}</p>}
               {salaryStatus?.salary?.monthlyGross != null && salaryStatus.configured && (
                 <p className="mt-1">
                   Current gross: <strong>{formatInr(salaryStatus.salary.monthlyGross)}</strong>
