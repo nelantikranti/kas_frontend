@@ -744,15 +744,17 @@ export default function UsersPage() {
                 <IoShieldCheckmark className="w-4 h-4 sm:w-5 sm:h-5" />
                 Roles
               </button>
-              <button
-                type="button"
-                onClick={() => router.push("/dashboard/permissions")}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors whitespace-nowrap text-sm sm:text-base"
-                title="Manage permissions by role"
-              >
-                <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
-                Permissions
-              </button>
+              {isAdmin() && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/dashboard/permissions")}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors whitespace-nowrap text-sm sm:text-base"
+                  title="Manage permissions by role"
+                >
+                  <IoLockClosed className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Permissions
+                </button>
+              )}
             </>
           )}
         </div>
@@ -1435,7 +1437,8 @@ export default function UsersPage() {
                 </div>
                   </div>
 
-            {/* Permissions Section */}
+            {/* Permissions Section — Admin only */}
+            {isAdmin() && (
             <div className="bg-white rounded-lg border-2 border-gray-100 p-5">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                 <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -1465,6 +1468,7 @@ export default function UsersPage() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Close Button */}
             <div className="pt-2 pb-2">

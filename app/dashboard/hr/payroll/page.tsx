@@ -58,6 +58,7 @@ type Payslip = {
   deductionsDetail?: PayslipDeductionsDetail;
   presentDays?: number;
   workingDays?: number;
+  paidLeaveDays?: number;
   unpaidLeaveDays?: number;
   absentDays?: number;
   status: "draft" | "published" | "superseded";
@@ -95,6 +96,7 @@ function payslipToCalculation(slip: Payslip): CalculationData {
     uanNumber: slip.uanNumber,
     workingDays: slip.workingDays ?? 0,
     presentDays: slip.presentDays ?? 0,
+    paidLeaveDays: slip.paidLeaveDays ?? 0,
     unpaidLeaveDays: slip.unpaidLeaveDays ?? 0,
     absentDays: slip.absentDays ?? 0,
     earnings: slip.earnings ?? { basic: 0, hra: 0, da: 0, allowances: 0, incentive: 0, total: slip.grossPay },
@@ -129,6 +131,7 @@ function buildPdfPayload(calc: CalculationData, role?: string) {
     uanNumber: calc.uanNumber,
     workingDays: calc.workingDays,
     presentDays: calc.presentDays,
+    paidLeaveDays: calc.paidLeaveDays ?? 0,
     unpaidLeaveDays: calc.unpaidLeaveDays,
     absentDays: calc.absentDays,
     earnings: calc.earnings,
@@ -156,6 +159,7 @@ function calculationToDocument(c: CalculationData): PayslipDocumentData {
     deductionsDetail: c.deductionsDetail,
     presentDays: c.presentDays,
     workingDays: c.workingDays,
+    paidLeaveDays: c.paidLeaveDays ?? 0,
     unpaidLeaveDays: c.unpaidLeaveDays,
     absentDays: c.absentDays,
   };

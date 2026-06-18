@@ -38,6 +38,7 @@ export type PayslipDocumentData = {
   deductionsDetail?: PayslipDeductionsDetail;
   presentDays?: number;
   workingDays?: number;
+  paidLeaveDays?: number;
   unpaidLeaveDays?: number;
   absentDays?: number;
   publishedAt?: string;

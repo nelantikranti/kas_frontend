@@ -35,14 +35,15 @@ function syncAttendance(
   patch: { presentDays?: number; absentDays?: number }
 ): CalculationData {
   const calendar = data.workingDays;
+  const paid = data.paidLeaveDays ?? 0;
   const unpaid = data.unpaidLeaveDays ?? 0;
   const next = { ...data };
   if (patch.presentDays != null) {
     next.presentDays = Math.max(0, patch.presentDays);
-    next.absentDays = Math.max(0, round2(calendar - next.presentDays - unpaid));
+    next.absentDays = Math.max(0, round2(calendar - next.presentDays - paid - unpaid));
   } else if (patch.absentDays != null) {
     next.absentDays = Math.max(0, patch.absentDays);
-    next.presentDays = Math.max(0, round2(calendar - next.absentDays - unpaid));
+    next.presentDays = Math.max(0, round2(calendar - next.absentDays - paid - unpaid));
   }
   return next;
 }
@@ -63,8 +64,9 @@ function scaleEarningsForPresentChange(prev: CalculationData, next: CalculationD
     scale = newPresent / prevPresent;
   } else if (calendarDays > 0) {
     const monthlyGross = resolveMonthlyGross(prev);
+    const paid = prev.paidLeaveDays ?? 0;
     if (monthlyGross > 0) {
-      const targetGross = round2(monthlyGross * (newPresent / calendarDays));
+      const targetGross = round2(monthlyGross * ((newPresent + paid) / calendarDays));
       const currentGross = prev.grossPay || 0;
       if (currentGross > 0) scale = targetGross / currentGross;
     }

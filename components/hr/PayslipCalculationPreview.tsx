@@ -16,6 +16,7 @@ export type CalculationData = {
   monthLabel?: string;
   workingDays: number;
   presentDays: number;
+  paidLeaveDays?: number;
   unpaidLeaveDays: number;
   absentDays: number;
   attendanceRatio?: number;

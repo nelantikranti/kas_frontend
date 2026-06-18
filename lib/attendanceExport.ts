@@ -35,6 +35,21 @@ export function isLateCheckIn(checkIn?: string | null): boolean {
   return d.getHours() * 60 + d.getMinutes() > LATE_CUTOFF_MINUTES;
 }
 
+export function countLateMarks(
+  employeeId: string,
+  attendance: AttendanceExportRow[],
+  from: string,
+  to: string
+): number {
+  return attendance.filter(
+    (r) =>
+      r.userId === employeeId &&
+      r.date >= from &&
+      r.date <= to &&
+      isLateCheckIn(r.checkIn)
+  ).length;
+}
+
 function parseYmd(dateStr: string): Date {
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -248,6 +263,7 @@ export function computeAttendanceSummary(
     weeklyOff,
     holidays,
     lop,
+    lateMarks: countLateMarks(employeeId, attendance, from, to),
   };
 }
 
@@ -261,6 +277,7 @@ type SummaryRow = {
   weeklyOff: number;
   holidays: number;
   lop: number;
+  lateMarks: number;
 };
 
 export async function buildAttendanceWorkbook(opts: {
@@ -286,6 +303,7 @@ export async function buildAttendanceWorkbook(opts: {
     "Weekly Off",
     "Holidays",
     "LOP",
+    "Late Marks",
   ];
 
   const perEmployeeRange = opts.perEmployeeRange ?? false;
@@ -340,6 +358,7 @@ export async function buildAttendanceWorkbook(opts: {
       r.weeklyOff,
       r.holidays,
       r.lop,
+      r.lateMarks,
     ]),
     [],
     detailHeaders,
@@ -387,6 +406,7 @@ export async function buildAttendanceWorkbook(opts: {
     { wch: 12 },
     { wch: 12 },
     { wch: 8 },
+    { wch: 10 },
   ];
 
   const wb = XLSX.utils.book_new();

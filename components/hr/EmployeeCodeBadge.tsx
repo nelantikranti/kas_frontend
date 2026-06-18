@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-const EMPLOYEE_CODE_PATTERN = /^KAS\d+$/i;
+const EMPLOYEE_CODE_PATTERN = /^\d{4,}$/;
 
 export default function EmployeeCodeBadge({ code, className = "" }: Props) {
   const value = code?.trim();

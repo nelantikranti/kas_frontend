@@ -8,10 +8,8 @@ import HrActionToolbar from "@/components/hr/HrActionToolbar";
 import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
 import { downloadBlob, sharePdfViaGmail } from "@/lib/hrShare";
-import { computePayrollTotals } from "@/lib/payrollTotals";
 import { useRoles } from "@/hooks/useRoles";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
-import { formatInr } from "@/components/hr/hrDocumentUtils";
 import { IoPersonOutline, IoDocumentTextOutline } from "react-icons/io5";
 
 type OfferRow = {
@@ -93,19 +91,6 @@ export default function HrOffersPage() {
     [form]
   );
 
-  const salarySummary = useMemo(() => {
-    const totals = computePayrollTotals(
-      { basic: form.basic, hra: form.hra, da: form.da, allowances: form.allowances },
-      { pf: form.pf, esi: form.esi, tds: form.tds, professionalTax: form.professionalTax, lop: 0 }
-    );
-    const gross = Number(form.monthlyGross) || totals.grossPay;
-    const deductions =
-      totals.deductionsDetail.pf +
-      totals.deductionsDetail.esi +
-      totals.deductionsDetail.tds +
-      totals.deductionsDetail.professionalTax;
-    return { gross, deductions, inHand: totals.inHandSalary };
-  }, [form]);
   const loadPdf = useCallback(() => hrAPI.previewOfferPdf(payload), [payload]);
 
   const validate = () => {
@@ -280,21 +265,6 @@ export default function HrOffersPage() {
                 Employee code: <EmployeeCodeBadge code={form.employeeId} className="inline text-sm" />
               </p>
             ) : null}
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-2 text-sm">
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Compensation summary</p>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Total package</span>
-                <span className="font-medium tabular-nums">{formatInr(salarySummary.gross)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Deductions (statutory)</span>
-                <span className="font-medium tabular-nums">{formatInr(salarySummary.deductions)}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-gray-200 font-semibold">
-                <span>In-Hand Salary</span>
-                <span className="text-green-700 tabular-nums">{formatInr(salarySummary.inHand)}</span>
-              </div>
-            </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Additional terms</label>
               <textarea
