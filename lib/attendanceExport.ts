@@ -213,6 +213,20 @@ function buildDetailRows(
   );
 }
 
+function countRangeWorkingDays(from: string, to: string) {
+  const start = parseYmd(from);
+  const end = parseYmd(to);
+  let weeklyOff = 0;
+  let workingDays = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    if (cur.getDay() === 0) weeklyOff += 1;
+    else workingDays += 1;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return { weeklyOff, workingDays };
+}
+
 export function computeAttendanceSummary(
   employeeId: string,
   attendance: AttendanceExportRow[],
@@ -222,14 +236,7 @@ export function computeAttendanceSummary(
 ) {
   const rangeStart = parseYmd(from);
   const rangeEnd = parseYmd(to);
-  const days = eachDayInRange(from, to);
-
-  let weeklyOff = 0;
-  let workingDays = 0;
-  for (const d of days) {
-    if (d.getDay() === 0) weeklyOff += 1;
-    else workingDays += 1;
-  }
+  const { weeklyOff, workingDays } = countRangeWorkingDays(from, to);
 
   const empAttendance = attendance.filter(
     (r) => r.userId === employeeId && r.date >= from && r.date <= to

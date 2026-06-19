@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import HrNav from "@/components/hr/HrNav";
 import { toast } from "@/components/Toast";
@@ -17,10 +17,28 @@ import { todayLocalDate } from "@/lib/dateLocal";
 import { downloadBlob } from "@/lib/hrShare";
 import {
   buildAttendanceWorkbook,
+  computeAttendanceSummary,
   resolveExportRange,
   type AttendanceExportRow,
+  type LeaveExportRow,
 } from "@/lib/attendanceExport";
-import { IoTime, IoPeople, IoCalendar, IoCreateOutline, IoDownloadOutline } from "react-icons/io5";
+import { formatInr } from "@/components/hr/hrDocumentUtils";
+import {
+  IoTime,
+  IoPeople,
+  IoCalendar,
+  IoCreateOutline,
+  IoDownloadOutline,
+  IoWalletOutline,
+  IoCalendarNumberOutline,
+  IoCheckmarkCircleOutline,
+  IoLeafOutline,
+  IoCloseCircleOutline,
+  IoBedOutline,
+  IoGiftOutline,
+  IoRemoveCircleOutline,
+  IoAlarmOutline,
+} from "react-icons/io5";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
 import { sortByEmployeeCode } from "@/lib/employeeSort";
 import Modal from "@/components/Modal";
@@ -46,6 +64,93 @@ type EmployeeOption = {
   joinDate?: string | null;
 };
 
+const FILTER_INPUT =
+  "block mt-1 h-9 px-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500";
+const TABLE_PAGE_SIZE = 75;
+
+function resolveSummaryRange(
+  from: string,
+  to: string,
+  joinDate?: string | null
+): { start: string; end: string; label: string } {
+  const end = to || todayLocalDate();
+  if (from && to) {
+    return { start: from, end: to, label: `${formatReportDate(from)} – ${formatReportDate(to)}` };
+  }
+  if (from) {
+    return { start: from, end, label: `from ${formatReportDate(from)}` };
+  }
+  if (to) {
+    const start = joinDate || "2000-01-01";
+    return { start, end: to, label: `until ${formatReportDate(to)}` };
+  }
+  const start = joinDate || "2000-01-01";
+  return { start, end, label: "all" };
+}
+
+function apiDateRange(
+  from: string,
+  to: string,
+  employeeId: string,
+  joinDate?: string | null
+) {
+  if (from || to) {
+    return { from: from || undefined, to: to || undefined };
+  }
+  if (employeeId && joinDate) {
+    return { from: joinDate, to: undefined };
+  }
+  return { from: undefined, to: undefined };
+}
+
+type StatTone = "emerald" | "blue" | "green" | "teal" | "rose" | "indigo" | "amber" | "orange" | "red";
+
+const STAT_TONE: Record<StatTone, { wrap: string; icon: string }> = {
+  emerald: { wrap: "bg-emerald-50 border-emerald-100 text-emerald-600", icon: "text-emerald-600" },
+  blue: { wrap: "bg-blue-50 border-blue-100 text-blue-600", icon: "text-blue-600" },
+  green: { wrap: "bg-green-50 border-green-100 text-green-600", icon: "text-green-600" },
+  teal: { wrap: "bg-teal-50 border-teal-100 text-teal-600", icon: "text-teal-600" },
+  rose: { wrap: "bg-rose-50 border-rose-100 text-rose-600", icon: "text-rose-600" },
+  indigo: { wrap: "bg-indigo-50 border-indigo-100 text-indigo-600", icon: "text-indigo-600" },
+  amber: { wrap: "bg-amber-50 border-amber-100 text-amber-600", icon: "text-amber-600" },
+  orange: { wrap: "bg-orange-50 border-orange-100 text-orange-600", icon: "text-orange-600" },
+  red: { wrap: "bg-red-50 border-red-100 text-red-600", icon: "text-red-600" },
+};
+
+function EmployeeStatCard({
+  label,
+  value,
+  icon,
+  tone,
+  compactValue,
+}: {
+  label: string;
+  value: string | number;
+  icon: ReactNode;
+  tone: StatTone;
+  compactValue?: boolean;
+}) {
+  const styles = STAT_TONE[tone];
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4 flex items-center gap-3">
+      <div
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${styles.wrap}`}
+      >
+        <span className={styles.icon}>{icon}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-gray-500 leading-snug">{label}</p>
+        <p
+          className={`font-bold text-gray-900 tabular-nums leading-tight mt-0.5 ${
+            compactValue ? "text-sm" : "text-lg"
+          }`}
+        >
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
 function formatReportDate(dateStr: string) {
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
@@ -53,15 +158,10 @@ function formatReportDate(dateStr: string) {
 }
 
 function effectiveRangeLabel(from: string, to: string) {
-  const end = to || todayLocalDate();
-  const start =
-    from ||
-    (() => {
-      const d = new Date(end);
-      d.setDate(d.getDate() - 30);
-      return d.toISOString().split("T")[0];
-    })();
-  return `${formatReportDate(start)} - ${formatReportDate(end)}`;
+  if (from && to) return `${formatReportDate(from)} – ${formatReportDate(to)}`;
+  if (from) return `from ${formatReportDate(from)}`;
+  if (to) return `until ${formatReportDate(to)}`;
+  return "all";
 }
 
 function formatTime(iso?: string | null) {
@@ -116,8 +216,11 @@ export default function HrAttendancePage() {
   const [to, setTo] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedFrom, setDebouncedFrom] = useState("");
+  const [debouncedTo, setDebouncedTo] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [tablePage, setTablePage] = useState(1);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -126,6 +229,8 @@ export default function HrAttendancePage() {
   const [checkInTime, setCheckInTime] = useState("");
   const [checkOutTime, setCheckOutTime] = useState("");
   const [saving, setSaving] = useState(false);
+  const [leaves, setLeaves] = useState<LeaveExportRow[]>([]);
+  const [employeeSalary, setEmployeeSalary] = useState<number | null>(null);
 
   const currentUser = readCurrentUser();
   const canEditTimes = (rowUserId: string) =>
@@ -149,6 +254,16 @@ export default function HrAttendancePage() {
   }, [search]);
 
   useEffect(() => {
+    const timer = setTimeout(() => setDebouncedFrom(from), 400);
+    return () => clearTimeout(timer);
+  }, [from]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTo(to), 400);
+    return () => clearTimeout(timer);
+  }, [to]);
+
+  useEffect(() => {
     if (!canViewAll) return;
     hrAPI
       .getEmployees()
@@ -170,6 +285,69 @@ export default function HrAttendancePage() {
 
   useEffect(() => {
     if (!canViewAll) return;
+    hrAPI
+      .getLeave({ status: "approved" })
+      .then((list) => setLeaves(Array.isArray(list) ? (list as LeaveExportRow[]) : []))
+      .catch(() => setLeaves([]));
+  }, [canViewAll]);
+
+  useEffect(() => {
+    if (!employeeId) {
+      setEmployeeSalary(null);
+      return;
+    }
+    hrAPI
+      .getEmployeeSalary(employeeId)
+      .then((status: { salary?: { monthlyGross?: number } }) => {
+        const gross = status?.salary?.monthlyGross;
+        setEmployeeSalary(gross != null && Number.isFinite(Number(gross)) ? Number(gross) : null);
+      })
+      .catch(() => setEmployeeSalary(null));
+  }, [employeeId]);
+
+  const selectedEmployee = useMemo(
+    () => employees.find((e) => e.id === employeeId),
+    [employees, employeeId]
+  );
+
+  const summaryRange = useMemo(
+    () => resolveSummaryRange(debouncedFrom, debouncedTo, selectedEmployee?.joinDate),
+    [debouncedFrom, debouncedTo, selectedEmployee?.joinDate]
+  );
+
+  const employeeStats = useMemo(() => {
+    if (!employeeId) return null;
+    return computeAttendanceSummary(
+      employeeId,
+      rows as AttendanceExportRow[],
+      leaves,
+      summaryRange.start,
+      summaryRange.end
+    );
+  }, [employeeId, rows, leaves, summaryRange.start, summaryRange.end]);
+
+  const today = todayLocalDate();
+  const todayStats = useMemo(
+    () => ({
+      checkedIn: rows.filter((r) => r.date === today && r.checkIn).length,
+      completed: rows.filter((r) => r.date === today && r.checkIn && r.checkOut).length,
+    }),
+    [rows, today]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE));
+  const pagedRows = useMemo(() => {
+    const safePage = Math.min(tablePage, totalPages);
+    const start = (safePage - 1) * TABLE_PAGE_SIZE;
+    return rows.slice(start, start + TABLE_PAGE_SIZE);
+  }, [rows, tablePage, totalPages]);
+
+  useEffect(() => {
+    setTablePage(1);
+  }, [debouncedFrom, debouncedTo, debouncedSearch, employeeId, roleFilter, rows.length]);
+
+  useEffect(() => {
+    if (!canViewAll) return;
 
     const controller = new AbortController();
     const isFirstLoad = !hasLoadedRef.current;
@@ -179,8 +357,7 @@ export default function HrAttendancePage() {
     hrAPI
       .getAttendance(
         {
-          from: from || undefined,
-          to: to || undefined,
+          ...apiDateRange(debouncedFrom, debouncedTo, employeeId, selectedEmployee?.joinDate),
           userId: employeeId || undefined,
           search: debouncedSearch || undefined,
           role: roleFilter || undefined,
@@ -203,7 +380,7 @@ export default function HrAttendancePage() {
       });
 
     return () => controller.abort();
-  }, [from, to, debouncedSearch, employeeId, roleFilter, canViewAll]);
+  }, [debouncedFrom, debouncedTo, debouncedSearch, employeeId, roleFilter, canViewAll, selectedEmployee?.joinDate]);
 
   const openEdit = (row: Row) => {
     setEditRow(row);
@@ -371,79 +548,149 @@ export default function HrAttendancePage() {
       </div>
       {!admin && <HrNav />}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
-          <div className="p-3 rounded-lg bg-green-50 text-green-600 border border-green-200">
-            <IoPeople className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500">Records in range</p>
-            <p className="text-xl font-bold text-gray-900">{rows.length}</p>
-          </div>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
-          <div className="p-3 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
-            <IoTime className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500">Checked in today</p>
-            <p className="text-xl font-bold text-gray-900">
-              {rows.filter((r) => r.date === todayLocalDate() && r.checkIn).length}
-            </p>
-          </div>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
-          <div className="p-3 rounded-lg bg-purple-50 text-purple-600 border border-purple-200">
-            <IoCalendar className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500">Completed today</p>
-            <p className="text-xl font-bold text-gray-900">
-              {
-                rows.filter(
-                  (r) => r.date === todayLocalDate() && r.checkIn && r.checkOut
-                ).length
-              }
-            </p>
-          </div>
-        </div>
+      <div
+        className={`grid gap-4 ${
+          employeeId ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-1 sm:grid-cols-3"
+        }`}
+      >
+        {employeeId ? (
+          <>
+            <EmployeeStatCard
+              label="Salary"
+              value={employeeSalary != null ? formatInr(employeeSalary) : "—"}
+              icon={<IoWalletOutline className="w-5 h-5" />}
+              tone="emerald"
+              compactValue
+            />
+            <EmployeeStatCard
+              label="Working Days"
+              value={employeeStats?.workingDays ?? 0}
+              icon={<IoCalendarNumberOutline className="w-5 h-5" />}
+              tone="blue"
+            />
+            <EmployeeStatCard
+              label="Present"
+              value={employeeStats?.present ?? 0}
+              icon={<IoCheckmarkCircleOutline className="w-5 h-5" />}
+              tone="green"
+            />
+            <EmployeeStatCard
+              label="Leave"
+              value={employeeStats?.leave ?? 0}
+              icon={<IoLeafOutline className="w-5 h-5" />}
+              tone="teal"
+            />
+            <EmployeeStatCard
+              label="Absent"
+              value={employeeStats?.absent ?? 0}
+              icon={<IoCloseCircleOutline className="w-5 h-5" />}
+              tone="rose"
+            />
+            <EmployeeStatCard
+              label="Weekly Off"
+              value={employeeStats?.weeklyOff ?? 0}
+              icon={<IoBedOutline className="w-5 h-5" />}
+              tone="indigo"
+            />
+            <EmployeeStatCard
+              label="Holidays"
+              value={employeeStats?.holidays ?? 0}
+              icon={<IoGiftOutline className="w-5 h-5" />}
+              tone="amber"
+            />
+            <EmployeeStatCard
+              label="LOP"
+              value={employeeStats?.lop ?? 0}
+              icon={<IoRemoveCircleOutline className="w-5 h-5" />}
+              tone="orange"
+            />
+            <EmployeeStatCard
+              label="Late Marks"
+              value={employeeStats?.lateMarks ?? 0}
+              icon={<IoAlarmOutline className="w-5 h-5" />}
+              tone="red"
+            />
+          </>
+        ) : (
+          <>
+            <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
+              <div className="p-3 rounded-lg bg-green-50 text-green-600 border border-green-200">
+                <IoPeople className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Records in range</p>
+                <p className="text-xl font-bold text-gray-900">{rows.length}</p>
+              </div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
+              <div className="p-3 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+                <IoTime className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Checked in today</p>
+                <p className="text-xl font-bold text-gray-900">{todayStats.checkedIn}</p>
+              </div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-white p-4 flex items-center gap-3">
+              <div className="p-3 rounded-lg bg-purple-50 text-purple-600 border border-purple-200">
+                <IoCalendar className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Completed today</p>
+                <p className="text-xl font-bold text-gray-900">{todayStats.completed}</p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="flex flex-wrap gap-3 items-end bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-        <div>
+      {employeeId && selectedEmployee ? (
+        <p className="text-sm text-gray-600 -mt-2 px-1">
+          Summary for{" "}
+          <span className="font-semibold text-gray-900">
+            {selectedEmployee.employeeId ? `${selectedEmployee.employeeId} · ` : ""}
+            {selectedEmployee.name}
+          </span>
+          <span className="text-gray-400"> · </span>
+          {summaryRange.label}
+        </p>
+      ) : null}
+
+      <div className="flex flex-wrap items-end gap-2.5 bg-white border border-gray-200 rounded-xl p-4">
+        <div className="shrink-0">
           <label className="text-xs font-medium text-gray-600">Search</label>
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name or employee code…"
-            className="block mt-1 w-[11.5rem] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className={`${FILTER_INPUT} w-[10.5rem]`}
           />
         </div>
-        <div>
+        <div className="shrink-0">
           <label className="text-xs font-medium text-gray-600">From</label>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="block mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className={`${FILTER_INPUT} w-[9.5rem]`}
           />
         </div>
-        <div>
+        <div className="shrink-0">
           <label className="text-xs font-medium text-gray-600">To</label>
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="block mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className={`${FILTER_INPUT} w-[9.5rem]`}
           />
         </div>
-        <div>
+        <div className="shrink-0">
           <label className="text-xs font-medium text-gray-600">Employee</label>
           <select
             value={employeeId}
             onChange={(e) => setEmployeeId(e.target.value)}
-            className="block mt-1 w-[12rem] px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className={`${FILTER_INPUT} w-[11rem]`}
           >
             <option value="">All employees</option>
             {employees.map((e) => (
@@ -454,13 +701,13 @@ export default function HrAttendancePage() {
             ))}
           </select>
         </div>
-        <div>
+        <div className="shrink-0">
           <label className="text-xs font-medium text-gray-600">Role</label>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             disabled={rolesLoading}
-            className="block mt-1 w-[9.5rem] px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className={`${FILTER_INPUT} w-[8.5rem]`}
           >
             <option value="">All roles</option>
             {roles.map((r) => (
@@ -474,7 +721,7 @@ export default function HrAttendancePage() {
           type="button"
           onClick={downloadAttendanceExcel}
           disabled={downloading}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 px-3 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <IoDownloadOutline className="w-4 h-4" />
           {downloading ? "Downloading…" : "Download"}
@@ -482,18 +729,25 @@ export default function HrAttendancePage() {
         <button
           type="button"
           onClick={clearFilters}
-          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shrink-0"
+          className="h-9 shrink-0 px-2 text-sm font-medium text-red-600 hover:text-red-700 bg-transparent"
         >
-          Clear filter
+          Clear
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm min-w-0 max-w-full">
+      <div className="bg-white border border-gray-200 rounded-xl min-w-0 max-w-full">
         <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-gray-800">All employee attendance</h2>
-          {refreshing && (
-            <span className="text-xs text-gray-400 animate-pulse">Updating…</span>
-          )}
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            {rows.length > TABLE_PAGE_SIZE ? (
+              <span>
+                Page {Math.min(tablePage, totalPages)} of {totalPages} · {rows.length} records
+              </span>
+            ) : rows.length > 0 ? (
+              <span>{rows.length} records</span>
+            ) : null}
+            {refreshing && <span className="text-gray-400 animate-pulse">Updating…</span>}
+          </div>
         </div>
         <div className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
           <table className={`w-full min-w-[960px] text-sm transition-opacity duration-200 ${refreshing ? "opacity-60" : ""}`}>
@@ -527,7 +781,7 @@ export default function HrAttendancePage() {
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => (
+                pagedRows.map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50/80">
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">{r.userName || "—"}</div>
@@ -572,6 +826,26 @@ export default function HrAttendancePage() {
             </tbody>
           </table>
         </div>
+        {rows.length > TABLE_PAGE_SIZE && (
+          <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100">
+            <button
+              type="button"
+              disabled={tablePage <= 1}
+              onClick={() => setTablePage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={tablePage >= totalPages}
+              onClick={() => setTablePage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       <Modal
