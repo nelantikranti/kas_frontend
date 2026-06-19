@@ -3,6 +3,7 @@
 import HrDocumentLetterhead from "./HrDocumentLetterhead";
 import { COMPANY_NAME, formatInr, formatLetterDate, formatPayrollMonth } from "./hrDocumentUtils";
 import { normalizePayslipDocument, resolvePayslipDeductions, resolvePayslipEarnings } from "./payslipNormalize";
+import { buildPayslipDeductionLines, statutoryDeductionTotal } from "@/lib/payslipDisplay";
 
 export type PayslipEarnings = {
   basic: number;
@@ -49,6 +50,8 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
   const period = formatPayrollMonth(slip.month);
   const earnings = resolvePayslipEarnings(slip);
   const deductions = resolvePayslipDeductions(slip);
+  const deductionLines = buildPayslipDeductionLines(deductions, slip.unpaidLeaveDays ?? 0);
+  const statutoryTotal = statutoryDeductionTotal(deductions);
   const generatedOn = slip.publishedAt
     ? new Date(slip.publishedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
     : new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
@@ -68,12 +71,11 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
         <div className="space-y-1 sm:text-right">
           <p><span className="font-semibold">Joining Date:</span> {slip.joinDate ? formatLetterDate(slip.joinDate) : "—"}</p>
           <p><span className="font-semibold">Pay Period:</span> {period}</p>
-          <p>
-            <span className="font-semibold">Attendance:</span> {slip.presentDays ?? 0} present / {slip.workingDays ?? 0} working days
-          </p>
-          <p>
-            <span className="font-semibold">LOP Days:</span> {slip.absentDays ?? 0}
-          </p>
+          <p><span className="font-semibold">TWD:</span> {slip.workingDays ?? 30}</p>
+          <p><span className="font-semibold">Present:</span> {slip.presentDays ?? 0}</p>
+          <p><span className="font-semibold">Paid leave:</span> {slip.paidLeaveDays ?? 0}</p>
+          <p><span className="font-semibold">Unpaid leave:</span> {slip.unpaidLeaveDays ?? 0}</p>
+          <p><span className="font-semibold">Absent:</span> {slip.absentDays ?? 0}</p>
         </div>
       </div>
 
@@ -105,21 +107,15 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
           <p className="text-xs font-bold uppercase border-b border-gray-400 pb-1 mb-2">Deductions</p>
           <table className="w-full text-sm">
             <tbody>
-              {[
-                ["Provident Fund", deductions.pf],
-                ["ESI", deductions.esi],
-                ["TDS", deductions.tds],
-                ["Professional Tax", deductions.professionalTax],
-                ["Loss of Pay", deductions.lop],
-              ].map(([label, amount]) => (
-                <tr key={String(label)}>
-                  <td className="py-1.5 text-gray-800 pr-4">{label}</td>
-                  <td className="py-1.5 text-right tabular-nums whitespace-nowrap w-28">{formatInr(Number(amount))}</td>
+              {deductionLines.map((line) => (
+                <tr key={line.label}>
+                  <td className="py-1.5 text-gray-800 pr-4">{line.label}</td>
+                  <td className="py-1.5 text-right tabular-nums whitespace-nowrap w-28">{formatInr(line.amount)}</td>
                 </tr>
               ))}
               <tr className="border-t border-gray-500 font-bold">
                 <td className="pt-2 pr-4">Total Deductions</td>
-                <td className="pt-2 text-right tabular-nums whitespace-nowrap">{formatInr(deductions.total)}</td>
+                <td className="pt-2 text-right tabular-nums whitespace-nowrap">{formatInr(statutoryTotal)}</td>
               </tr>
             </tbody>
           </table>

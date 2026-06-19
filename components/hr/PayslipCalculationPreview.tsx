@@ -2,6 +2,7 @@
 
 import HrDocumentLetterhead from "./HrDocumentLetterhead";
 import { formatInr, formatLetterDate, formatPayrollMonth } from "./hrDocumentUtils";
+import { buildPayslipDeductionLines, statutoryDeductionTotal } from "@/lib/payslipDisplay";
 
 export type CalculationData = {
   employeeName: string;
@@ -26,11 +27,14 @@ export type CalculationData = {
   deductions: number;
   netPay: number;
   monthlyGross?: number;
+  dayRate?: number;
   breakdown?: Array<{ label: string; value: string; highlight?: boolean; section?: string }>;
 };
 
 export default function PayslipCalculationPreview({ data }: { data: CalculationData }) {
   const period = data.monthLabel || formatPayrollMonth(data.month);
+  const deductionLines = buildPayslipDeductionLines(data.deductionsDetail, data.unpaidLeaveDays);
+  const statutoryTotal = statutoryDeductionTotal(data.deductionsDetail);
 
   return (
     <div className="bg-white border border-gray-300 max-w-2xl mx-auto font-serif text-gray-900">
@@ -47,8 +51,14 @@ export default function PayslipCalculationPreview({ data }: { data: CalculationD
         <div>
           <p><span className="font-semibold">Joining Date:</span> {data.joinDate ? formatLetterDate(data.joinDate) : "—"}</p>
           <p><span className="font-semibold">Pay Period:</span> {period}</p>
-          <p><span className="font-semibold">Attendance:</span> {data.presentDays} present / {data.workingDays} working days</p>
-          <p><span className="font-semibold">LOP Days:</span> {data.absentDays}</p>
+          <p><span className="font-semibold">TWD:</span> {data.workingDays}</p>
+          <p><span className="font-semibold">Present:</span> {data.presentDays}</p>
+          <p><span className="font-semibold">Paid leave:</span> {data.paidLeaveDays ?? 0}</p>
+          <p><span className="font-semibold">Unpaid leave:</span> {data.unpaidLeaveDays}</p>
+          <p><span className="font-semibold">Absent:</span> {data.absentDays}</p>
+          {data.dayRate != null ? (
+            <p><span className="font-semibold">Day rate:</span> {formatInr(data.dayRate)}</p>
+          ) : null}
         </div>
       </div>
 
@@ -80,21 +90,15 @@ export default function PayslipCalculationPreview({ data }: { data: CalculationD
           <p className="text-xs font-bold uppercase mb-2 border-b border-gray-300 pb-1">Deductions</p>
           <table className="w-full text-sm">
             <tbody>
-              {[
-                ["Provident Fund", data.deductionsDetail.pf],
-                ["ESI", data.deductionsDetail.esi],
-                ["TDS", data.deductionsDetail.tds],
-                ["Professional Tax", data.deductionsDetail.professionalTax],
-                ["Loss of Pay", data.deductionsDetail.lop],
-              ].map(([l, v]) => (
-                <tr key={String(l)}>
-                  <td className="py-1 text-gray-700">{l}</td>
-                  <td className="py-1 text-right">{formatInr(Number(v))}</td>
+              {deductionLines.map((line) => (
+                <tr key={line.label}>
+                  <td className="py-1 text-gray-700">{line.label}</td>
+                  <td className="py-1 text-right">{formatInr(line.amount)}</td>
                 </tr>
               ))}
               <tr className="border-t border-gray-400 font-bold">
-                <td className="py-2">Total</td>
-                <td className="py-2 text-right">{formatInr(data.deductionsDetail.total)}</td>
+                <td className="py-2">Total Deductions</td>
+                <td className="py-2 text-right">{formatInr(statutoryTotal)}</td>
               </tr>
             </tbody>
           </table>

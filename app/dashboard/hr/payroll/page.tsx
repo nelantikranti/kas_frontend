@@ -18,6 +18,7 @@ import { downloadBlob } from "@/lib/hrShare";
 import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 import { formatInr, formatLetterDate, formatPayrollMonth } from "@/components/hr/hrDocumentUtils";
 import PayslipEditPanel from "@/components/hr/PayslipEditPanel";
+import { refreshCalculationFromSalary, type SalaryComponentsInput } from "@/lib/payrollCalculation";
 import HrListFilters from "@/components/hr/HrListFilters";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
 import { IoCheckmarkCircle, IoChevronForward, IoWarningOutline } from "react-icons/io5";
@@ -69,7 +70,17 @@ type Payslip = {
 type SalaryStatus = {
   configured: boolean;
   errors: string[];
-  salary: { monthlyGross?: number; basic?: number } | null;
+  salary: {
+    monthlyGross?: number;
+    basic?: number;
+    hra?: number;
+    da?: number;
+    allowances?: number;
+    pf?: number;
+    esi?: number;
+    tds?: number;
+    professionalTax?: number;
+  } | null;
 };
 
 type ConfirmState = {
@@ -111,10 +122,6 @@ function payslipToCalculation(slip: Payslip): CalculationData {
     grossPay: slip.grossPay,
     deductions: slip.deductions,
     netPay: slip.netPay,
-    monthlyGross:
-      slip.deductionsDetail?.lop != null
-        ? Math.round((slip.grossPay + slip.deductionsDetail.lop) * 100) / 100
-        : undefined,
   };
 }
 
@@ -133,7 +140,6 @@ function buildPdfPayload(calc: CalculationData, role?: string) {
     presentDays: calc.presentDays,
     paidLeaveDays: calc.paidLeaveDays ?? 0,
     unpaidLeaveDays: calc.unpaidLeaveDays,
-    absentDays: calc.absentDays,
     earnings: calc.earnings,
     deductionsDetail: calc.deductionsDetail,
     grossPay: calc.grossPay,
@@ -187,6 +193,21 @@ export default function HrPayrollPage() {
 
   const selectedEmployee = employees.find((e) => e.id === employeeId);
   const salaryConfigured = salaryStatus?.configured === true;
+
+  const salaryComponents = useMemo((): SalaryComponentsInput | null => {
+    const s = salaryStatus?.salary;
+    if (!salaryConfigured || !s) return null;
+    return {
+      basic: Number(s.basic) || 0,
+      hra: Number(s.hra) || 0,
+      da: Number(s.da) || 0,
+      allowances: Number(s.allowances) || 0,
+      pf: Number(s.pf) || 0,
+      esi: Number(s.esi) || 0,
+      tds: Number(s.tds) || 0,
+      professionalTax: Number(s.professionalTax) || 0,
+    };
+  }, [salaryStatus, salaryConfigured]);
 
   const savedSlip = useMemo(
     () =>
@@ -284,14 +305,31 @@ export default function HrPayrollPage() {
   );
 
   useEffect(() => {
-    if (!employeeId || !salaryConfigured || salaryLoading) {
+    if (!employeeId || !salaryConfigured || salaryLoading || !salaryComponents) {
       if (!employeeId) setCalculation(null);
       return;
     }
     if (savedSlip) {
-      setCalculation(enrichCalculation(payslipToCalculation(savedSlip)));
+      const base = enrichCalculation(payslipToCalculation(savedSlip));
+      const result = refreshCalculationFromSalary(base, salaryComponents);
+      setCalculation({
+        ...base,
+        workingDays: result.workingDays,
+        presentDays: result.presentDays,
+        paidLeaveDays: result.paidLeaveDays,
+        unpaidLeaveDays: result.unpaidLeaveDays,
+        absentDays: result.absentDays,
+        attendanceRatio: result.attendanceRatio,
+        monthlyGross: result.monthlyPackage,
+        dayRate: result.dayRate,
+        earnings: result.earnings,
+        deductionsDetail: result.deductionsDetail,
+        grossPay: result.grossPay,
+        deductions: result.deductions,
+        netPay: result.netPay,
+      });
     }
-  }, [employeeId, month, salaryConfigured, salaryLoading, savedSlip, enrichCalculation]);
+  }, [employeeId, month, salaryConfigured, salaryLoading, savedSlip, salaryComponents, enrichCalculation]);
 
   useEffect(() => {
     if (!employeeId || !salaryConfigured || salaryLoading || savedSlip) return;
@@ -330,8 +368,17 @@ export default function HrPayrollPage() {
     setBusy(true);
     try {
       const overrides = {
-        earnings: calculation.earnings,
-        deductionsDetail: calculation.deductionsDetail,
+        earnings: { incentive: calculation.earnings.incentive ?? 0 },
+        presentDays: calculation.presentDays,
+        paidLeaveDays: calculation.paidLeaveDays ?? 0,
+        unpaidLeaveDays: calculation.unpaidLeaveDays,
+        absentDays: calculation.absentDays,
+        deductionsDetail: {
+          pf: calculation.deductionsDetail.pf,
+          esi: calculation.deductionsDetail.esi,
+          tds: calculation.deductionsDetail.tds,
+          professionalTax: calculation.deductionsDetail.professionalTax,
+        },
       };
       const res = (await hrAPI.savePayrollDraft(employeeId, month, overrides)) as {
         payslip: Payslip;
@@ -620,6 +667,7 @@ export default function HrPayrollPage() {
           {calculation && canGenerate && (
             <PayslipEditPanel
               data={calculation}
+              salaryComponents={salaryComponents}
               onChange={setCalculation}
               onSave={savePayslip}
               saving={busy}

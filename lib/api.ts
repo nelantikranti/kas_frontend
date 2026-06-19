@@ -913,10 +913,10 @@ export const hrAPI = {
     userId: string,
     month: string,
     overrides?: {
-      earnings?: Record<string, number>;
-      deductionsDetail?: Record<string, number>;
+      earnings?: { incentive?: number };
       presentDays?: number;
-      absentDays?: number;
+      paidLeaveDays?: number;
+      unpaidLeaveDays?: number;
     }
   ) =>
     fetchAPI("/hr/payroll/draft", {

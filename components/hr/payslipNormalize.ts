@@ -21,7 +21,8 @@ function normalizeDeductionsRow(d: PayslipDeductionsDetail, deductions: number):
   const tds = num(d.tds);
   const professionalTax = num(d.professionalTax);
   const lop = num(d.lop);
-  const total = num(d.total) > 0 ? num(d.total) : pf + esi + tds + professionalTax + lop || num(deductions);
+  const statutory = pf + esi + tds + professionalTax;
+  const total = statutory > 0 ? statutory : Math.max(0, num(deductions) - lop);
   return { pf, esi, tds, professionalTax, lop, total };
 }
 
@@ -61,28 +62,27 @@ export function resolvePayslipDeductions(data: PayslipDocumentData): PayslipDedu
   if (hasDeductionsBreakdown(data.deductionsDetail)) {
     return normalizeDeductionsRow(data.deductionsDetail!, deductions);
   }
-  return { pf: 0, esi: 0, tds: 0, professionalTax: 0, lop: deductions, total: deductions };
+  return { pf: 0, esi: 0, tds: 0, professionalTax: 0, lop: 0, total: deductions };
 }
 
 export function normalizePayslipDocument(data: PayslipDocumentData): PayslipDocumentData {
   const earnings = resolvePayslipEarnings(data);
   const deductionsDetail = resolvePayslipDeductions(data);
   const grossPay = num(data.grossPay) > 0 ? num(data.grossPay) : earnings.total;
-  const deductions = num(data.deductions) > 0 ? num(data.deductions) : deductionsDetail.total;
-  const lop = deductionsDetail.lop;
-  const netPay =
-    lop <= grossPay
-      ? Math.max(0, round2(grossPay - deductions))
-      : num(data.netPay) > 0
-        ? num(data.netPay)
-        : Math.max(0, round2(grossPay - (deductions - lop)));
+  const statutory =
+    num(deductionsDetail.pf) +
+    num(deductionsDetail.esi) +
+    num(deductionsDetail.tds) +
+    num(deductionsDetail.professionalTax);
+  const deductions = statutory;
+  const netPay = Math.max(0, round2(grossPay - statutory));
   return {
     ...data,
     grossPay,
     deductions,
     netPay,
     earnings,
-    deductionsDetail,
+    deductionsDetail: { ...deductionsDetail, total: statutory },
   };
 }
 
