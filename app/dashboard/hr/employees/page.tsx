@@ -10,6 +10,7 @@ import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
 import { formatInr } from "@/components/hr/hrDocumentUtils";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
 import HrListFilters from "@/components/hr/HrListFilters";
+import { sortByEmployeeCode } from "@/lib/employeeSort";
 
 type Employee = {
   id: string;
@@ -58,7 +59,7 @@ export default function HrEmployeesPage() {
     setLoading(true);
     hrAPI
       .getEmployees({ search: search || undefined, role: roleFilter || undefined })
-      .then(setEmployees)
+      .then((list) => setEmployees(sortByEmployeeCode(Array.isArray(list) ? list : [])))
       .catch((e: Error) => toast.error(e.message))
       .finally(() => setLoading(false));
   };

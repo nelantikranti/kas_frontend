@@ -21,6 +21,7 @@ import PayslipEditPanel from "@/components/hr/PayslipEditPanel";
 import { refreshCalculationFromSalary, type SalaryComponentsInput } from "@/lib/payrollCalculation";
 import HrListFilters from "@/components/hr/HrListFilters";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
+import { sortByEmployeeCode } from "@/lib/employeeSort";
 import { IoCheckmarkCircle, IoChevronForward, IoWarningOutline } from "react-icons/io5";
 
 function lastMonth() {
@@ -241,19 +242,21 @@ export default function HrPayrollPage() {
       ]);
       setPayslips(Array.isArray(slips) ? slips : []);
       setEmployees(
-        (Array.isArray(emps) ? emps : [])
-          .filter((e: { status: string; role: string }) => e.status === "Active" && e.role !== "Admin")
-          .map((e: Employee & { status: string }) => ({
-            id: e.id,
-            name: e.name,
-            email: e.email,
-            role: e.role,
-            employeeId: e.employeeId,
-            joinDate: e.joinDate,
-            accountNumber: e.accountNumber,
-            panNumber: e.panNumber,
-            uanNumber: e.uanNumber,
-          }))
+        sortByEmployeeCode(
+          (Array.isArray(emps) ? emps : [])
+            .filter((e: { status: string; role: string }) => e.status === "Active" && e.role !== "Admin")
+            .map((e: Employee & { status: string }) => ({
+              id: e.id,
+              name: e.name,
+              email: e.email,
+              role: e.role,
+              employeeId: e.employeeId,
+              joinDate: e.joinDate,
+              accountNumber: e.accountNumber,
+              panNumber: e.panNumber,
+              uanNumber: e.uanNumber,
+            }))
+        )
       );
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to load payroll");

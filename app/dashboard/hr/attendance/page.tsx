@@ -22,6 +22,7 @@ import {
 } from "@/lib/attendanceExport";
 import { IoTime, IoPeople, IoCalendar, IoCreateOutline, IoDownloadOutline } from "react-icons/io5";
 import EmployeeCodeBadge from "@/components/hr/EmployeeCodeBadge";
+import { sortByEmployeeCode } from "@/lib/employeeSort";
 import Modal from "@/components/Modal";
 import { useRoles } from "@/hooks/useRoles";
 
@@ -153,13 +154,15 @@ export default function HrAttendancePage() {
       .getEmployees()
       .then((list) =>
         setEmployees(
-          (Array.isArray(list) ? list : []).map((e: EmployeeOption) => ({
-            id: e.id,
-            name: e.name,
-            employeeId: e.employeeId,
-            role: e.role,
-            joinDate: e.joinDate ?? null,
-          }))
+          sortByEmployeeCode(
+            (Array.isArray(list) ? list : []).map((e: EmployeeOption) => ({
+              id: e.id,
+              name: e.name,
+              employeeId: e.employeeId,
+              role: e.role,
+              joinDate: e.joinDate ?? null,
+            }))
+          )
         )
       )
       .catch(() => {});

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import HrNav from "@/components/hr/HrNav";
 import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
+import { sortByEmployeeCode } from "@/lib/employeeSort";
 
 type ChecklistItem = { key: string; label: string; completed: boolean; completedAt?: string };
 type Employee = {
@@ -27,8 +28,9 @@ export default function HrOnboardingPage() {
     hrAPI
       .getEmployees()
       .then((list: Employee[]) => {
-        setEmployees(list);
-        if (list.length) setSelectedId(list[0].id);
+        const sorted = sortByEmployeeCode(list);
+        setEmployees(sorted);
+        if (sorted.length) setSelectedId(sorted[0].id);
       })
       .catch((e: Error) => toast.error(e.message))
       .finally(() => setLoading(false));
