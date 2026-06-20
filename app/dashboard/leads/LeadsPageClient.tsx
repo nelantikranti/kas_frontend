@@ -2314,6 +2314,7 @@ NEXT ACTION:
                 </option>
               ))}
             </select>
+            {isAdmin() && (
             <select
               value={selectedBdmUserId}
               onChange={(e) => setSelectedBdmUserId(e.target.value)}
@@ -2329,6 +2330,7 @@ NEXT ACTION:
                   </option>
                 ))}
             </select>
+            )}
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   getEffectivePermissions,
   getDashboardHomePath,
   usesFieldOperationsDashboard,
+  isAdmin,
 } from "@/lib/permissions";
 import FieldOperationsDashboard from "@/components/dashboard/FieldOperationsDashboard";
 import {
@@ -485,6 +486,7 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {isAdmin() && (
           <div className="w-full">
             <label className="block text-xs font-medium text-gray-700 mb-1">Sales Executive (BDM)</label>
             <select
@@ -500,6 +502,7 @@ export default function DashboardPage() {
               ))}
             </select>
           </div>
+          )}
 
           <div className="w-full">
             <label className="block text-xs font-medium text-gray-700 mb-1">Month</label>

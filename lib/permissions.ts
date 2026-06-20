@@ -385,6 +385,10 @@ export function getDashboardHomePath(role: string, userPermissions: string[] = [
   if (r === "HR") return "/dashboard/hr";
   if (usesFieldOperationsDashboard(r)) return "/dashboard";
 
+  if (hasPermInList(PERMISSIONS.DASHBOARD_VIEW, userPermissions, r)) {
+    return "/dashboard";
+  }
+
   const hasLeads =
     hasPermInList(PERMISSIONS.LEADS_VIEW, userPermissions, r) ||
     hasPermInList(PERMISSIONS.LEADS_VIEW_ALL, userPermissions, r);
