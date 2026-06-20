@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { hrAPI } from "@/lib/api";
-import { shouldShowEmployeeAttendanceCheckIn } from "@/lib/permissions";
+import { canEmployeeCheckInOut, getEffectivePermissions } from "@/lib/permissions";
 import { toast } from "@/components/Toast";
 import { IoLogIn, IoLogOut } from "react-icons/io5";
 
@@ -19,14 +19,18 @@ function formatTime(iso: string | null) {
   return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 }
 
-function readUserRole(): string {
-  if (typeof window === "undefined") return "";
+function readUserFromStorage(): { role: string; permissions: string[] } {
+  if (typeof window === "undefined") return { role: "", permissions: [] };
   try {
     const raw = localStorage.getItem("user");
-    if (!raw) return "";
-    return String(JSON.parse(raw).role || "").trim();
+    if (!raw) return { role: "", permissions: [] };
+    const user = JSON.parse(raw);
+    return {
+      role: String(user.role || "").trim(),
+      permissions: getEffectivePermissions(user),
+    };
   } catch {
-    return "";
+    return { role: "", permissions: [] };
   }
 }
 
@@ -38,7 +42,8 @@ export default function AttendanceTodayCard() {
   const [busy, setBusy] = useState(false);
 
   const syncUser = useCallback(() => {
-    setShow(shouldShowEmployeeAttendanceCheckIn(readUserRole()));
+    const { role, permissions } = readUserFromStorage();
+    setShow(canEmployeeCheckInOut(role, permissions));
   }, []);
 
   useEffect(() => {

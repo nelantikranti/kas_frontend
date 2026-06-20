@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
-import { can, getUserPermissions, isAdmin, PERMISSION_GROUPS, PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, ALL_PERMISSIONS } from "@/lib/permissions";
+import { can, getUserPermissions, isAdmin, PERMISSION_GROUPS, PERMISSIONS, ALL_PERMISSIONS } from "@/lib/permissions";
 
 const getApiUrl = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -21,11 +21,9 @@ export default function RolePermissionsPage() {
 
   const grouped = useMemo(() => PERMISSION_GROUPS, []);
 
-  const effectivePermissionsForRole = (role: string, loaded?: string[]) => {
+  const permissionsForRole = (role: string, loaded?: string[]) => {
     if (role === "Admin") return [...ALL_PERMISSIONS];
-    const defaults = DEFAULT_ROLE_PERMISSIONS[role] || [];
-    const stored = loaded || [];
-    return [...new Set([...defaults, ...stored])];
+    return loaded || [];
   };
 
   const togglePermission = (key: string) => {
@@ -122,7 +120,7 @@ export default function RolePermissionsPage() {
               </thead>
               <tbody className="divide-y">
                 {roles.map((role) => {
-                  const perms = effectivePermissionsForRole(role, rolePermissionsByRole[role]);
+                  const perms = permissionsForRole(role, rolePermissionsByRole[role]);
                   const enabled = role === "Admin" ? "All" : String(perms.length);
                   return (
                     <tr key={role} className="hover:bg-gray-50">
@@ -173,8 +171,7 @@ export default function RolePermissionsPage() {
                                   const err = await res.json().catch(() => ({}));
                                   throw new Error(err?.error || "Failed to delete role permissions override");
                                 }
-                                const defaults = DEFAULT_ROLE_PERMISSIONS[role] || [];
-                                setRolePermissionsByRole((prev) => ({ ...prev, [role]: defaults }));
+                                await loadRolePermissions(role);
                                 toast.success("Role override cleared (back to default)");
                               } catch (e: any) {
                                 toast.error(e?.message || "Failed to delete override");

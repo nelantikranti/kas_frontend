@@ -310,9 +310,8 @@ export function getEffectivePermissions(user: {
   const stored = (user.permissions ?? []).filter((p) => ALL_PERMISSIONS.includes(p));
   const source = resolvePermissionSource(user);
   if (source === "role") {
+    if (stored.length > 0) return [...stored];
     const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role] || [];
-    // Merge role defaults with stored overrides (backend role-permission table may be partial)
-    if (stored.length > 0) return [...new Set([...fromRole, ...stored])];
     return [...fromRole];
   }
   // If custom mode is indicated but no valid permission keys exist, fall back to role defaults.
@@ -453,18 +452,18 @@ export const EMPLOYEE_ATTENDANCE_ROLES = [
   "Accountant",
 ] as const;
 
-export function shouldShowEmployeeAttendanceCheckIn(role?: string): boolean {
-  const r = String(role || "").trim();
-  if (!r || r === "Admin") return false;
-  return (EMPLOYEE_ATTENDANCE_ROLES as readonly string[]).includes(r);
+export function shouldShowEmployeeAttendanceCheckIn(
+  role?: string,
+  userPermissions: string[] = []
+): boolean {
+  return canEmployeeCheckInOut(role, userPermissions);
 }
 
 export function canEmployeeCheckInOut(role?: string, userPermissions: string[] = []): boolean {
-  if (String(role || "").trim() === "Admin") return false;
-  return (
-    shouldShowEmployeeAttendanceCheckIn(role) ||
-    userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_SELF)
-  );
+  const r = String(role || "").trim();
+  if (!r || r === "Admin") return false;
+  if (userPermissions.includes(PERMISSIONS.HR_ATTENDANCE_SELF)) return true;
+  return (EMPLOYEE_ATTENDANCE_ROLES as readonly string[]).includes(r);
 }
 
 export function usesSalesLeadsDashboard(role: string, userPermissions: string[] = []): boolean {
