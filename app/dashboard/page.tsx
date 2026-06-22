@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
-import { leadsAPI, projectsAPI, amcAPI, settingsAPI } from "@/lib/api";
+import { leadsAPI, projectsAPI, amcAPI, settingsAPI, usersAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import {
   getEffectivePermissions,
@@ -85,6 +85,10 @@ export default function DashboardPage() {
   const [allProjects, setAllProjects] = useState<any[]>([]);
   const [allAMC, setAllAMC] = useState<any[]>([]);
   const [selectedStatCard, setSelectedStatCard] = useState<string | null>(null);
+  const [modalLeads, setModalLeads] = useState<any[]>([]);
+  const [modalLeadsLoading, setModalLeadsLoading] = useState(false);
+
+  const hasClientFilters = !!(selectedExecutive || selectedMonth || fromDate || toDate);
 
   const computeStats = (leads: any[]) => ({
     totalLeads: leads.length,
@@ -170,13 +174,18 @@ export default function DashboardPage() {
     return null;
   };
 
-  /** Same filters as the leads API; merges every page (max 200/req) so the dashboard is not capped at page 1. */
+  const withMeetingDates = (leads: any[]) =>
+    leads.map((lead: any) => ({
+      ...lead,
+      meetingDateTime: lead.stage === "Meeting Scheduled" ? parseMeetingDateTime(lead) : null,
+    }));
+
+  /** Fetches leads in pages — only when date/executive filters need the full list. */
   const fetchAllLeadsForState = async (state: string) => {
     const limit = 200;
     const out: any[] = [];
     let total = Infinity;
     let page = 1;
-    // Fetch until backend reports no more records.
     while (out.length < total) {
       const raw = await leadsAPI.getAll({ state: state || undefined, page, limit });
       const chunk = Array.isArray((raw as any)?.leads) ? (raw as any).leads : [];
@@ -191,40 +200,82 @@ export default function DashboardPage() {
     return out;
   };
 
+  const applyClientFilters = (leads: any[]) => {
+    const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+    const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
+    return leads.filter((lead: any) => {
+      const assignedTo = String(lead.assignedTo || "").trim();
+      if (selectedExecutive && assignedTo !== selectedExecutive) return false;
+      const created = lead.createdAt ? new Date(lead.createdAt) : null;
+      if (selectedMonth) {
+        if (!created || Number.isNaN(created.getTime())) return false;
+        const monthKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}`;
+        if (monthKey !== selectedMonth) return false;
+      }
+      if ((from || to) && (!created || Number.isNaN(created.getTime()))) return false;
+      if (from && created && created < from) return false;
+      if (to && created && created > to) return false;
+      return true;
+    });
+  };
+
+  const loadExecutivesFromUsers = async () => {
+    try {
+      const usersData = await usersAPI.getAll();
+      const list = Array.isArray(usersData) ? usersData : [];
+      const executives = Array.from(
+        new Set(
+          list
+            .filter((u: any) => (u?.role || "") !== "Admin" && String(u?.name || "").trim())
+            .map((u: any) => String(u.name).trim())
+        )
+      ).sort((a, b) => a.localeCompare(b));
+      setAvailableExecutives(executives);
+    } catch {
+      setAvailableExecutives([]);
+    }
+  };
+
   const loadData = async (opts?: { state?: string }) => {
     try {
       setLoading(true);
       const state = opts?.state !== undefined ? opts.state : selectedState;
 
-      const leadsData = await fetchAllLeadsForState(state);
-      setRecentLeads(leadsData.slice(0, 3));
-      // Store leads with parsed meeting dates
-      const leadsWithMeetingDates = leadsData.map((lead: any) => ({
-        ...lead,
-        meetingDateTime: lead.stage === "Meeting Scheduled" ? parseMeetingDateTime(lead) : null
-      }));
-      setAllLeads(leadsWithMeetingDates);
-      setStats(computeStats(leadsWithMeetingDates));
-      const executives = Array.from(
-        new Set(
-          leadsWithMeetingDates
-            .map((lead: any) => String(lead.assignedTo || "").trim())
-            .filter((v: string) => v.length > 0)
-        )
-      ).sort((a, b) => a.localeCompare(b));
-      setAvailableExecutives(executives);
+      const [summary, recentResp, projectsData, amcData] = await Promise.all([
+        leadsAPI.getSummaryStats({ state: state || undefined }),
+        leadsAPI.getAll({ state: state || undefined, page: 1, limit: 3 }),
+        projectsAPI.getAll().catch(() => []),
+        amcAPI.getAll().catch(() => []),
+      ]);
 
-      // Load projects and AMC for other sections
-      try {
-        const [projectsData, amcData] = await Promise.all([
-          projectsAPI.getAll(),
-          amcAPI.getAll().catch(() => []),
-        ]);
-        setRecentProjects(projectsData.slice(0, 3));
-        setAllProjects(projectsData);
-        setAllAMC(amcData || []);
-      } catch (err) {
-        console.error("Failed to load projects/AMC:", err);
+      const recent = withMeetingDates(
+        Array.isArray((recentResp as any)?.leads) ? (recentResp as any).leads : []
+      );
+      setRecentLeads(recent);
+      setStats({
+        totalLeads: summary.total ?? 0,
+        leadContacted: summary.leadContacted ?? 0,
+        meetingScheduled: summary.meetingScheduled ?? 0,
+        meetingsCompleted: summary.meetingsCompleted ?? 0,
+        quotationSent: summary.quotationSent ?? 0,
+        managerDeliberation: summary.managerDeliberation ?? 0,
+        lostLeads: summary.lostLeads ?? 0,
+        askToCallBack: summary.askToCallBack ?? 0,
+        dnp: summary.dnp ?? 0,
+        notRequired: summary.notRequired ?? 0,
+      });
+
+      setRecentProjects((Array.isArray(projectsData) ? projectsData : []).slice(0, 3));
+      setAllProjects(Array.isArray(projectsData) ? projectsData : []);
+      setAllAMC(Array.isArray(amcData) ? amcData : []);
+
+      await loadExecutivesFromUsers();
+
+      if (hasClientFilters) {
+        const leadsData = withMeetingDates(await fetchAllLeadsForState(state));
+        setAllLeads(leadsData);
+      } else {
+        setAllLeads([]);
       }
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
@@ -233,38 +284,23 @@ export default function DashboardPage() {
     }
   };
 
-  // Reload dashboard metrics when state filter changes
+  // Fast load on state change; full lead list only when executive/date filters are active
   useEffect(() => {
     if (!pageReady || isFieldDashboard) return;
     loadData({ state: selectedState }).catch(() => { });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedState, pageReady, isFieldDashboard]);
+  }, [selectedState, pageReady, isFieldDashboard, hasClientFilters]);
 
   const filteredLeads = useMemo(() => {
-    const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
-    const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
-    return allLeads.filter((lead: any) => {
-      const assignedTo = String(lead.assignedTo || "").trim();
-      if (selectedExecutive && assignedTo !== selectedExecutive) return false;
-
-      const created = lead.createdAt ? new Date(lead.createdAt) : null;
-      if (selectedMonth) {
-        if (!created || Number.isNaN(created.getTime())) return false;
-        const monthKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}`;
-        if (monthKey !== selectedMonth) return false;
-      }
-
-      if ((from || to) && (!created || Number.isNaN(created.getTime()))) return false;
-      if (from && created && created < from) return false;
-      if (to && created && created > to) return false;
-      return true;
-    });
-  }, [allLeads, selectedExecutive, selectedMonth, fromDate, toDate]);
+    if (!hasClientFilters) return [];
+    return applyClientFilters(allLeads);
+  }, [allLeads, selectedExecutive, selectedMonth, fromDate, toDate, hasClientFilters]);
 
   useEffect(() => {
+    if (!hasClientFilters) return;
     setStats(computeStats(filteredLeads));
     setRecentLeads(filteredLeads.slice(0, 3));
-  }, [filteredLeads]);
+  }, [filteredLeads, hasClientFilters]);
 
   const handleCardClick = (title: string) => {
     setSelectedStatCard(title);
@@ -277,6 +313,11 @@ export default function DashboardPage() {
 
   // Compute meeting scheduled trend text
   const getMeetingScheduledTrend = () => {
+    if (!hasClientFilters) {
+      return stats.meetingScheduled > 0
+        ? `${stats.meetingScheduled} meeting(s) scheduled`
+        : "Meetings planned";
+    }
     const scheduledLeads = filteredLeads.filter((l: any) => l.stage === "Meeting Scheduled");
     if (scheduledLeads.length === 0) return "Meetings planned";
 
@@ -376,13 +417,66 @@ export default function DashboardPage() {
   ];
 
   const currentSelectedStat = selectedStatCard ? statCards.find(s => s.title === selectedStatCard) : null;
-  const filteredLeadsForModal = currentSelectedStat
-    ? ("contactStatus" in currentSelectedStat && currentSelectedStat.contactStatus)
-      ? filteredLeads.filter((lead: any) => lead.contactStatus === currentSelectedStat.contactStatus)
-      : currentSelectedStat.stage === "All"
-        ? filteredLeads
-        : filteredLeads.filter((lead: any) => lead.stage === currentSelectedStat.stage)
-    : [];
+
+  useEffect(() => {
+    if (!selectedStatCard || !currentSelectedStat) {
+      setModalLeads([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadModalLeads = async () => {
+      setModalLeadsLoading(true);
+      try {
+        const limit = 200;
+        const params: {
+          state?: string;
+          stage?: string;
+          contactStatus?: string;
+          page: number;
+          limit: number;
+        } = { state: selectedState || undefined, page: 1, limit };
+
+        if ("contactStatus" in currentSelectedStat && currentSelectedStat.contactStatus) {
+          params.contactStatus = currentSelectedStat.contactStatus;
+        } else if (currentSelectedStat.stage !== "All") {
+          params.stage = currentSelectedStat.stage;
+        }
+
+        const out: any[] = [];
+        let total = Infinity;
+        while (out.length < total) {
+          const raw = await leadsAPI.getAll(params);
+          const chunk = Array.isArray((raw as any)?.leads) ? (raw as any).leads : [];
+          total =
+            typeof (raw as any)?.total === "number"
+              ? (raw as any).total
+              : Math.max(chunk.length, out.length + chunk.length);
+          out.push(...chunk);
+          if (chunk.length < limit || chunk.length === 0) break;
+          params.page += 1;
+        }
+
+        if (!cancelled) {
+          const leads = withMeetingDates(out);
+          setModalLeads(hasClientFilters ? applyClientFilters(leads) : leads);
+        }
+      } catch (e) {
+        console.error("Failed to load modal leads:", e);
+        if (!cancelled) setModalLeads([]);
+      } finally {
+        if (!cancelled) setModalLeadsLoading(false);
+      }
+    };
+
+    loadModalLeads();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatCard, selectedState, hasClientFilters, selectedExecutive, selectedMonth, fromDate, toDate]);
+
+  const filteredLeadsForModal = modalLeads;
 
   if (!pageReady) {
     return (
@@ -578,7 +672,9 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-              {filteredLeadsForModal.length === 0 ? (
+              {modalLeadsLoading ? (
+                <div className="text-center py-8 text-gray-500">Loading leads...</div>
+              ) : filteredLeadsForModal.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">
                     {"contactStatus" in currentSelectedStat && currentSelectedStat.contactStatus

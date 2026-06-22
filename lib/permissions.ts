@@ -312,6 +312,7 @@ export function getEffectivePermissions(user: {
   const stored = (user.permissions ?? []).filter((p) => ALL_PERMISSIONS.includes(p));
   const source = resolvePermissionSource(user);
   if (source === "role") {
+    // Login stores effective role permissions from the backend — use those when present.
     if (stored.length > 0) return [...stored];
     const fromRole = DEFAULT_ROLE_PERMISSIONS[user.role] || [];
     return [...fromRole];

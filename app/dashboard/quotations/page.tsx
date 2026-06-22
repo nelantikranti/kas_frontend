@@ -102,7 +102,34 @@ export default function QuotationsPage() {
     }
   };
 
+  const getLeadOptionId = (lead: Lead & { leadId?: string }) =>
+    (lead.id || lead.leadId || "").trim();
+
   const handleCreateQuotation = async () => {
+    if (!newQuotation.leadId.trim()) {
+      toast.error("Please select a lead.");
+      return;
+    }
+    if (!newQuotation.leadName.trim()) {
+      toast.error("Please enter the client name.");
+      return;
+    }
+    const floorsNum = parseInt(newQuotation.floors, 10);
+    const capacityNum = parseInt(newQuotation.capacity, 10);
+    const speedNum = parseFloat(newQuotation.speed);
+    if (!Number.isFinite(floorsNum) || floorsNum < 1) {
+      toast.error("Please enter floors (minimum 1).");
+      return;
+    }
+    if (!Number.isFinite(capacityNum) || capacityNum < 1) {
+      toast.error("Please enter capacity in kg (minimum 1).");
+      return;
+    }
+    if (!Number.isFinite(speedNum) || speedNum <= 0) {
+      toast.error("Please enter speed in m/s (greater than 0).");
+      return;
+    }
+
     try {
       // Calculate totals
       const standardRates = {
@@ -153,9 +180,9 @@ export default function QuotationsPage() {
         contactNumber: newQuotation.contactNumber,
         elevatorType: newQuotation.elevatorType,
         modelNumber: newQuotation.modelNumber,
-        floors: parseInt(newQuotation.floors) || 0,
-        capacity: parseInt(newQuotation.capacity) || 0,
-        speed: parseFloat(newQuotation.speed) || 0,
+        floors: floorsNum,
+        capacity: capacityNum,
+        speed: speedNum,
         shaftType: newQuotation.shaftType,
         application: newQuotation.application,
         cabinType: newQuotation.cabinType,
@@ -232,9 +259,9 @@ export default function QuotationsPage() {
         paymentPercentage1: "50",
         paymentPercentage2: "50",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create quotation:", error);
-      toast.error("Failed to create quotation. Please try again.");
+      toast.error(error?.message || "Failed to create quotation. Please try again.");
     }
   };
 
@@ -268,13 +295,30 @@ export default function QuotationsPage() {
   };
 
   const handleLeadSelect = (leadId: string) => {
-    const selectedLead = Array.isArray(leads) ? leads.find(l => l.id === leadId) : undefined;
-    if (selectedLead) {
+    if (!leadId) {
       setNewQuotation({
         ...newQuotation,
-        leadId: selectedLead.id,
-        leadName: `${selectedLead.name}${selectedLead.company ? ` - ${selectedLead.company}` : ''}`,
-        contactNumber: selectedLead.phone,
+        leadId: "",
+        leadName: "",
+        projectAddress: "",
+        contactNumber: "",
+      });
+      return;
+    }
+    const selectedLead = Array.isArray(leads)
+      ? leads.find((l) => getLeadOptionId(l as Lead & { leadId?: string }) === leadId)
+      : undefined;
+    if (selectedLead) {
+      const resolvedId = getLeadOptionId(selectedLead as Lead & { leadId?: string });
+      setNewQuotation({
+        ...newQuotation,
+        leadId: resolvedId,
+        leadName: `${selectedLead.name}${selectedLead.company ? ` - ${selectedLead.company}` : ""}`,
+        projectAddress:
+          (selectedLead as Lead & { projectLocation?: string }).projectLocation ||
+          selectedLead.company ||
+          "",
+        contactNumber: selectedLead.phone || "",
       });
     }
   };
@@ -487,8 +531,14 @@ export default function QuotationsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select a lead...</option>
-                  {(Array.isArray(leads) ? leads : []).map((lead) => (
-                    <option key={lead.id} value={lead.id}>
+                  {(Array.isArray(leads) ? leads : [])
+                    .map((lead) => {
+                      const optionId = getLeadOptionId(lead as Lead & { leadId?: string });
+                      return optionId ? { lead, optionId } : null;
+                    })
+                    .filter(Boolean)
+                    .map(({ lead, optionId }) => (
+                    <option key={optionId} value={optionId}>
                       {lead.name} {lead.company ? `- ${lead.company}` : ''}
                     </option>
                   ))}
