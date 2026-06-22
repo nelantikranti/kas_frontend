@@ -10,6 +10,8 @@ import {
   getDashboardHomePath,
   usesFieldOperationsDashboard,
   isAdmin,
+  canViewAllLeads,
+  getUserPermissions,
 } from "@/lib/permissions";
 import FieldOperationsDashboard from "@/components/dashboard/FieldOperationsDashboard";
 import {
@@ -486,7 +488,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {isAdmin() && (
+          {canViewAllLeads(getUserPermissions()) && (
           <div className="w-full">
             <label className="block text-xs font-medium text-gray-700 mb-1">Sales Executive (BDM)</label>
             <select

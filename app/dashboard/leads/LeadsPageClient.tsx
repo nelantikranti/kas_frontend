@@ -11,7 +11,7 @@ import { IoAdd, IoSearch, IoDocumentText, IoCalendar, IoTime, IoClose, IoCamera,
 import AnimatedDeleteButton from "@/components/AnimatedDeleteButton";
 import AnimatedEditButton from "@/components/AnimatedEditButton";
 import { useRouter } from "next/navigation";
-import { isAdmin, getUserPermissions, can, PERMISSIONS } from "@/lib/permissions";
+import { isAdmin, getUserPermissions, can, canViewAllLeads, canManageLeadAssignments, PERMISSIONS } from "@/lib/permissions";
 import { LEAD_FUNNEL_STAGES } from "@/lib/leadStages";
 import { LEAD_CONTACT_STATUSES } from "@/lib/leadContactStatuses";
 
@@ -208,6 +208,8 @@ export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userPermissions = getUserPermissions();
+  const canViewAllLeadsFilter = canViewAllLeads(userPermissions);
+  const canManageAssignments = canManageLeadAssignments(userPermissions);
   const canViewLeadActions = can(PERMISSIONS.LEADS_VIEW, userPermissions);
   const canEditLeadActions = can(PERMISSIONS.LEADS_EDIT, userPermissions);
   const canDeleteLeadActions = can(PERMISSIONS.LEADS_DELETE, userPermissions);
@@ -270,7 +272,10 @@ export default function LeadsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [leadsPerPage, setLeadsPerPage] = useState(20);
   const [facebookConfigured, setFacebookConfigured] = useState(false);
-  const canManageAssignments = currentUser?.role === "Admin";
+  const [isBulkReassignModalOpen, setIsBulkReassignModalOpen] = useState(false);
+  const [bulkReassignFromUserId, setBulkReassignFromUserId] = useState("");
+  const [bulkReassignToUserId, setBulkReassignToUserId] = useState("");
+  const [bulkReassigning, setBulkReassigning] = useState(false);
   const [meetingData, setMeetingData] = useState({
     // 1. Actual Meeting Details
     meetingDuration: "",
@@ -510,7 +515,7 @@ export default function LeadsPage() {
 
   const handleAssignLeads = async (userId: string, userName: string) => {
     if (!canManageAssignments) {
-      toast.error("Only admins can reassign leads.");
+      toast.error("You do not have permission to reassign leads.");
       return;
     }
 
@@ -541,7 +546,7 @@ export default function LeadsPage() {
 
   const handleUnassignLeads = async () => {
     if (!canManageAssignments) {
-      toast.error("Only admins can reassign leads.");
+      toast.error("You do not have permission to reassign leads.");
       return;
     }
 
@@ -567,6 +572,39 @@ export default function LeadsPage() {
       toast.error("Failed to unassign leads. Please try again.");
     } finally {
       setAssigning(false);
+    }
+  };
+
+  const handleBulkReassign = async () => {
+    if (!canManageAssignments) {
+      toast.error("You do not have permission to reassign leads.");
+      return;
+    }
+    if (!bulkReassignFromUserId || !bulkReassignToUserId) {
+      toast.error("Please select both source and target users.");
+      return;
+    }
+    if (bulkReassignFromUserId === bulkReassignToUserId) {
+      toast.error("Source and target user must be different.");
+      return;
+    }
+
+    setBulkReassigning(true);
+    try {
+      const result = await leadsAPI.bulkReassign({
+        fromUserId: bulkReassignFromUserId,
+        toUserId: bulkReassignToUserId,
+      });
+      await loadLeads({ page: currentPage });
+      setIsBulkReassignModalOpen(false);
+      setBulkReassignFromUserId("");
+      setBulkReassignToUserId("");
+      toast.success(result.message || `Reassigned ${result.modifiedCount} lead(s).`);
+    } catch (error: any) {
+      console.error("Bulk reassign failed:", error);
+      toast.error(error?.message || "Failed to bulk reassign leads.");
+    } finally {
+      setBulkReassigning(false);
     }
   };
 
@@ -2241,6 +2279,19 @@ NEXT ACTION:
               <IoRefresh className="w-4 h-4 shrink-0" />
               {syncingFacebook ? "Syncing..." : "Sync Facebook"}
             </button>
+            {canManageAssignments && (
+              <button
+                onClick={() => setIsBulkReassignModalOpen(true)}
+                disabled={backendConnected === false}
+                className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${backendConnected === false
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-purple-600 text-white hover:bg-purple-700"
+                  }`}
+              >
+                <IoPerson className="w-4 h-4 shrink-0" />
+                Bulk Reassign
+              </button>
+            )}
           </div>
         </div>
 
@@ -2314,7 +2365,7 @@ NEXT ACTION:
                 </option>
               ))}
             </select>
-            {isAdmin() && (
+            {canViewAllLeadsFilter && (
             <select
               value={selectedBdmUserId}
               onChange={(e) => setSelectedBdmUserId(e.target.value)}
@@ -5842,6 +5893,84 @@ NEXT ACTION:
         onSubmit={handleContactReportSubmit}
         leadName={leadForContact?.name}
       />
+
+      {/* Bulk Reassign Modal — transfer all leads from one user to another */}
+      <Modal
+        isOpen={canManageAssignments && isBulkReassignModalOpen}
+        onClose={() => {
+          if (bulkReassigning) return;
+          setIsBulkReassignModalOpen(false);
+          setBulkReassignFromUserId("");
+          setBulkReassignToUserId("");
+        }}
+        title="Bulk Reassign Leads"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Move all leads from one BDM to another. For example, transfer all of ABC&apos;s leads to XYZ in one step.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">From (current owner)</label>
+            <select
+              value={bulkReassignFromUserId}
+              onChange={(e) => setBulkReassignFromUserId(e.target.value)}
+              disabled={bulkReassigning}
+              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">Select user...</option>
+              {users
+                .filter((u: any) => (u?.role || "") !== "Admin")
+                .map((u: any) => (
+                  <option key={u.id || u._id} value={u.id || u._id}>
+                    {u.name || u.email} ({u.role})
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">To (new owner)</label>
+            <select
+              value={bulkReassignToUserId}
+              onChange={(e) => setBulkReassignToUserId(e.target.value)}
+              disabled={bulkReassigning}
+              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">Select user...</option>
+              {users
+                .filter((u: any) => (u?.role || "") !== "Admin")
+                .filter((u: any) => (u.id || u._id) !== bulkReassignFromUserId)
+                .map((u: any) => (
+                  <option key={u.id || u._id} value={u.id || u._id}>
+                    {u.name || u.email} ({u.role})
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsBulkReassignModalOpen(false);
+                setBulkReassignFromUserId("");
+                setBulkReassignToUserId("");
+              }}
+              disabled={bulkReassigning}
+              className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkReassign}
+              disabled={bulkReassigning || !bulkReassignFromUserId || !bulkReassignToUserId}
+              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {bulkReassigning ? "Reassigning..." : "Reassign All Leads"}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Assign Lead Modal - Admin excluded (admins see all leads) */}
       <Modal

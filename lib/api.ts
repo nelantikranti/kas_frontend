@@ -436,6 +436,13 @@ export const leadsAPI = {
   getById: (id: string) => fetchAPI(`/leads/${id}`),
   create: (data: any) => fetchAPI("/leads", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) => fetchAPI(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  bulkReassign: (data: { fromUserId: string; toUserId: string }) =>
+    fetchAPI("/leads/bulk-reassign", { method: "POST", body: JSON.stringify(data) }) as Promise<{
+      message: string;
+      modifiedCount: number;
+      assignedTo: string;
+      assignedToUserId: string | null;
+    }>,
   delete: (id: string) => fetchAPI(`/leads/${id}`, { method: "DELETE" }),
   /** Check which phones/emails already exist in the CRM. Returns sets of duplicate values. */
   checkDuplicates: (data: { phones: string[]; emails: string[] }) =>

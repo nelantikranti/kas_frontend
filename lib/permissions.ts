@@ -106,6 +106,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   ],
   "Project Manager": [
     PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.LEADS_VIEW,
+    PERMISSIONS.LEADS_VIEW_ALL,
     PERMISSIONS.PROJECTS_VIEW,
     PERMISSIONS.PROJECTS_CREATE,
     PERMISSIONS.PROJECTS_EDIT,
@@ -329,6 +331,14 @@ export const can = (permission: string, userPermissions: string[] = []): boolean
   if (!userPermissions || userPermissions.length === 0) return false;
   return userPermissions.includes(permission);
 };
+
+/** Admin or users with View All Leads — can filter leads by BDM and see every lead. */
+export const canViewAllLeads = (userPermissions: string[] = []): boolean =>
+  isAdmin() || can(PERMISSIONS.LEADS_VIEW_ALL, userPermissions);
+
+/** Admin or users with View All Leads — can reassign / bulk-reassign leads. */
+export const canManageLeadAssignments = (userPermissions: string[] = []): boolean =>
+  isAdmin() || can(PERMISSIONS.LEADS_VIEW_ALL, userPermissions);
 
 // Get user permissions from localStorage (Admin always gets all permissions)
 export const getUserPermissions = (): string[] => {
