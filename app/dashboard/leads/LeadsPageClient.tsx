@@ -163,6 +163,10 @@ const getStageIcon = (stage: Lead["stage"]) => {
       return <IoPerson className={iconClass} />;
     case "Lead Contacted":
       return <IoCall className={iconClass} />;
+    case "Not Contacted":
+      return <IoTime className={iconClass} />;
+    case "Not Interested":
+      return <IoPersonRemove className={iconClass} />;
     case "Meeting Scheduled":
       return <IoCalendar className={iconClass} />;
     case "Meeting Completed":
@@ -187,6 +191,10 @@ const getStageColor = (stage: Lead["stage"]) => {
       return "bg-blue-100 text-blue-700 border-blue-300";
     case "Lead Contacted":
       return "bg-cyan-100 text-cyan-700 border-cyan-300";
+    case "Not Contacted":
+      return "bg-amber-100 text-amber-700 border-amber-300";
+    case "Not Interested":
+      return "bg-slate-100 text-slate-700 border-slate-300";
     case "Meeting Scheduled":
       return "bg-purple-100 text-purple-700 border-purple-300";
     case "Meeting Completed":
@@ -864,7 +872,11 @@ export default function LeadsPage() {
 
     // Progressive unlock: only show current stage and next available stage(s)
     if (currentStage === "New Lead") {
-      return ["New Lead", "Lead Contacted"];
+      return ["New Lead", "Lead Contacted", "Not Contacted", "Not Interested"];
+    } else if (currentStage === "Not Contacted") {
+      return ["New Lead", "Not Contacted", "Lead Contacted", "Not Interested"];
+    } else if (currentStage === "Not Interested") {
+      return ["New Lead", "Not Interested"];
     } else if (currentStage === "Lead Contacted") {
       return ["Lead Contacted", "Meeting Scheduled"];
     } else if (currentStage === "Meeting Scheduled") {
@@ -1030,7 +1042,7 @@ export default function LeadsPage() {
     // Validate stage change
     if (!isStageAllowed(lead.stage, newStage)) {
       const errorMsg = lead.stage === "New Lead"
-        ? "Please select 'Lead Contacted' to proceed"
+        ? "Please select 'Lead Contacted', 'Not Contacted', or 'Not Interested' to proceed"
         : `Invalid stage progression. Current stage: ${lead.stage}. You can only move to the next stage or go back one step.`;
 
       setStageChangeError({ [leadId]: errorMsg });
@@ -1741,9 +1753,31 @@ NEXT ACTION:
     }
   };
 
-  const handleViewDetails = (lead: Lead) => {
+  const handleViewDetails = async (lead: Lead) => {
     setSelectedLead(lead);
     setIsDetailsModalOpen(true);
+    try {
+      const leadId = lead.id || (lead as any)._id;
+      if (leadId) {
+        const fullLead = await leadsAPI.getById(leadId) as Lead;
+        setSelectedLead(fullLead);
+      }
+    } catch (error) {
+      console.error("Failed to load lead details:", error);
+    }
+  };
+
+  const handleLeadDocumentDownload = async (docId: string, fileName: string) => {
+    if (!selectedLead || !docId) return;
+    const leadId = selectedLead.id || (selectedLead as any)._id;
+    if (!leadId) return;
+
+    try {
+      await leadsAPI.downloadDocument(leadId, docId, fileName);
+    } catch (error: any) {
+      console.error("Failed to download document:", error);
+      toast.error(error?.message || "Failed to download document");
+    }
   };
 
   const handleEditLead = (lead: Lead) => {
@@ -3898,36 +3932,48 @@ NEXT ACTION:
                   </div>
                 </div>
 
-                {/* Document Upload Section */}
+                {/* Documents (view only — upload via Edit Lead) */}
                 <div className="pt-4 border-t">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-3">
                     <IoDocumentText className="w-5 h-5 text-green-600" />
                     Documents
                   </h3>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      className="hidden"
-                      id="document-upload"
-                    />
-                    <label
-                      htmlFor="document-upload"
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
-                      <IoDocumentText className="w-8 h-8 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        Click to upload plans, drawings, emails & enquiry documents
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        PDF, DOC, DOCX, JPG, PNG (Max 10MB)
-                      </span>
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    Document upload functionality will be connected to backend storage
-                  </p>
+
+                  {(selectedLead.documents?.length ?? 0) > 0 ? (
+                    <div className="space-y-2">
+                      {selectedLead.documents!.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex items-center justify-between gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <IoDocumentText className="w-5 h-5 text-green-600 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">{doc.fileName}</p>
+                              <p className="text-xs text-gray-500">
+                                {doc.uploadedDate || "Uploaded"}
+                                {doc.fileSize ? ` • ${(doc.fileSize / 1024).toFixed(1)} KB` : ""}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleLeadDocumentDownload(doc.id, doc.fileName)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors shrink-0"
+                            title="Download"
+                          >
+                            <IoDownload className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                      <IoDocumentText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No documents uploaded yet.</p>
+                      <p className="text-xs text-gray-400 mt-1">Use Edit Lead to upload plans, drawings, and enquiry documents.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

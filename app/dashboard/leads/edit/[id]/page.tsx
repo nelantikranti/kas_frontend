@@ -6,7 +6,7 @@ import { leadsAPI, projectsAPI, groupsAPI, usersAPI, type Lead } from "@/lib/api
 import { isAdmin } from "@/lib/permissions";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
-import { IoArrowBack, IoCheckmarkCircle } from "react-icons/io5";
+import { IoArrowBack, IoCheckmarkCircle, IoCloudUpload, IoClose, IoDocumentText, IoDownload } from "react-icons/io5";
 
 // All Indian States and Union Territories
 const indianStates = [
@@ -55,6 +55,8 @@ export default function EditLeadPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [documents, setDocuments] = useState<NonNullable<Lead["documents"]>>([]);
   const [canReassignLead, setCanReassignLead] = useState(false);
   const [originalStage, setOriginalStage] = useState<Lead["stage"]>("New Lead");
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
@@ -271,7 +273,6 @@ export default function EditLeadPage() {
       // Store original stage to check if it's being changed to "Order Closed"
       setOriginalStage(lead.stage || "New Lead");
       
-      // Map parsed data and backend fields to form state
       setLeadData({
         // Basic Lead Details - prioritize parsed data over backend fields
         name: basicData['Lead Name'] || lead.name || "",
@@ -332,6 +333,7 @@ export default function EditLeadPage() {
         company: lead.company || "",
         groupId: lead.groupId || "",
       });
+      setDocuments(lead.documents || []);
       
       console.log("✅ Lead data loaded:", {
         name: basicData['Lead Name'] || lead.name,
@@ -346,6 +348,58 @@ export default function EditLeadPage() {
       router.push("/dashboard/leads");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!leadId || !e.target.files?.length) return;
+
+    const files = Array.from(e.target.files);
+    setUploadingDocument(true);
+
+    try {
+      const newDocs = [...documents];
+      for (const file of files) {
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} exceeds 10MB limit. Skipping.`);
+          continue;
+        }
+        try {
+          const uploaded = await leadsAPI.uploadDocument(leadId, file) as NonNullable<Lead["documents"]>[number];
+          newDocs.push(uploaded);
+          toast.success(`${file.name} uploaded successfully`);
+        } catch (fileError: any) {
+          toast.error(`${file.name}: ${fileError?.message || "Upload failed"}`);
+        }
+      }
+      setDocuments(newDocs);
+    } finally {
+      setUploadingDocument(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDocumentDelete = async (docId: string) => {
+    if (!leadId || !docId) return;
+
+    try {
+      await leadsAPI.deleteDocument(leadId, docId);
+      setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+      toast.success("Document deleted");
+    } catch (error: any) {
+      console.error("Failed to delete document:", error);
+      toast.error(error?.message || "Failed to delete document");
+    }
+  };
+
+  const handleDocumentDownload = async (docId: string, fileName: string) => {
+    if (!leadId || !docId) return;
+
+    try {
+      await leadsAPI.downloadDocument(leadId, docId, fileName);
+    } catch (error: any) {
+      console.error("Failed to download document:", error);
+      toast.error(error?.message || "Failed to download document");
     }
   };
 
@@ -701,6 +755,8 @@ SALES OWNER:
                   >
                     <option value="New Lead">New Lead</option>
                     <option value="Lead Contacted">Lead Contacted</option>
+                    <option value="Not Contacted">Not Contacted</option>
+                    <option value="Not Interested">Not Interested</option>
                     <option value="Meeting Scheduled">Meeting Scheduled</option>
                     <option value="Meeting Completed">Meeting Completed</option>
                     <option value="Quotation Sent">Quotation Sent</option>
@@ -1286,6 +1342,80 @@ SALES OWNER:
                     placeholder="Additional remarks or notes..."
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* 10. DOCUMENTS */}
+            <div className="pb-4 border-t pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <IoDocumentText className="w-5 h-5 text-green-600" />
+                Documents
+              </h3>
+
+              {documents.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {documents.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center justify-between gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <IoDocumentText className="w-5 h-5 text-green-600 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{doc.fileName}</p>
+                          <p className="text-xs text-gray-500">
+                            {doc.uploadedDate || "Uploaded"}
+                            {doc.fileSize ? ` • ${(doc.fileSize / 1024).toFixed(1)} KB` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleDocumentDownload(doc.id, doc.fileName)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Download"
+                        >
+                          <IoDownload className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDocumentDelete(doc.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <IoClose className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className={`border-2 border-dashed border-gray-300 rounded-lg p-6 text-center ${uploadingDocument ? "opacity-60 pointer-events-none" : ""}`}>
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={handleDocumentUpload}
+                  className="hidden"
+                  id="lead-edit-document-upload"
+                  disabled={uploadingDocument}
+                />
+                <label
+                  htmlFor="lead-edit-document-upload"
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <IoCloudUpload className="w-8 h-8 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    {uploadingDocument
+                      ? "Uploading..."
+                      : "Click to upload plans, drawings, emails & enquiry documents"}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    PDF, DOC, DOCX, JPG, PNG (Max 10MB per file) — uploads save immediately
+                  </span>
+                </label>
               </div>
             </div>
 

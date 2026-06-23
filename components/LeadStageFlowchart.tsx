@@ -9,7 +9,9 @@ import {
   IoDocument, 
   IoConstruct, 
   IoHandLeft, 
-  IoCloseCircle 
+  IoCloseCircle,
+  IoPersonRemove,
+  IoTime,
 } from "react-icons/io5";
 import { type Lead } from "@/lib/api";
 
@@ -24,6 +26,8 @@ interface LeadStageFlowchartProps {
 const stages = [
   { value: "New Lead" as const, label: "New Lead", icon: IoMegaphone, color: "bg-blue-500" },
   { value: "Lead Contacted" as const, label: "Lead Contacted", icon: IoCall, color: "bg-blue-500" },
+  { value: "Not Contacted" as const, label: "Not Contacted", icon: IoTime, color: "bg-amber-500" },
+  { value: "Not Interested" as const, label: "Not Interested", icon: IoPersonRemove, color: "bg-slate-500" },
   { value: "Meeting Scheduled" as const, label: "Meeting Scheduled", icon: IoCalendar, color: "bg-blue-500" },
   { value: "Meeting Completed" as const, label: "Meeting Completed", icon: IoDocumentText, color: "bg-blue-500" },
   { value: "Quotation Sent" as const, label: "Quotation Sent", icon: IoDocument, color: "bg-blue-500" },

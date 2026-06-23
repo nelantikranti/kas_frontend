@@ -5,6 +5,8 @@
 export const LEAD_FUNNEL_STAGES = [
   "New Lead",
   "Lead Contacted",
+  "Not Contacted",
+  "Not Interested",
   "Meeting Scheduled",
   "Meeting Completed",
   "Quotation Sent",

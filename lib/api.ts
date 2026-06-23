@@ -178,6 +178,14 @@ export interface Lead {
       remarks: string;
     };
   };
+  documents?: Array<{
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    fileUrl: string;
+    uploadedDate?: string;
+  }>;
 }
 
 export interface Quotation {
@@ -482,6 +490,56 @@ export const leadsAPI = {
       errors?: string[];
       message: string;
     }>,
+  uploadDocument: async (leadId: string, file: File) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch(`${API_BASE_URL}/leads/${leadId}/documents`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      let errorMessage = "Upload failed";
+      try {
+        const errData = JSON.parse(errText);
+        errorMessage = errData.details || errData.error || errText || "Upload failed";
+      } catch {
+        if (errText) errorMessage = errText;
+      }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+  deleteDocument: (leadId: string, docId: string) =>
+    fetchAPI(`/leads/${leadId}/documents/${docId}`, { method: "DELETE" }),
+  downloadDocument: async (leadId: string, docId: string, fileName: string) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    const response = await fetch(`${API_BASE_URL}/leads/${leadId}/documents/${docId}/download`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      let message = "Download failed";
+      try {
+        const errData = JSON.parse(errText);
+        if (errData?.error) message = errData.error;
+      } catch {
+        if (errText) message = errText;
+      }
+      throw new Error(message);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
 };
 
 // Settings API (integrations stored on backend)
