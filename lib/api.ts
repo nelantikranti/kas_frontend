@@ -121,6 +121,7 @@ export interface Lead {
   id: string;
   name: string;
   company: string;
+  state?: string;
   email: string;
   phone: string;
   source: string;

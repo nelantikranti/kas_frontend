@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { leadsAPI, projectsAPI, groupsAPI, usersAPI, type Lead } from "@/lib/api";
 import { isAdmin } from "@/lib/permissions";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
 import { IoArrowBack, IoCheckmarkCircle, IoCloudUpload, IoClose, IoDocumentText, IoDownload } from "react-icons/io5";
+
+const LEAD_GROUP_OPTIONS = ["Tamil Nadu", "Andhra Pradesh"] as const;
 
 // All Indian States and Union Territories
 const indianStates = [
@@ -66,6 +68,7 @@ export default function EditLeadPage() {
     name: "",
     phone: "",
     email: "",
+    state: "",
     projectLocation: "",
     source: "Website",
     
@@ -121,6 +124,14 @@ export default function EditLeadPage() {
     company: "",
     groupId: "",
   });
+
+  const leadGroupOptions = useMemo(() => {
+    const existing = new Set(groups.map((g) => g.groupName.toLowerCase()));
+    const extras = LEAD_GROUP_OPTIONS.filter((name) => !existing.has(name.toLowerCase())).map(
+      (name) => ({ id: name, groupName: name })
+    );
+    return [...extras, ...groups];
+  }, [groups]);
 
   useEffect(() => {
     setCanReassignLead(isAdmin());
@@ -278,7 +289,8 @@ export default function EditLeadPage() {
         name: basicData['Lead Name'] || lead.name || "",
         phone: basicData['Mobile Number'] || lead.phone || "",
         email: basicData['Email ID'] || lead.email || "",
-        projectLocation: basicData['Project Location'] || lead.company || "",
+        projectLocation: basicData['Project Location'] || lead.state || lead.company || "",
+        state: lead.state || basicData['Project Location'] || lead.company || "",
         source: basicData['Lead Source'] || lead.source || "Website",
         stage: lead.stage || "New Lead", // Use stage from backend
         value: valueInLakhs,
@@ -404,7 +416,7 @@ export default function EditLeadPage() {
   };
 
   const handleSave = async () => {
-    if (!leadData.name || !leadData.phone || !leadData.email || !leadData.projectLocation || !leadData.source) {
+    if (!leadData.name || !leadData.phone || !leadData.email || !leadData.state || !leadData.source) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -436,7 +448,7 @@ BASIC LEAD DETAILS:
 - Lead Name: ${leadData.name}
 - Mobile Number: ${leadData.phone}
 - Email ID: ${leadData.email}
-- Project Location: ${leadData.projectLocation}
+- Project Location: ${leadData.state}
 - Lead Source: ${leadData.source}
 
 CONTACT CONFIRMATION:
@@ -486,7 +498,8 @@ SALES OWNER:
       // Prepare update data - USE THE SELECTED STAGE FROM THE FORM
       const updateData: any = {
         name: leadData.name,
-        company: leadData.projectLocation,
+        company: leadData.state,
+        state: leadData.state,
         email: leadData.email,
         phone: leadData.phone,
         source: leadData.source,
@@ -627,8 +640,7 @@ SALES OWNER:
         toast.success("Lead updated successfully");
       }
       
-      router.refresh();
-      router.push("/dashboard/leads");
+      router.push("/dashboard/leads?refresh=1");
     } catch (error: any) {
       console.error("Failed to update lead:", error);
       toast.error(error.message || "Failed to update lead");
@@ -708,11 +720,17 @@ SALES OWNER:
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project Location (State) *
+                    State *
                   </label>
                   <select
-                    value={leadData.projectLocation}
-                    onChange={(e) => setLeadData({ ...leadData, projectLocation: e.target.value })}
+                    value={leadData.state}
+                    onChange={(e) =>
+                      setLeadData({
+                        ...leadData,
+                        state: e.target.value,
+                        projectLocation: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   >
@@ -1323,7 +1341,7 @@ SALES OWNER:
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Group</option>
-                    {groups.map((group) => (
+                    {leadGroupOptions.map((group) => (
                       <option key={group.id} value={group.id}>
                         {group.groupName}
                       </option>

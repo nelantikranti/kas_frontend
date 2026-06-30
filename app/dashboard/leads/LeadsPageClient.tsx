@@ -115,6 +115,8 @@ function mergeContactReportSections(
   return parsed;
 }
 
+const LEAD_GROUP_OPTIONS = ["Tamil Nadu", "Andhra Pradesh"] as const;
+
 // All Indian States and Union Territories
 const indianStates = [
   "Andhra Pradesh",
@@ -395,7 +397,7 @@ export default function LeadsPage() {
     name: "",
     phone: "",
     email: "",
-    projectLocation: "",
+    state: "",
     source: "Website",
 
 
@@ -483,6 +485,15 @@ export default function LeadsPage() {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  // Reload list after returning from edit lead page
+  useEffect(() => {
+    if (searchParams.get("refresh") === "1") {
+      loadLeads({ page: currentPage });
+      router.replace("/dashboard/leads");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isAssignModalOpen && !isModalOpen) return;
@@ -1854,7 +1865,7 @@ NEXT ACTION:
   const handleAddLead = async () => {
     if (isCreatingLead) return;
     // Validation
-    if (!newLead.name || !newLead.phone || !newLead.email || !newLead.projectLocation || !newLead.source) {
+    if (!newLead.name || !newLead.phone || !newLead.email || !newLead.state || !newLead.source) {
       toast.error("Please fill in all required basic lead details.");
       return;
     }
@@ -1876,7 +1887,8 @@ NEXT ACTION:
       setIsCreatingLead(true);
       const leadData: any = {
         name: newLead.name,
-        company: newLead.projectLocation, // Using project location as company for now
+        company: newLead.state,
+        state: newLead.state,
         email: newLead.email,
         phone: newLead.phone,
         source: newLead.source,
@@ -1900,8 +1912,8 @@ NEXT ACTION:
         leadData.groupId = newLead.groupId;
       }
 
-      const createdLead = await leadsAPI.create(leadData);
-      setLeadList([...leadList, createdLead]);
+      await leadsAPI.create(leadData);
+      await loadLeads({ page: currentPage });
       setIsModalOpen(false);
       toast.success("Lead added successfully!");
 
@@ -1913,7 +1925,7 @@ NEXT ACTION:
         name: "",
         phone: "",
         email: "",
-        projectLocation: "",
+        state: "",
         source: "Website",
         remarks: "",
         company: "",
@@ -2211,6 +2223,13 @@ NEXT ACTION:
 
   // Let the backend control which leads are visible for the current user.
   const filteredLeads = leadList;
+  const leadGroupOptions = useMemo(() => {
+    const existing = new Set(groups.map((g) => g.groupName.toLowerCase()));
+    const extras = LEAD_GROUP_OPTIONS.filter((name) => !existing.has(name.toLowerCase())).map(
+      (name) => ({ id: name, groupName: name })
+    );
+    return [...extras, ...groups];
+  }, [groups]);
   const salesExecutiveSuggestions = Array.from(
     new Set(
       users
@@ -2731,6 +2750,9 @@ NEXT ACTION:
                   Group
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  State
+                </th>
+                <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
                 <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2753,7 +2775,7 @@ NEXT ACTION:
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-4 lg:px-6 py-8 text-center text-gray-500">
+                  <td colSpan={13} className="px-4 lg:px-6 py-8 text-center text-gray-500">
                     {leadList.length === 0 ? "No leads yet" : "No results found"}
                   </td>
                 </tr>
@@ -2786,6 +2808,9 @@ NEXT ACTION:
                       </td>
                       <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                         {lead.groupName || "-"}
+                      </td>
+                      <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                        {lead.state || lead.company || "-"}
                       </td>
                       <td className="px-2 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                         {(lead as any).createdAt ? new Date((lead as any).createdAt).toLocaleDateString() : "-"}
@@ -3032,11 +3057,11 @@ NEXT ACTION:
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project Location (State) *
+                    State *
                   </label>
                   <select
-                    value={newLead.projectLocation}
-                    onChange={(e) => setNewLead({ ...newLead, projectLocation: e.target.value })}
+                    value={newLead.state}
+                    onChange={(e) => setNewLead({ ...newLead, state: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   >
@@ -3058,7 +3083,7 @@ NEXT ACTION:
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Group</option>
-                    {groups.map((group) => (
+                    {leadGroupOptions.map((group) => (
                       <option key={group.id} value={group.id}>
                         {group.groupName}
                       </option>
@@ -3262,12 +3287,16 @@ NEXT ACTION:
                       <p className="font-medium text-gray-900">{selectedLead.email || basicDetails['Email ID'] || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">Project Location</p>
-                      <p className="font-medium text-gray-900">{selectedLead.company || basicDetails['Project Location'] || 'N/A'}</p>
+                      <p className="text-sm text-gray-500 mb-1">State</p>
+                      <p className="font-medium text-gray-900">{selectedLead.state || selectedLead.company || basicDetails['Project Location'] || "-"}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Lead Source</p>
                       <p className="font-medium text-gray-900">{selectedLead.source || basicDetails['Lead Source'] || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Group</p>
+                      <p className="font-medium text-gray-900">{selectedLead.groupName || "-"}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Stage</p>
