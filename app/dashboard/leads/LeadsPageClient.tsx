@@ -254,6 +254,10 @@ export default function LeadsPage() {
     assignedTo: "Sales Executive 1",
     groupId: null,
   });
+  // Auto-disable the background Facebook sync after repeated failures so a broken/expired
+  // token doesn't keep firing (and logging errors) every few minutes.
+  const fbSyncFailuresRef = useRef(0);
+  const [fbSyncDisabled, setFbSyncDisabled] = useState(false);
   const isInitialMount = useRef(true);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -684,11 +688,25 @@ export default function LeadsPage() {
     checkBackendConnection();
   }, []);
 
-  // Load whether Facebook Lead Ads is configured (credentials stored on backend)
+  // Load whether Facebook Lead Ads is usable. "configured" (from settings) only means a
+  // token + page ID are stored — not that they work. We verify with a real Graph API check
+  // so we only enable/auto-run sync when it will actually succeed.
   const refreshFacebookConfigured = async () => {
     try {
       const res = await settingsAPI.getFacebookLeadAds();
-      setFacebookConfigured(!!res?.configured);
+      if (!res?.configured) {
+        setFacebookConfigured(false);
+        return;
+      }
+      try {
+        const v = await leadsAPI.validateFacebook();
+        setFacebookConfigured(!!v?.valid);
+        if (!v?.valid && v?.reason) {
+          console.warn("[Leads] Facebook credentials present but not usable:", v.reason);
+        }
+      } catch {
+        setFacebookConfigured(false);
+      }
     } catch {
       setFacebookConfigured(false);
     }
@@ -2161,8 +2179,9 @@ NEXT ACTION:
     groupId: selectedGroupId || null,
   };
 
+  const FB_SYNC_MAX_FAILURES = 3;
   const syncFacebookSilent = async () => {
-    if (!facebookConfigured) return;
+    if (!facebookConfigured || fbSyncDisabled) return;
     console.log("[Leads] Fetching leads from Facebook...");
     const { assignedTo, assignedToUserId, groupId } = fbSyncParamsRef.current;
     try {
@@ -2171,6 +2190,7 @@ NEXT ACTION:
         assignedToUserId,
         groupId: groupId ?? undefined,
       });
+      fbSyncFailuresRef.current = 0;
       if (res.imported > 0) {
         console.log(`[Leads] Fetched ${res.imported} lead(s) from Facebook. Leads are fetching from Facebook.`);
         await loadLeads({ page: 1 });
@@ -2178,7 +2198,17 @@ NEXT ACTION:
         console.log("[Leads] No new leads from Facebook this sync.", res.total != null ? `(Total checked: ${res.total})` : "");
       }
     } catch (e) {
-      console.warn("[Leads] Facebook sync failed (background):", e);
+      fbSyncFailuresRef.current += 1;
+      console.warn(
+        `[Leads] Facebook sync failed (background, ${fbSyncFailuresRef.current}/${FB_SYNC_MAX_FAILURES}):`,
+        e
+      );
+      if (fbSyncFailuresRef.current >= FB_SYNC_MAX_FAILURES) {
+        setFbSyncDisabled(true);
+        console.warn(
+          "[Leads] Auto-sync disabled after repeated Facebook failures. Fix the credentials in Settings, then reload the page."
+        );
+      }
     }
   };
 
@@ -2197,6 +2227,8 @@ NEXT ACTION:
       });
       console.log(`[Leads] Leads are fetching from Facebook. Synced ${res.imported} lead(s).`);
       toast.success(res.message || `Synced ${res.imported} lead(s) from Facebook Lead Ads.`);
+      fbSyncFailuresRef.current = 0;
+      if (fbSyncDisabled) setFbSyncDisabled(false);
       if (res.imported > 0) await loadLeads({ page: 1 });
       if (res.errors?.length) toast.error(res.errors.slice(0, 2).join(" "));
     } catch (e: any) {
@@ -2208,16 +2240,17 @@ NEXT ACTION:
   };
 
 
-  // Auto-sync Facebook leads periodically when configured (credentials stored on backend)
+  // Auto-sync Facebook leads periodically when configured (credentials stored on backend).
+  // Stops entirely once fbSyncDisabled is set (after repeated failures).
   useEffect(() => {
-    if (!facebookConfigured) return;
+    if (!facebookConfigured || fbSyncDisabled) return;
     const t1 = setTimeout(() => syncFacebookSilent(), 10000);
     const t2 = setInterval(syncFacebookSilent, 5 * 60 * 1000);
     return () => {
       clearTimeout(t1);
       clearInterval(t2);
     };
-  }, [facebookConfigured]);
+  }, [facebookConfigured, fbSyncDisabled]);
 
   // Google Ads leads now come via webhook, no periodic sync needed
 

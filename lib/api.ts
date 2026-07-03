@@ -473,6 +473,13 @@ export const leadsAPI = {
       errors?: string[];
       message: string;
     }>,
+  /** Check whether the stored Facebook credentials actually work (real Graph API check). Never throws on invalid creds. */
+  validateFacebook: () =>
+    fetchAPI("/leads/validate/facebook") as Promise<{
+      configured: boolean;
+      valid: boolean;
+      reason?: string;
+    }>,
   /** Sync leads from Facebook using credentials stored in backend Settings. Uses GET with query params. */
   syncFacebook: (data: {
     assignedTo: string;
