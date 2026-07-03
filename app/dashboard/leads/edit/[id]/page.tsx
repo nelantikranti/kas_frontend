@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { leadsAPI, projectsAPI, groupsAPI, usersAPI, type Lead } from "@/lib/api";
-import { isAdmin } from "@/lib/permissions";
+import { canManageLeadAssignments, getUserPermissions } from "@/lib/permissions";
 import Modal from "@/components/Modal";
 import { toast } from "@/components/Toast";
 import { IoArrowBack, IoCheckmarkCircle, IoCloudUpload, IoClose, IoDocumentText, IoDownload } from "react-icons/io5";
@@ -134,7 +134,7 @@ export default function EditLeadPage() {
   }, [groups]);
 
   useEffect(() => {
-    setCanReassignLead(isAdmin());
+    setCanReassignLead(canManageLeadAssignments(getUserPermissions()));
     if (leadId) {
       loadLead();
       loadGroups();
@@ -684,7 +684,7 @@ SALES OWNER:
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lead Name *
+                    Lead Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -696,7 +696,7 @@ SALES OWNER:
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mobile Number *
+                    Mobile Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -708,7 +708,7 @@ SALES OWNER:
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email ID *
+                    Email ID <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -720,7 +720,7 @@ SALES OWNER:
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    State *
+                    State <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={leadData.state}
@@ -744,7 +744,7 @@ SALES OWNER:
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lead Source *
+                    Lead Source <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                     {["Website", "Google Ads", "Meta Ads", "Referral", "Walk-in", "Other"].map((source) => (
@@ -804,7 +804,7 @@ SALES OWNER:
               <h3 className="text-lg font-semibold text-gray-900 mb-4">🔹 2. CONTACT CONFIRMATION</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Was the lead successfully contacted? *
+                  Was the lead successfully contacted? <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-4">
                   <label className="flex items-center space-x-2 cursor-pointer">
@@ -840,7 +840,7 @@ SALES OWNER:
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contact Mode *
+                      Contact Mode <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {["Call", "WhatsApp", "Email", "Walk-in"].map((mode) => (
@@ -860,7 +860,7 @@ SALES OWNER:
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date & Time of Contact *
+                      Date & Time of Contact <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -871,7 +871,7 @@ SALES OWNER:
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Spoken To *
+                      Spoken To <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                       {["Client", "Family Member", "Architect", "Builder", "Caretaker"].map((person) => (
@@ -1282,7 +1282,7 @@ SALES OWNER:
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Sales Executive Name *
+                    Sales Executive Name <span className="text-red-500">*</span>
                   </label>
                   {canReassignLead ? (
                     <select
@@ -1322,12 +1322,12 @@ SALES OWNER:
                       value={leadData.salesExecutiveName}
                       disabled
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                      placeholder="Only admins can change this"
+                      placeholder="You do not have permission to reassign"
                     />
                   )}
                   {!canReassignLead && (
                     <p className="mt-1 text-xs text-gray-500">
-                      Lead reassignment is admin-only. Please contact an admin if this needs to change.
+                      Lead reassignment requires manager access. Please contact an admin or manager if this needs to change.
                     </p>
                   )}
                 </div>
