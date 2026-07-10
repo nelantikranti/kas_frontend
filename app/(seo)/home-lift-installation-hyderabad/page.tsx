@@ -12,6 +12,8 @@ const seoLinkClass =
 const seoLinkClassHero =
   "text-green-400 underline underline-offset-2 hover:text-green-300";
 
+const brandPlaceholder = "KASHOME_ELEVATORS_BRAND";
+
 function createSeoLinker(excludeHref?: string) {
   const linkedHrefs = new Set<string>();
   const links = [
@@ -45,6 +47,10 @@ function createSeoLinker(excludeHref?: string) {
   ): ReactNode {
     if (links.length === 0) return text;
 
+    const protectedText = text
+      .replace(/Kashome\s+Elevators/gi, brandPlaceholder)
+      .replace(/KAS\s+Home\s+Elevators/gi, brandPlaceholder);
+
     const pattern = links
       .map((link) => link.phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
       .join("|");
@@ -53,14 +59,24 @@ function createSeoLinker(excludeHref?: string) {
       links.map((link) => [link.phrase.toLowerCase(), link.href]),
     );
 
-    return text.split(regex).map((part, index) => {
+    return protectedText.split(regex).map((part, index) => {
+      const restoredPart = part.replace(
+        new RegExp(brandPlaceholder, "g"),
+        "Kashome Elevators",
+      );
       const href = hrefByPhrase.get(part.toLowerCase());
-      if (!href || linkedHrefs.has(href)) return part;
+      if (
+        !href ||
+        linkedHrefs.has(href) ||
+        part.toUpperCase().includes(brandPlaceholder)
+      ) {
+        return restoredPart;
+      }
 
       linkedHrefs.add(href);
       return (
         <a key={`${part}-${index}`} href={href} className={linkClass}>
-          {part}
+          {restoredPart}
         </a>
       );
     });
@@ -69,6 +85,7 @@ function createSeoLinker(excludeHref?: string) {
 
 const pageUrl =
   "https://www.kashomeelevators.com/home-lift-installation-hyderabad/";
+const siteUrl = "https://www.kashomeelevators.com/";
 const imageFileName = "home-lift-installation-hyderabad.webp";
 const imagePath = installationImage;
 const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
@@ -591,15 +608,26 @@ const serviceSchema = {
 const webPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Home Lift Installation Hyderabad",
+  "@id": `${pageUrl}#webpage`,
   url: pageUrl,
+  name: "Home Lift Installation Hyderabad",
   description:
     "Need professional home lift installation in Hyderabad? Kashome Elevators provides safe, customized, and reliable installation solutions for every home. Get a free quote.",
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${siteUrl}#website`,
+    url: siteUrl,
+    name: "Kashome Elevators",
+  },
+  breadcrumb: {
+    "@id": `${pageUrl}#breadcrumb`,
+  },
 };
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
+  "@id": `${pageUrl}#breadcrumb`,
   itemListElement: [
     {
       "@type": "ListItem",

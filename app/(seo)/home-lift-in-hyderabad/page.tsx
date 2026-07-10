@@ -9,6 +9,10 @@ const currentPageHref = "/home-lift-in-hyderabad";
 const seoLinkClass =
   "text-green-700 underline underline-offset-2 hover:text-green-800";
 
+const seoLinkClassHero =
+  "text-green-400 underline underline-offset-2 hover:text-green-300";
+const brandPlaceholder = "KASHOME_ELEVATORS_BRAND";
+
 function createSeoLinker(excludeHref?: string) {
   const linkedHrefs = new Set<string>();
   const links = [
@@ -17,6 +21,8 @@ function createSeoLinker(excludeHref?: string) {
     { phrase: "residential home lifts", href: "/residential-elevator-hyderabad" },
     { phrase: "residential home lift", href: "/residential-elevator-hyderabad" },
     { phrase: "residential lifts", href: "/residential-elevator-hyderabad" },
+    { phrase: "home elevators in Hyderabad", href: "/home-elevator-in-hyderabad" },
+    { phrase: "home elevator in Hyderabad", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevator", href: "/home-elevator-in-hyderabad" },
     { phrase: "villa elevators", href: "/villa-elevator-hyderabad" },
@@ -38,25 +44,42 @@ function createSeoLinker(excludeHref?: string) {
     .filter((link) => link.href !== excludeHref)
     .sort((a, b) => b.phrase.length - a.phrase.length);
 
-  return function linkSeoKeywords(text: string): ReactNode {
+  return function linkSeoKeywords(
+    text: string,
+    linkClass: string = seoLinkClass,
+  ): ReactNode {
     if (links.length === 0) return text;
+
+    const protectedText = text
+      .replace(/Kashome\s+Elevators/gi, brandPlaceholder)
+      .replace(/KAS\s+Home\s+Elevators/gi, brandPlaceholder);
 
     const pattern = links
       .map((link) => link.phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
       .join("|");
-    const regex = new RegExp(`(${pattern})`, "gi");
+    const regex = new RegExp(`\\b(${pattern})\\b`, "gi");
     const hrefByPhrase = new Map(
       links.map((link) => [link.phrase.toLowerCase(), link.href]),
     );
 
-    return text.split(regex).map((part, index) => {
+    return protectedText.split(regex).map((part, index) => {
+      const restoredPart = part.replace(
+        new RegExp(brandPlaceholder, "g"),
+        "Kashome Elevators",
+      );
       const href = hrefByPhrase.get(part.toLowerCase());
-      if (!href || linkedHrefs.has(href)) return part;
+      if (
+        !href ||
+        linkedHrefs.has(href) ||
+        part.toUpperCase().includes(brandPlaceholder)
+      ) {
+        return restoredPart;
+      }
 
       linkedHrefs.add(href);
       return (
-        <a key={`${part}-${index}`} href={href} className={seoLinkClass}>
-          {part}
+        <a key={`${part}-${index}`} href={href} className={linkClass}>
+          {restoredPart}
         </a>
       );
     });
@@ -64,6 +87,7 @@ function createSeoLinker(excludeHref?: string) {
 }
 
 const pageUrl = "https://www.kashomeelevators.com/home-lift-in-hyderabad/";
+const siteUrl = "https://www.kashomeelevators.com/";
 const imageFileName = "Home-Lift-in-Hyderabad.webp";
 const imagePath = `/${imageFileName}`;
 const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
@@ -404,9 +428,29 @@ const serviceSchema = {
   url: pageUrl,
 };
 
+const webPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": `${pageUrl}#webpage`,
+  url: pageUrl,
+  name: "Home Lift in Hyderabad",
+  description:
+    "Looking for the best home lift in Hyderabad? Kashome Elevators offers premium residential home lifts with safe installation, modern designs, and reliable after-sales support.",
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${siteUrl}#website`,
+    url: siteUrl,
+    name: "Kashome Elevators",
+  },
+  breadcrumb: {
+    "@id": `${pageUrl}#breadcrumb`,
+  },
+};
+
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
+  "@id": `${pageUrl}#breadcrumb`,
   itemListElement: [
     {
       "@type": "ListItem",
@@ -454,10 +498,10 @@ export default function HomeLiftHyderabadPage() {
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
                 <p>
-                  {linkSeoKeywords("A modern home lift in Hyderabad is no longer considered a luxury—it's a smart investment that adds comfort, convenience, and long-term value to your home. Whether you're building a new villa, renovating an existing house, or looking for an easier way to move between floors, a well-designed home lift can transform your daily living experience. It offers safe and effortless mobility for every family member, especially senior citizens, children, and individuals with limited mobility.")}
+                  {linkSeoKeywords("A modern home lift in Hyderabad is no longer considered a luxury—it's a smart investment that adds comfort, convenience, and long-term value to your home. Whether you're building a new villa, renovating an existing house, or looking for an easier way to move between floors, a well-designed home lift can transform your daily living experience. It offers safe and effortless mobility for every family member, especially senior citizens, children, and individuals with limited mobility.", seoLinkClassHero)}
                 </p>
                 <p>
-                  {linkSeoKeywords("At KASH HOME Elevators, we provide premium home lift solutions that combine advanced technology, elegant design, and reliable performance. Every lift is carefully designed to suit your home's layout while maintaining the highest standards of safety and quality. From compact residential lifts to customized solutions for luxury villas, we ensure every installation blends seamlessly with your interiors and lifestyle.")}
+                  {linkSeoKeywords("At Kashome Elevators, we provide premium home lift solutions and home elevators in Hyderabad that combine advanced technology, elegant design, and reliable performance. Every lift is carefully designed to suit your home's layout while maintaining the highest standards of safety and quality. From compact residential lifts to customized solutions for luxury villas, we ensure every installation blends seamlessly with your interiors and lifestyle.", seoLinkClassHero)}
                 </p>
               </div>
 
@@ -477,10 +521,10 @@ export default function HomeLiftHyderabadPage() {
 
             <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
               <p>
-                {linkSeoKeywords("As a trusted provider of home lift installation in Hyderabad, our experienced team manages everything from site inspection and planning to installation and after-sales support. We focus on delivering personalized solutions that meet your specific requirements without compromising on safety, efficiency, or aesthetics.")}
+                {linkSeoKeywords("As a trusted provider of home lift installation in Hyderabad, our experienced team manages everything from site inspection and planning to installation and after-sales support. We focus on delivering personalized solutions that meet your specific requirements without compromising on safety, efficiency, or aesthetics.", seoLinkClassHero)}
               </p>
               <p>
-                {linkSeoKeywords("If you're searching for a dependable home lift in Hyderabad, Kashome Elevators is your trusted partner. Our commitment to quality craftsmanship, innovative engineering, and customer satisfaction has made us a preferred choice for homeowners seeking stylish, durable, and energy-efficient home lift solutions across Hyderabad.")}
+                {linkSeoKeywords("If you're searching for a dependable home lift in Hyderabad, Kashome Elevators is your trusted partner. Our commitment to quality craftsmanship, innovative engineering, and customer satisfaction has made us a preferred choice for homeowners seeking stylish, durable, and energy-efficient home lift solutions across Hyderabad.", seoLinkClassHero)}
               </p>
             </div>
           </div>
@@ -674,6 +718,10 @@ export default function HomeLiftHyderabadPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
       />
       <script
         type="application/ld+json"

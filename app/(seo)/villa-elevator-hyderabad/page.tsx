@@ -9,6 +9,15 @@ const currentPageHref = "/villa-elevator-hyderabad";
 const seoLinkClass =
   "text-green-700 underline underline-offset-2 hover:text-green-800";
 
+const seoLinkClassHero =
+  "text-green-400 underline underline-offset-2 hover:text-green-300";
+const brandPlaceholder = "KASHOME_ELEVATORS_BRAND";
+
+type SeoLinkOptions = {
+  after?: string;
+  linkBrandTo?: string;
+};
+
 function createSeoLinker(excludeHref?: string) {
   const linkedHrefs = new Set<string>();
   const links = [
@@ -17,6 +26,8 @@ function createSeoLinker(excludeHref?: string) {
     { phrase: "residential elevators", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevator", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevator solutions", href: "/residential-elevator-hyderabad" },
+    { phrase: "home elevators in Hyderabad", href: "/home-elevator-in-hyderabad" },
+    { phrase: "home elevator in Hyderabad", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevator", href: "/home-elevator-in-hyderabad" },
     { phrase: "villa elevators", href: "/villa-elevator-hyderabad" },
@@ -41,32 +52,101 @@ function createSeoLinker(excludeHref?: string) {
     .filter((link) => link.href !== excludeHref)
     .sort((a, b) => b.phrase.length - a.phrase.length);
 
-  return function linkSeoKeywords(text: string): ReactNode {
+  return function linkSeoKeywords(
+    text: string,
+    linkClass: string = seoLinkClass,
+    options?: string | SeoLinkOptions,
+  ): ReactNode {
     if (links.length === 0) return text;
 
-    const pattern = links
-      .map((link) => link.phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-      .join("|");
-    const regex = new RegExp(`(${pattern})`, "gi");
-    const hrefByPhrase = new Map(
-      links.map((link) => [link.phrase.toLowerCase(), link.href]),
-    );
+    const linkOnlyAfter =
+      typeof options === "string" ? options : options?.after;
+    const linkBrandTo =
+      typeof options === "string" ? undefined : options?.linkBrandTo;
+    const brandText = "Kashome Elevators";
 
-    return text.split(regex).map((part, index) => {
-      const href = hrefByPhrase.get(part.toLowerCase());
-      if (!href || linkedHrefs.has(href)) return part;
+    const linkText = (segment: string, keyPrefix = ""): ReactNode => {
+      const protectedText = segment
+        .replace(/Kashome\s+Elevators/gi, brandPlaceholder)
+        .replace(/KAS\s+Home\s+Elevators/gi, brandPlaceholder);
 
-      linkedHrefs.add(href);
-      return (
-        <a key={`${part}-${index}`} href={href} className={seoLinkClass}>
-          {part}
-        </a>
+      const pattern = links
+        .map((link) => link.phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+        .join("|");
+      const regex = new RegExp(`\\b(${pattern})\\b`, "gi");
+      const hrefByPhrase = new Map(
+        links.map((link) => [link.phrase.toLowerCase(), link.href]),
       );
-    });
+
+      return protectedText.split(regex).map((part, index) => {
+        const restoredPart = part.replace(
+          new RegExp(brandPlaceholder, "g"),
+          "Kashome Elevators",
+        );
+        const href = hrefByPhrase.get(part.toLowerCase());
+        if (
+          !href ||
+          linkedHrefs.has(href) ||
+          part.toUpperCase().includes(brandPlaceholder)
+        ) {
+          return restoredPart;
+        }
+
+        linkedHrefs.add(href);
+        return (
+          <a
+            key={`${keyPrefix}${part}-${index}`}
+            href={href}
+            className={linkClass}
+          >
+            {restoredPart}
+          </a>
+        );
+      });
+    };
+
+    if (linkOnlyAfter) {
+      const splitIndex = text.indexOf(linkOnlyAfter);
+      if (splitIndex === -1) return linkText(text);
+
+      const before = text.slice(0, splitIndex + linkOnlyAfter.length);
+      const after = text.slice(splitIndex + linkOnlyAfter.length);
+
+      if (linkBrandTo) {
+        const brandIndex = after.indexOf(brandText);
+        if (brandIndex !== -1) {
+          const beforeBrand = after.slice(0, brandIndex);
+          const afterBrand = after.slice(brandIndex + brandText.length);
+
+          linkedHrefs.add(linkBrandTo);
+
+          return (
+            <>
+              {before}
+              {beforeBrand}
+              <a href={linkBrandTo} className={linkClass}>
+                {brandText}
+              </a>
+              {linkText(afterBrand, "after-brand-")}
+            </>
+          );
+        }
+      }
+
+      return (
+        <>
+          {before}
+          {linkText(after, "after-")}
+        </>
+      );
+    }
+
+    return linkText(text);
   };
 }
 
 const pageUrl = "https://www.kashomeelevators.com/villa-elevator-hyderabad/";
+const siteUrl = "https://www.kashomeelevators.com/";
 const imageFileName = "villa-elevator-hyderabad.webp";
 const imagePath = `/${imageFileName}`;
 const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
@@ -105,7 +185,7 @@ export const metadata: Metadata = {
 };
 
 const heroParagraphs = [
-  "Looking for a premium villa elevator in Hyderabad that combines luxury, safety, and exceptional performance? Kashome Elevators offers customized villa elevator solutions, residential elevators, and home lifts in Hyderabad designed to enhance the comfort, accessibility, and elegance of modern villas and independent homes. Whether you're constructing a new luxury villa or upgrading an existing property, our advanced elevator systems provide seamless vertical mobility while perfectly complementing your home's architecture.",
+  "Looking for a premium villa elevator in Hyderabad that combines luxury, safety, and exceptional performance? Kashome Elevators offers customized villa elevator solutions, residential elevators, home elevators, and home lifts in Hyderabad designed to enhance the comfort, accessibility, and elegance of modern villas and independent homes. Whether you're constructing a new luxury villa or upgrading an existing property, our advanced elevator systems provide seamless vertical mobility while perfectly complementing your home's architecture.",
   "A villa elevator in Hyderabad is more than just a convenience—it's a smart investment that improves your lifestyle and increases the value of your property. As villas continue to feature multiple floors and contemporary designs, homeowners are choosing modern elevator systems that make everyday movement effortless for every family member, including senior citizens, children, and people with mobility challenges.",
   "At Kashome Elevators, we specialize in villa elevator installation in Hyderabad, offering tailor-made solutions that match your space, interior design, and functional requirements. Our elevators are engineered using advanced technology and premium-quality components to ensure smooth operation, energy efficiency, and long-lasting reliability. Every elevator is equipped with modern safety features, elegant cabin designs, and intelligent control systems to deliver a comfortable and secure riding experience.",
   "From compact elevators for space-conscious villas to luxurious panoramic elevators that create a stunning visual statement, we provide a wide range of luxury villa elevators in Hyderabad to suit different architectural styles and customer preferences. Our experienced team manages every stage of the project, including site inspection, customized design, professional installation, testing, and dependable after-sales support.",
@@ -450,15 +530,26 @@ const serviceSchema = {
 const webPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Villa Elevator in Hyderabad",
+  "@id": `${pageUrl}#webpage`,
   url: pageUrl,
+  name: "Villa Elevator in Hyderabad",
   description:
     "Upgrade your villa with premium villa elevators in Hyderabad. Kashome Elevators offers safe, stylish, and customized villa elevator installation for luxury homes.",
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${siteUrl}#website`,
+    url: siteUrl,
+    name: "Kashome Elevators",
+  },
+  breadcrumb: {
+    "@id": `${pageUrl}#breadcrumb`,
+  },
 };
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
+  "@id": `${pageUrl}#breadcrumb`,
   itemListElement: [
     {
       "@type": "ListItem",
@@ -506,10 +597,13 @@ export default function VillaElevatorHyderabadPage() {
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
                 <p>
-                  {linkSeoKeywords(heroParagraphs[0])}
+                  {linkSeoKeywords(heroParagraphs[0], seoLinkClassHero, {
+                    after: "?",
+                    linkBrandTo: "/home-elevator-in-hyderabad",
+                  })}
                 </p>
                 <p>
-                  {linkSeoKeywords(heroParagraphs[1])}
+                  {linkSeoKeywords(heroParagraphs[1], seoLinkClassHero)}
                 </p>
               </div>
 
@@ -530,7 +624,7 @@ export default function VillaElevatorHyderabadPage() {
             <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
               {heroParagraphs.slice(2).map((paragraph) => (
                 <p key={paragraph}>
-                  {linkSeoKeywords(paragraph)}
+                  {linkSeoKeywords(paragraph, seoLinkClassHero)}
                 </p>
               ))}
             </div>
