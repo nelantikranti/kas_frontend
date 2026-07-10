@@ -21,6 +21,10 @@ function createSeoLinker(excludeHref?: string) {
     { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
     { phrase: "home lift", href: "/home-lift-in-hyderabad" },
     {
+      phrase: "home lift installation in Hyderabad",
+      href: "/home-lift-installation-hyderabad",
+    },
+    {
       phrase: "home lift installation",
       href: "/home-lift-installation-hyderabad",
     },
@@ -58,6 +62,10 @@ const imageFileName = "home-elevator-in-hydrabad.jpg";
 const imagePath = `/${imageFileName}`;
 const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
 const imageAlt = "Home elevator in Hyderabad by KAS Home Elevators";
+
+const secondImageFileName = "home-elevator-hyderabad-villa.webp";
+const secondImagePath = `/${secondImageFileName}`;
+const secondImageAlt = "Glass Home Elevator in Hyderabad";
 
 const heroIntro =
   "Looking for a reliable home elevator in Hyderabad? KAS Home Elevators designs and installs safe, compact, and low-maintenance home lifts for villas, duplex homes, and independent houses across the city. Whether you need a lift for elderly family members, added convenience, or to future-proof your home, our home elevators in Hyderabad are built for Indian homes with minimal civil work, low power consumption, and a design that blends into your interiors.";
@@ -594,6 +602,20 @@ export default function HomeElevatorHyderabadPage() {
             <p className="text-gray-700 leading-relaxed mt-8">
               {linkSeoKeywords(benefitsClosing)}
             </p>
+          </div>
+        </section>
+
+        <section className="py-12 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex justify-center">
+            <div className="relative aspect-[4/3] w-full max-w-xl rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+              <Image
+                src={secondImagePath}
+                alt={secondImageAlt}
+                fill
+                sizes="(max-width: 768px) 100vw, 576px"
+                className="object-cover"
+              />
+            </div>
           </div>
         </section>
 

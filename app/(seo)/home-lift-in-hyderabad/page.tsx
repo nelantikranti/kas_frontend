@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -19,6 +20,10 @@ function createSeoLinker(excludeHref?: string) {
     { phrase: "villa elevator", href: "/villa-elevator-hyderabad" },
     { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
     { phrase: "home lift", href: "/home-lift-in-hyderabad" },
+    {
+      phrase: "home lift installation in Hyderabad",
+      href: "/home-lift-installation-hyderabad",
+    },
     {
       phrase: "home lift installation",
       href: "/home-lift-installation-hyderabad",
@@ -53,6 +58,11 @@ function createSeoLinker(excludeHref?: string) {
 }
 
 const pageUrl = "https://www.kashomeelevators.com/home-lift-in-hyderabad/";
+const imageFileName = "Home-Lift-in-Hyderabad.webp";
+const imagePath = `/${imageFileName}`;
+const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
+const imageAlt =
+  "Small space saving domestic home lift for independent house in Hyderabad.";
 
 const ctaButtons = [
   { href: "/contact", label: "Get Free Quote" },
@@ -77,8 +87,8 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://www.kashomeelevators.com/premium_lift.jpg",
-        alt: "Home lift in Hyderabad by KAS",
+        url: imageUrl,
+        alt: imageAlt,
       },
     ],
   },
@@ -340,7 +350,7 @@ const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   name: "KAS Home Elevators",
-  image: "https://www.kashomeelevators.com/premium_lift.jpg",
+  image: imageUrl,
   telephone: "+91-8019219911",
   email: "assist@kashomeelevators.com",
   address: {
@@ -360,7 +370,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: "KAS Home Elevators",
   url: "https://www.kashomeelevators.com",
-  logo: "https://www.kashomeelevators.com/premium_lift.jpg",
+  logo: imageUrl,
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+91-8019219911",
@@ -428,18 +438,38 @@ export default function HomeLiftHyderabadPage() {
       <Navigation />
 
       <main>
-        <section className="relative pt-32 pb-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
+        <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.12),_transparent_45%)]" />
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 lg:mb-10 max-w-4xl">
               Home Lift in Hyderabad
             </h1>
-            <div className="space-y-4 text-lg sm:text-xl text-slate-100 leading-relaxed">
-              <p>
-                {linkSeoKeywords("A modern home lift in Hyderabad is no longer considered a luxury—it's a smart investment that adds comfort, convenience, and long-term value to your home. Whether you're building a new villa, renovating an existing house, or looking for an easier way to move between floors, a well-designed home lift can transform your daily living experience. It offers safe and effortless mobility for every family member, especially senior citizens, children, and individuals with limited mobility.")}
-              </p>
-              <p>
-                {linkSeoKeywords("At KASH HOME Elevators, we provide premium home lift solutions that combine advanced technology, elegant design, and reliable performance. Every lift is carefully designed to suit your home's layout while maintaining the highest standards of safety and quality. From compact residential lifts to customized solutions for luxury villas, we ensure every installation blends seamlessly with your interiors and lifestyle.")}
-              </p>
+
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              <div className="lg:col-span-7 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
+                <p>
+                  {linkSeoKeywords("A modern home lift in Hyderabad is no longer considered a luxury—it's a smart investment that adds comfort, convenience, and long-term value to your home. Whether you're building a new villa, renovating an existing house, or looking for an easier way to move between floors, a well-designed home lift can transform your daily living experience. It offers safe and effortless mobility for every family member, especially senior citizens, children, and individuals with limited mobility.")}
+                </p>
+                <p>
+                  {linkSeoKeywords("At KASH HOME Elevators, we provide premium home lift solutions that combine advanced technology, elegant design, and reliable performance. Every lift is carefully designed to suit your home's layout while maintaining the highest standards of safety and quality. From compact residential lifts to customized solutions for luxury villas, we ensure every installation blends seamlessly with your interiors and lifestyle.")}
+                </p>
+              </div>
+
+              <div className="lg:col-span-5 lg:sticky lg:top-32">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-600/50">
+                  <Image
+                    src={imagePath}
+                    alt={imageAlt}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
               <p>
                 {linkSeoKeywords("As a trusted provider of home lift installation in Hyderabad, our experienced team manages everything from site inspection and planning to installation and after-sales support. We focus on delivering personalized solutions that meet your specific requirements without compromising on safety, efficiency, or aesthetics.")}
               </p>

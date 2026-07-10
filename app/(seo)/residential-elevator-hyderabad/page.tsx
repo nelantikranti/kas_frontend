@@ -25,7 +25,15 @@ function createSeoLinker(excludeHref?: string) {
     { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
     { phrase: "home lift", href: "/home-lift-in-hyderabad" },
     {
+      phrase: "home lift installation in Hyderabad",
+      href: "/home-lift-installation-hyderabad",
+    },
+    {
       phrase: "home lift installation",
+      href: "/home-lift-installation-hyderabad",
+    },
+    {
+      phrase: "elevator installation in Hyderabad",
       href: "/home-lift-installation-hyderabad",
     },
   ]
