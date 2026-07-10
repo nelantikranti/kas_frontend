@@ -11,6 +11,16 @@ const nextConfig = {
   // Next.js automatically serves /favicon.ico from public folder
   
   // Ensure static files are properly served in production
+  async redirects() {
+    return [
+      {
+        source: "/villa-elevator-in-hyderabad",
+        destination: "/villa-elevator-hyderabad",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {

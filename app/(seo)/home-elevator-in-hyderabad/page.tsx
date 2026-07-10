@@ -1,21 +1,66 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
-const pageUrl = "https://www.kashomeelevators.com/home-elevator-in-hyderabad/";
+const currentPageHref = "/home-elevator-in-hyderabad";
+const seoLinkClass =
+  "text-green-700 underline underline-offset-2 hover:text-green-800";
 
-const internalLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About Us" },
-  { href: "/contact", label: "Contact Us" },
-  { href: "/home-lift-in-hyderabad", label: "Home Lift" },
-  { href: "/products/mrl-elevator", label: "Villa Elevator" },
-  { href: "/products/traction-elevators", label: "Passenger Elevator" },
-  { href: "/services", label: "Elevator Maintenance" },
-  { href: "/products", label: "Gallery" },
-  { href: "/blogs", label: "Blog" },
-];
+function createSeoLinker(excludeHref?: string) {
+  const linkedHrefs = new Set<string>();
+  const links = [
+    { phrase: "residential elevators", href: "/residential-elevator-hyderabad" },
+    { phrase: "residential elevator", href: "/residential-elevator-hyderabad" },
+    { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
+    { phrase: "home elevator", href: "/home-elevator-in-hyderabad" },
+    { phrase: "villa elevators", href: "/villa-elevator-hyderabad" },
+    { phrase: "villa elevator", href: "/villa-elevator-hyderabad" },
+    { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
+    { phrase: "home lift", href: "/home-lift-in-hyderabad" },
+    {
+      phrase: "home lift installation",
+      href: "/home-lift-installation-hyderabad",
+    },
+  ]
+    .filter((link) => link.href !== excludeHref)
+    .sort((a, b) => b.phrase.length - a.phrase.length);
+
+  return function linkSeoKeywords(text: string): ReactNode {
+    if (links.length === 0) return text;
+
+    const pattern = links
+      .map((link) => link.phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|");
+    const regex = new RegExp(`(${pattern})`, "gi");
+    const hrefByPhrase = new Map(
+      links.map((link) => [link.phrase.toLowerCase(), link.href]),
+    );
+
+    return text.split(regex).map((part, index) => {
+      const href = hrefByPhrase.get(part.toLowerCase());
+      if (!href || linkedHrefs.has(href)) return part;
+
+      linkedHrefs.add(href);
+      return (
+        <a key={`${part}-${index}`} href={href} className={seoLinkClass}>
+          {part}
+        </a>
+      );
+    });
+  };
+}
+
+const pageUrl = "https://www.kashomeelevators.com/home-elevator-in-hyderabad/";
+const imageFileName = "home-elevator-in-hydrabad.jpg";
+const imagePath = `/${imageFileName}`;
+const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
+const imageAlt = "Home elevator in Hyderabad by KAS Home Elevators";
+
+const heroIntro =
+  "Looking for a reliable home elevator in Hyderabad? KAS Home Elevators designs and installs safe, compact, and low-maintenance home lifts for villas, duplex homes, and independent houses across the city. Whether you need a lift for elderly family members, added convenience, or to future-proof your home, our home elevators in Hyderabad are built for Indian homes with minimal civil work, low power consumption, and a design that blends into your interiors.";
 
 const ctaButtons = [
   { href: "/contact", label: "Get Free Quote" },
@@ -40,8 +85,8 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://www.kashomeelevators.com/premium_lift.jpg",
-        alt: "Home elevator in Hyderabad by KAS",
+        url: imageUrl,
+        alt: imageAlt,
       },
     ],
   },
@@ -336,6 +381,16 @@ const elevatorTypes = [
 const elevatorTypesClosing =
   "No matter which type of elevator you choose, Kashome Elevators ensures professional home lift installation in Hyderabad, premium quality components, and reliable after-sales support. Our goal is to provide homeowners with safe, stylish, and efficient elevator solutions that improve accessibility while adding long-term value to their property.";
 
+const serviceAreas = [
+  "Jubilee Hills",
+  "Banjara Hills",
+  "Gachibowli",
+  "Kondapur",
+  "Kokapet",
+  "Financial District",
+  "Nallagandla",
+];
+
 const faqs = [
   {
     question: "What is the cost of a home elevator in Hyderabad?",
@@ -402,7 +457,7 @@ const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   name: "KAS Home Elevators",
-  image: "https://www.kashomeelevators.com/premium_lift.jpg",
+  image: imageUrl,
   telephone: "+91-8019219911",
   email: "assist@kashomeelevators.com",
   address: {
@@ -483,160 +538,247 @@ const faqSchema = {
 };
 
 export default function HomeElevatorHyderabadPage() {
+  const linkSeoKeywords = createSeoLinker(currentPageHref);
+
   return (
     <div className="min-h-screen bg-green-50">
       <Navigation />
 
       <main>
-        <section className="relative pt-32 pb-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
+        <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.12),_transparent_45%)]" />
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 lg:mb-10 max-w-4xl">
               Home Elevator in Hyderabad - Safe, Compact Lifts for Every Home
             </h1>
-            <p className="text-lg sm:text-xl text-slate-100 leading-relaxed">
-              Looking for a reliable home elevator in Hyderabad? KAS Home Elevators
-              designs and installs safe, compact, and low-maintenance home lifts
-              for villas, duplex homes, and independent houses across the city.
-              Whether you need a lift for elderly family members, added convenience,
-              or to future-proof your home, our home elevators in Hyderabad are built
-              for Indian homes with minimal civil work, low power consumption, and a
-              design that blends into your interiors.
+
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              <div className="lg:col-span-7 text-lg sm:text-xl text-slate-100 leading-relaxed">
+                <p>{linkSeoKeywords(heroIntro)}</p>
+              </div>
+
+              <div className="lg:col-span-5 lg:sticky lg:top-32">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-600/50">
+                  <Image
+                    src={imagePath}
+                    alt={imageAlt}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Benefits of Installing a Home Elevator in Hyderabad
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(benefitsIntro)}
+            </p>
+            <ul className="space-y-6 list-disc pl-6">
+              {benefits.map((item) => (
+                <li key={item.title} className="text-gray-700 leading-relaxed">
+                  <strong className="text-gray-900">{item.title}</strong>
+                  <p className="mt-2">
+                    {linkSeoKeywords(item.content)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mt-8">
+              {linkSeoKeywords(benefitsClosing)}
+            </p>
+          </div>
+        </section>
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Features of Our Home Elevators in Hyderabad
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(featuresIntro)}
+            </p>
+            <ul className="space-y-6 list-disc pl-6">
+              {features.map((item) => (
+                <li key={item.title} className="text-gray-700 leading-relaxed">
+                  <strong className="text-gray-900">{item.title}</strong>
+                  <p className="mt-2">
+                    {linkSeoKeywords(item.content)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mt-8">
+              {linkSeoKeywords(featuresClosing)}
             </p>
           </div>
         </section>
 
         <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Benefits of Installing a Home Elevator in Hyderabad
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">{benefitsIntro}</p>
-            <ul className="space-y-6 list-disc pl-6">
-              {benefits.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">{item.content}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">{benefitsClosing}</p>
-          </div>
-        </section>
-
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Features of Our Home Elevators in Hyderabad
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">{featuresIntro}</p>
-            <ul className="space-y-6 list-disc pl-6">
-              {features.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">{item.content}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">{featuresClosing}</p>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Our Home Elevator Solutions in Hyderabad
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">{solutionsIntro}</p>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(solutionsIntro)}
+            </p>
             <ul className="space-y-6 list-disc pl-6">
               {solutions.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
                   <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">{item.content}</p>
+                  <p className="mt-2">
+                    {linkSeoKeywords(item.content)}
+                  </p>
                 </li>
               ))}
             </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">{solutionsClosing}</p>
+            <p className="text-gray-700 leading-relaxed mt-8">
+              {linkSeoKeywords(solutionsClosing)}
+            </p>
           </div>
         </section>
 
         <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose Kashome Elevators for Home Elevators in Hyderabad?
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">{whyChooseKasIntro}</p>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(whyChooseKasIntro)}
+            </p>
             <ul className="space-y-6 list-disc pl-6">
               {whyChooseKas.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
                   <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">{item.content}</p>
+                  <p className="mt-2">
+                    {linkSeoKeywords(item.content)}
+                  </p>
                 </li>
               ))}
             </ul>
             <h3 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
               Your Trusted Partner for Home Elevators in Hyderabad
             </h3>
-            <p className="text-gray-700 leading-relaxed">{whyChooseKasClosing}</p>
+            <p className="text-gray-700 leading-relaxed">
+              {linkSeoKeywords(whyChooseKasClosing)}
+            </p>
           </div>
         </section>
 
         <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose Us
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">{whyChooseUsIntro}</p>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(whyChooseUsIntro)}
+            </p>
             <ul className="space-y-6 list-disc pl-6">
               {whyChooseUs.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
                   <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">{item.content}</p>
+                  <p className="mt-2">
+                    {linkSeoKeywords(item.content)}
+                  </p>
                 </li>
               ))}
             </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">{whyChooseUsClosing}</p>
+            <p className="text-gray-700 leading-relaxed mt-8">
+              {linkSeoKeywords(whyChooseUsClosing)}
+            </p>
           </div>
         </section>
 
         <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Types of Home Elevators
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">{elevatorTypesIntro}</p>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(elevatorTypesIntro)}
+            </p>
             <ul className="space-y-6 list-disc pl-6">
               {elevatorTypes.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
                   <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">{item.content}</p>
+                  <p className="mt-2">
+                    {linkSeoKeywords(item.content)}
+                  </p>
                 </li>
               ))}
             </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">{elevatorTypesClosing}</p>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Service Areas in Hyderabad
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              We serve key residential locations including Jubilee Hills, Banjara Hills,
-              Gachibowli, Kondapur, Kokapet, Financial District, and Nallagandla.
+            <p className="text-gray-700 leading-relaxed mt-8">
+              {linkSeoKeywords(elevatorTypesClosing)}
             </p>
-            <div className="flex flex-wrap gap-4">
-              {internalLinks.map((link) => (
-                <Link key={link.label} href={link.href} className="text-green-700 underline">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
           </div>
         </section>
 
         <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-white p-8 sm:p-10 shadow-sm">
+              <div className="max-w-3xl mb-8">
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                  Service Areas in Hyderabad
+                </h2>
+                <p className="text-gray-700 leading-relaxed">
+                  We install and service home elevators across Hyderabad&apos;s top residential
+                  neighbourhoods. Wherever you are in the city, our team can visit your site,
+                  recommend the right lift, and handle installation end to end.
+                </p>
+              </div>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 list-none">
+                {serviceAreas.map((area) => (
+                  <li
+                    key={area}
+                    className="flex items-center gap-3 rounded-xl border border-green-200 bg-white px-4 py-3.5 text-gray-800 shadow-sm transition-colors hover:border-green-300 hover:bg-green-50"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </span>
+                    <span className="font-medium">{area}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-8 text-sm text-gray-600 leading-relaxed">
+                Don&apos;t see your area listed?{" "}
+                <Link href="/contact" className="font-semibold text-green-700 hover:text-green-800">
+                  Contact us
+                </Link>{" "}
+                — we cover most residential locations across Hyderabad and nearby areas.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
               Frequently Asked Questions
             </h2>
@@ -644,7 +786,9 @@ export default function HomeElevatorHyderabadPage() {
               {faqs.map((item) => (
                 <li key={item.question} className="text-gray-700 leading-relaxed">
                   <strong className="text-gray-900 block mb-2">{item.question}</strong>
-                  <p>{item.answer}</p>
+                  <p>
+                    {linkSeoKeywords(item.answer)}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -652,14 +796,18 @@ export default function HomeElevatorHyderabadPage() {
         </section>
 
         <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Contact Us
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-6">{contactIntro}</p>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              {linkSeoKeywords(contactIntro)}
+            </p>
             <div className="space-y-4 text-gray-700 leading-relaxed">
               {contactDetails.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+                <p key={paragraph}>
+                  {linkSeoKeywords(paragraph)}
+                </p>
               ))}
             </div>
             <Link
@@ -672,7 +820,7 @@ export default function HomeElevatorHyderabadPage() {
         </section>
 
         <section className="py-16 bg-gradient-to-r from-green-600 to-green-500 text-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-5xl text-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Get a Free Home Elevator Quote in Hyderabad
             </h2>
