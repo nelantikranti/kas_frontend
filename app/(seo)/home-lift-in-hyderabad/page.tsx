@@ -14,10 +14,16 @@ function createSeoLinker(excludeHref?: string) {
   const links = [
     { phrase: "residential elevators", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevator", href: "/residential-elevator-hyderabad" },
+    { phrase: "residential home lifts", href: "/residential-elevator-hyderabad" },
+    { phrase: "residential home lift", href: "/residential-elevator-hyderabad" },
+    { phrase: "residential lifts", href: "/residential-elevator-hyderabad" },
     { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevator", href: "/home-elevator-in-hyderabad" },
     { phrase: "villa elevators", href: "/villa-elevator-hyderabad" },
     { phrase: "villa elevator", href: "/villa-elevator-hyderabad" },
+    { phrase: "villa home lifts", href: "/villa-elevator-hyderabad" },
+    { phrase: "luxury villas", href: "/villa-elevator-hyderabad" },
+    { phrase: "luxury villa", href: "/villa-elevator-hyderabad" },
     { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
     { phrase: "home lift", href: "/home-lift-in-hyderabad" },
     {

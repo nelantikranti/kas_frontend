@@ -18,10 +18,15 @@ function createSeoLinker(excludeHref?: string) {
     { phrase: "residential elevators", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevator", href: "/residential-elevator-hyderabad" },
     { phrase: "villa residential elevators", href: "/villa-elevator-hyderabad" },
+    { phrase: "home elevators in Hyderabad", href: "/home-elevator-in-hyderabad" },
+    { phrase: "home elevator in Hyderabad", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevator", href: "/home-elevator-in-hyderabad" },
+    { phrase: "customized home elevators", href: "/home-elevator-in-hyderabad" },
     { phrase: "villa elevators", href: "/villa-elevator-hyderabad" },
     { phrase: "villa elevator", href: "/villa-elevator-hyderabad" },
+    { phrase: "home lifts in Hyderabad", href: "/home-lift-in-hyderabad" },
+    { phrase: "home lift in Hyderabad", href: "/home-lift-in-hyderabad" },
     { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
     { phrase: "home lift", href: "/home-lift-in-hyderabad" },
     {
@@ -106,7 +111,7 @@ export const metadata: Metadata = {
 
 const heroParagraphs = [
   "Finding the right residential elevator in Hyderabad is essential for homeowners who want to combine comfort, safety, and modern living in one solution. As multi-storey homes, duplex residences, villa elevators, and independent houses continue to grow across Hyderabad, residential elevators have become an important part of contemporary home design. They provide effortless floor-to-floor mobility while enhancing accessibility, improving convenience, and increasing the overall value of your property.",
-  "At Kashome Elevators, we specialize in delivering premium residential elevator solutions in Hyderabad that are designed to match your home's architecture and your family's daily lifestyle. Every elevator is engineered using advanced technology, premium materials, and international safety standards to ensure smooth operation, quiet performance, and long-term reliability. Whether you're planning a new construction project or upgrading an existing home, our customized elevator solutions are designed to fit seamlessly into your available space.",
+  "At Kashome Elevators, we specialize in delivering premium residential elevator solutions in Hyderabad, along with home elevators and home lifts in Hyderabad, designed to match your home's architecture and your family's daily lifestyle. Every elevator is engineered using advanced technology, premium materials, and international safety standards to ensure smooth operation, quiet performance, and long-term reliability. Whether you're planning a new construction project or upgrading an existing home, our customized elevator solutions are designed to fit seamlessly into your available space.",
   "A professionally installed residential elevator in Hyderabad does much more than simplify movement between floors. It creates a safer environment for senior citizens, children, and family members with mobility challenges while adding a touch of luxury and sophistication to your home. With elegant cabin designs, energy-efficient systems, and intelligent safety features, modern residential elevators provide the perfect balance of functionality and aesthetics.",
   "As a trusted residential elevator company in Hyderabad, Kashome Elevators offers complete end-to-end services, including site inspection, elevator design, manufacturing, professional installation, testing, and reliable after-sales maintenance. Our experienced engineers carefully assess every project to recommend the most suitable elevator solution based on your home's layout, number of floors, available space, and future requirements.",
   "We understand that every homeowner has unique expectations. That's why our residential elevator installation in Hyderabad is fully customized to suit different property types, including villas, duplex homes, bungalows, premium apartments, and independent residences. From compact elevators for limited spaces to luxurious cabin designs with advanced automation, we provide solutions that enhance both convenience and property value.",

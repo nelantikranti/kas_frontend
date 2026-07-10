@@ -12,12 +12,17 @@ const seoLinkClass =
 function createSeoLinker(excludeHref?: string) {
   const linkedHrefs = new Set<string>();
   const links = [
+    { phrase: "residential elevators in Hyderabad", href: "/residential-elevator-hyderabad" },
+    { phrase: "residential elevator in Hyderabad", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevators", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevator", href: "/residential-elevator-hyderabad" },
+    { phrase: "residential elevator solutions", href: "/residential-elevator-hyderabad" },
     { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
     { phrase: "home elevator", href: "/home-elevator-in-hyderabad" },
     { phrase: "villa elevators", href: "/villa-elevator-hyderabad" },
     { phrase: "villa elevator", href: "/villa-elevator-hyderabad" },
+    { phrase: "home lifts in Hyderabad", href: "/home-lift-in-hyderabad" },
+    { phrase: "home lift in Hyderabad", href: "/home-lift-in-hyderabad" },
     { phrase: "home lifts", href: "/home-lift-in-hyderabad" },
     { phrase: "home lift", href: "/home-lift-in-hyderabad" },
     {
@@ -100,7 +105,7 @@ export const metadata: Metadata = {
 };
 
 const heroParagraphs = [
-  "Looking for a premium villa elevator in Hyderabad that combines luxury, safety, and exceptional performance? Kashome Elevators offers customized villa elevator solutions designed to enhance the comfort, accessibility, and elegance of modern villas and independent homes. Whether you're constructing a new luxury villa or upgrading an existing property, our advanced elevator systems provide seamless vertical mobility while perfectly complementing your home's architecture.",
+  "Looking for a premium villa elevator in Hyderabad that combines luxury, safety, and exceptional performance? Kashome Elevators offers customized villa elevator solutions, residential elevators, and home lifts in Hyderabad designed to enhance the comfort, accessibility, and elegance of modern villas and independent homes. Whether you're constructing a new luxury villa or upgrading an existing property, our advanced elevator systems provide seamless vertical mobility while perfectly complementing your home's architecture.",
   "A villa elevator in Hyderabad is more than just a convenience—it's a smart investment that improves your lifestyle and increases the value of your property. As villas continue to feature multiple floors and contemporary designs, homeowners are choosing modern elevator systems that make everyday movement effortless for every family member, including senior citizens, children, and people with mobility challenges.",
   "At Kashome Elevators, we specialize in villa elevator installation in Hyderabad, offering tailor-made solutions that match your space, interior design, and functional requirements. Our elevators are engineered using advanced technology and premium-quality components to ensure smooth operation, energy efficiency, and long-lasting reliability. Every elevator is equipped with modern safety features, elegant cabin designs, and intelligent control systems to deliver a comfortable and secure riding experience.",
   "From compact elevators for space-conscious villas to luxurious panoramic elevators that create a stunning visual statement, we provide a wide range of luxury villa elevators in Hyderabad to suit different architectural styles and customer preferences. Our experienced team manages every stage of the project, including site inspection, customized design, professional installation, testing, and dependable after-sales support.",
