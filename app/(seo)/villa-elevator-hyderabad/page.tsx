@@ -152,6 +152,20 @@ const imagePath = `/${imageFileName}`;
 const imageUrl = `https://www.kashomeelevators.com/${imageFileName}`;
 const imageAlt = "Luxury Villa Elevator in Hyderabad Installed by Kashome Elevators";
 
+const secondImageFileName = "villa-elevator-hyderabad-luxury-home.webp";
+const secondImagePath = `/${secondImageFileName}`;
+const secondImageAlt =
+  "Luxury villa elevator installed in a modern home in Hyderabad";
+const secondImageCaption =
+  "Luxury Villa Elevator for Modern Homes in Hyderabad";
+
+const thirdImageFileName = "premium-villa-lift-hyderabad-installation.webp";
+const thirdImagePath = `/${thirdImageFileName}`;
+const thirdImageAlt =
+  "Premium villa elevator installation service in Hyderabad for luxury homes";
+const thirdImageCaption =
+  "Premium Villa Elevator Installation by KAS Home Elevators in Hyderabad";
+
 const ctaButtons = [
   { href: "/contact", label: "Get Free Quote" },
   { href: "/contact", label: "Book Free Site Visit" },
@@ -636,12 +650,28 @@ export default function VillaElevatorHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose a Villa Elevator in Hyderabad?
             </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              {whyChooseParagraphs.map((paragraph) => (
-                <p key={paragraph}>
-                  {linkSeoKeywords(paragraph)}
-                </p>
-              ))}
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              <div className="lg:col-span-7 space-y-4 text-gray-700 leading-relaxed">
+                {whyChooseParagraphs.map((paragraph) => (
+                  <p key={paragraph}>
+                    {linkSeoKeywords(paragraph)}
+                  </p>
+                ))}
+              </div>
+              <figure className="lg:col-span-5 lg:sticky lg:top-32">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                  <Image
+                    src={secondImagePath}
+                    alt={secondImageAlt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                  />
+                </div>
+                <figcaption className="mt-3 text-center text-sm text-gray-600">
+                  {secondImageCaption}
+                </figcaption>
+              </figure>
             </div>
           </div>
         </section>
@@ -702,19 +732,37 @@ export default function VillaElevatorHyderabadPage() {
             <p className="text-gray-700 leading-relaxed mb-8">
               {linkSeoKeywords(elevatorTypesIntro)}
             </p>
-            <ul className="space-y-6 list-disc pl-6">
-              {elevatorTypes.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold">{item.title}</h3>
-                  <p className="mt-2">
-                    {linkSeoKeywords(item.content)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(elevatorTypesClosing)}
-            </p>
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              <div className="lg:col-span-7">
+                <ul className="space-y-6 list-disc pl-6">
+                  {elevatorTypes.map((item) => (
+                    <li key={item.title} className="text-gray-700 leading-relaxed">
+                      <h3 className="text-gray-900 font-bold">{item.title}</h3>
+                      <p className="mt-2">
+                        {linkSeoKeywords(item.content)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-gray-700 leading-relaxed mt-8">
+                  {linkSeoKeywords(elevatorTypesClosing)}
+                </p>
+              </div>
+              <figure className="lg:col-span-5 lg:sticky lg:top-32">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                  <Image
+                    src={thirdImagePath}
+                    alt={thirdImageAlt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                  />
+                </div>
+                <figcaption className="mt-3 text-center text-sm text-gray-600">
+                  {thirdImageCaption}
+                </figcaption>
+              </figure>
+            </div>
           </div>
         </section>
 
