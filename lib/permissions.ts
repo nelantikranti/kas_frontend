@@ -45,6 +45,7 @@ export const PERMISSIONS = {
   PIPELINES_CREATE: "pipelines:create",
   PIPELINES_EDIT: "pipelines:edit",
   PIPELINES_DELETE: "pipelines:delete",
+  PIPELINES_VIEW_ALL: "pipelines:view_all",
 
   // Staff Performance
   VIEW_PERFORMANCE_REPORT: "view_performance_report",
@@ -147,6 +148,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.USERS_VIEW,
     PERMISSIONS.GROUPS_VIEW,
     PERMISSIONS.PIPELINES_VIEW,
+    PERMISSIONS.PIPELINES_VIEW_ALL,
     PERMISSIONS.VIEW_PERFORMANCE_REPORT,
     PERMISSIONS.HR_LEAVE_REQUEST,
     PERMISSIONS.HR_ATTENDANCE_SELF,
@@ -272,7 +274,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   "Business Development Manager": [
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.LEADS_VIEW,
-    PERMISSIONS.LEADS_VIEW_ALL,
     PERMISSIONS.LEADS_CREATE,
     PERMISSIONS.LEADS_EDIT,
     PERMISSIONS.QUOTATIONS_VIEW,
@@ -614,6 +615,7 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.PIPELINES_CREATE, label: "Pipelines Create" },
       { key: PERMISSIONS.PIPELINES_EDIT, label: "Pipelines Edit" },
       { key: PERMISSIONS.PIPELINES_DELETE, label: "Pipelines Delete" },
+      { key: PERMISSIONS.PIPELINES_VIEW_ALL, label: "View All Pipelines" },
     ],
   },
   {
