@@ -11,7 +11,7 @@ export default function ProductPage({ params }: Props) {
   if (!product) return notFound();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#cef5db" }}>
+    <div className="min-h-screen page-mint-bg">
       <div className="container mx-auto px-4 py-16">
         <Link href="/" className="text-sm text-green-700 mb-4 inline-block">
           ← Back

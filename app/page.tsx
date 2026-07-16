@@ -60,7 +60,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#cef5db' }}>
+    <div className="min-h-screen page-mint-bg">
       <Navigation />
 
       {/* Hero Banner Section */}
@@ -319,7 +319,7 @@ export default function LandingPage() {
       </section>
 
       {/* Statistics Section */}
-      <section className="pt-[62px] pb-16 sm:pt-[78px] sm:pb-20 md:pt-[94px] md:pb-24" style={{ backgroundColor: '#cef5db' }}>
+      <section className="pt-[62px] pb-16 sm:pt-[78px] sm:pb-20 md:pt-[94px] md:pb-24 page-mint-bg">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="bg-green-50 rounded-2xl shadow-lg p-8 sm:p-12 mb-20 border border-green-100/50">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">

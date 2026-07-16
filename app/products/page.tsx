@@ -11,7 +11,7 @@ import {
 export default function ProductsPage() {
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#cef5db' }}>
+    <div className="min-h-screen page-mint-bg">
       <Navigation />
 
       {/* Hero Section */}
@@ -35,9 +35,9 @@ export default function ProductsPage() {
       </section>
 
       {/* Our Products Section */}
-      <section className="pt-[62px] pb-16 sm:pt-[78px] sm:pb-20 md:pt-[94px] md:pb-24" style={{ backgroundColor: '#cef5db' }}>
+      <section className="pt-[62px] pb-16 sm:pt-[78px] sm:pb-20 md:pt-[94px] md:pb-24 page-mint-bg">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="space-y-12 sm:space-y-16 rounded-3xl p-8 sm:p-12" style={{ backgroundColor: 'rgba(206, 245, 219, 0.5)' }}>
+          <div className="space-y-12 sm:space-y-16 rounded-3xl p-8 sm:p-12 page-mint-panel">
             {[
               {
                 title: "Hydraulic Elevator",
@@ -194,7 +194,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Features Section */}
-      <section className="pt-[46px] pb-12 sm:pt-[62px] sm:pb-16 md:pt-[78px] md:pb-20" style={{ backgroundColor: '#cef5db' }}>
+      <section className="pt-[46px] pb-12 sm:pt-[62px] sm:pb-16 md:pt-[78px] md:pb-20 page-mint-bg">
         <div className="container mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

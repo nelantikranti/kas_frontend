@@ -18,6 +18,7 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  color-scheme: light;
 }
 
 /* Hide scrollbars but keep scrolling functionality */
@@ -69,6 +70,15 @@ select:focus {
   border-color: #16a34a;
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
   color: #111827;
+}
+
+/* Marketing pages with mint background */
+.page-mint-bg {
+  background-color: #cef5db;
+}
+
+.page-mint-panel {
+  background-color: rgba(206, 245, 219, 0.5);
 }
 
 /* 3D Animated Icons */
@@ -171,9 +181,3 @@ select:focus {
 .garbage-animation {
   animation: throw-garbage 0.4s linear;
 }
-
-
-
-
-
-

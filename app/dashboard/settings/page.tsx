@@ -17,7 +17,6 @@ export default function SettingsPage() {
       sms: false,
       whatsapp: true,
     },
-    theme: "light",
   });
 
   const [fbLeadCreds, setFbLeadCreds] = useState({ accessToken: "", pageId: "" });
@@ -347,28 +346,6 @@ export default function SettingsPage() {
               <IoSave className="w-4 h-4" />
               {googleAdsSaving ? "Saving..." : "Save Google Ads credentials"}
             </button>
-          </div>
-        </div>
-
-        {/* Theme */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <IoColorPalette className="w-5 h-5" />
-            Appearance
-          </h2>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Theme
-            </label>
-            <select
-              value={settings.theme}
-              onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white"
-            >
-              <option value="light" className={settings.theme === "light" ? "bg-green-600 text-white font-semibold" : ""}>Light</option>
-              <option value="dark" className={settings.theme === "dark" ? "bg-green-600 text-white font-semibold" : ""}>Dark</option>
-              <option value="auto" className={settings.theme === "auto" ? "bg-green-600 text-white font-semibold" : ""}>Auto</option>
-            </select>
           </div>
         </div>
 

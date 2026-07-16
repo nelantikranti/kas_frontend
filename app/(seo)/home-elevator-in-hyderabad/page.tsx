@@ -89,8 +89,17 @@ const secondImageFileName = "home-elevator-hyderabad-villa.webp";
 const secondImagePath = `/${secondImageFileName}`;
 const secondImageAlt = "Glass Home Elevator in Hyderabad";
 
+const heroDefinition =
+  "A home elevator is a compact, low-power lift installed inside a house to move safely between floors — commonly used in villas, duplex homes, and multi-storey independent houses.";
+
 const heroIntro =
   "Looking for a reliable home elevator in Hyderabad? KAS Home Elevators designs and installs safe, compact, and low-maintenance home lifts for villas, duplex homes, and independent houses across the city. Whether you need a lift for elderly family members, added convenience, or to future-proof your home, our home elevators in Hyderabad are built for Indian homes with minimal civil work, low power consumption, and a design that blends into your interiors.";
+
+const trustStats = [
+  { value: "10+", label: "Years of Elevator Expertise" },
+  { value: "500+", label: "Installations Completed" },
+  { value: "4", label: "Countries Served" },
+];
 
 const ctaButtons = [
   { href: "/contact", label: "Get Free Quote" },
@@ -101,16 +110,16 @@ const ctaButtons = [
 ];
 
 export const metadata: Metadata = {
-  title: "Home Elevator in Hyderabad | KAS Home Elevators",
+  title: "Best Home Elevator in Hyderabad | Safe & Trusted Lifts - KAS",
   description:
-    "Looking for a home elevator in Hyderabad? KAS installs safe, compact, gearless home lifts for villas & duplex homes. Free site visit & quote.",
+    "Trusted home elevators in Hyderabad from ₹4-6 Lakh. Safe, compact, low-maintenance lifts for villas & duplexes. Book your free expert site visit today!",
   alternates: {
     canonical: pageUrl,
   },
   openGraph: {
-    title: "Home Elevator in Hyderabad | KAS Home Elevators",
+    title: "Best Home Elevator in Hyderabad | Safe & Trusted Lifts - KAS",
     description:
-      "Safe, compact, and low-maintenance home elevators in Hyderabad for villas, duplex homes, and independent houses.",
+      "Trusted, safe, and low-maintenance home elevators in Hyderabad for villas, duplex homes, and independent houses. Free expert site visit.",
     url: pageUrl,
     type: "website",
     images: [
@@ -323,55 +332,6 @@ const whyChooseKas = [
 const whyChooseKasClosing =
   "If you're looking for a reliable home elevator in Hyderabad, Kashome Elevators is the partner you can trust. With innovative technology, personalized solutions, experienced professionals, and dedicated customer support, we deliver home elevator systems that combine safety, comfort, elegance, and long-term value. Whether you need a compact residential lift or a luxurious villa elevator, we are committed to providing solutions that exceed your expectations.";
 
-const whyChooseUsIntro =
-  "Finding the right partner for your home elevator project is essential to ensure safety, quality, and long-term reliability. At Kashome Elevators, we are dedicated to providing premium home elevators in Hyderabad that combine innovative technology, elegant design, and exceptional performance. From consultation to installation and after-sales support, we focus on delivering a seamless experience for every homeowner.";
-
-const whyChooseUs = [
-  {
-    title: "Tailor-Made Elevator Solutions",
-    content:
-      "Every home is unique, and we believe your elevator should be too. We design customized lift solutions that match your home's layout, available space, and interior style, ensuring a perfect balance of functionality and aesthetics.",
-  },
-  {
-    title: "Premium Quality Products",
-    content:
-      "Our elevators are built using high-quality components and advanced engineering standards. Every residential elevator in Hyderabad is designed to deliver smooth operation, durability, and dependable performance for years to come.",
-  },
-  {
-    title: "Safety Comes First",
-    content:
-      "We never compromise on safety. Our home elevators are equipped with modern safety features such as emergency battery backup, automatic rescue devices, overload protection, door sensors, and emergency alarm systems to provide complete peace of mind.",
-  },
-  {
-    title: "Professional Installation",
-    content:
-      "Our experienced technicians handle every stage of home lift installation in Hyderabad, from site inspection and planning to installation, testing, and final handover. Every project is completed with precision and follows industry safety standards.",
-  },
-  {
-    title: "Elegant Designs for Modern Homes",
-    content:
-      "Whether you prefer a sleek contemporary cabin or a luxurious finish for your villa, we offer a variety of customizable designs that enhance the beauty of your home while providing maximum comfort.",
-  },
-  {
-    title: "Energy-Efficient and Low Maintenance",
-    content:
-      "Our elevators are engineered for energy efficiency and reliable performance. With low maintenance requirements and durable construction, they offer an economical solution without compromising quality.",
-  },
-  {
-    title: "Dedicated Customer Support",
-    content:
-      "Our commitment doesn't end after installation. We provide responsive after-sales service, regular maintenance support, and technical assistance to ensure your elevator continues to perform at its best.",
-  },
-  {
-    title: "Trusted Choice for Homeowners in Hyderabad",
-    content:
-      "Homeowners trust Kashome Elevators for delivering reliable home elevators in Hyderabad, premium craftsmanship, transparent service, and customer-focused solutions. Whether you need a compact home lift or a luxury villa elevator in Hyderabad, we are committed to providing solutions that improve accessibility, comfort, and property value.",
-  },
-];
-
-const whyChooseUsClosing =
-  "Choose Kashome Elevators for a home elevator solution that combines safety, innovation, quality, and long-term reliability—all backed by a team that puts your satisfaction first.";
-
 const elevatorTypesIntro =
   "Choosing the right home elevator in Hyderabad depends on your home's layout, available space, budget, and lifestyle needs. At Kashome Elevators, we offer a wide range of residential elevator solutions designed to provide maximum comfort, safety, and long-term reliability. Whether you're building a new home or upgrading an existing one, our experts help you select the ideal elevator that perfectly suits your requirements.";
 
@@ -408,6 +368,30 @@ const elevatorTypes = [
   },
 ];
 
+const elevatorComparison = [
+  {
+    type: "Hydraulic",
+    bestFor: "Villas, low-rise homes",
+    space: "Moderate",
+    maintenance: "Low",
+    noise: "Low",
+  },
+  {
+    type: "MRL (Machine Room-Less)",
+    bestFor: "Space-constrained homes",
+    space: "Compact",
+    maintenance: "Low",
+    noise: "Very Low",
+  },
+  {
+    type: "Gearless",
+    bestFor: "Luxury / premium homes",
+    space: "Moderate",
+    maintenance: "Very Low",
+    noise: "Minimal",
+  },
+];
+
 const elevatorTypesClosing =
   "No matter which type of elevator you choose, Kashome Elevators ensures professional home lift installation in Hyderabad, premium quality components, and reliable after-sales support. Our goal is to provide homeowners with safe, stylish, and efficient elevator solutions that improve accessibility while adding long-term value to their property.";
 
@@ -425,7 +409,7 @@ const faqs = [
   {
     question: "What is the cost of a home elevator in Hyderabad?",
     answer:
-      "The cost of a home elevator in Hyderabad depends on several factors, including the type of elevator, the number of floors, cabin size, customization options, and installation requirements. Contact Kashome Elevators for a free site inspection and a customized quotation based on your home's needs.",
+      "A home elevator in Hyderabad typically starts from around ₹4-6 lakh for a compact 2-floor hydraulic or MRL lift, and can range higher depending on the number of floors, cabin size, finish, and customization. Contact Kashome Elevators for a free site inspection and a customized quotation based on your home's needs.",
   },
   {
     question: "Which type of home elevator is best for residential properties?",
@@ -455,7 +439,7 @@ const faqs = [
   {
     question: "How much space is required to install a home elevator?",
     answer:
-      "The space required depends on the elevator model you choose. We offer compact home elevators designed for homes with limited space, making installation possible in most villas, duplex homes, and independent houses.",
+      "Most compact home elevators need a shaft space of approximately 4x4 feet to 5x5 feet, depending on the model and cabin size. We offer compact home elevators designed for homes with limited space, making installation possible in most villas, duplex homes, and independent houses.",
   },
   {
     question: "Are your home elevators energy efficient?",
@@ -542,7 +526,7 @@ const webPageSchema = {
   url: pageUrl,
   name: "Home Elevator in Hyderabad",
   description:
-    "Looking for a home elevator in Hyderabad? KAS installs safe, compact, gearless home lifts for villas & duplex homes. Free site visit & quote.",
+    "Trusted home elevators in Hyderabad from ₹4-6 Lakh. Safe, compact, low-maintenance lifts for villas & duplexes. Book your free expert site visit today!",
   isPartOf: {
     "@type": "WebSite",
     "@id": `${siteUrl}#website`,
@@ -604,7 +588,21 @@ export default function HomeElevatorHyderabadPage() {
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 text-lg sm:text-xl text-slate-100 leading-relaxed">
+                <p className="text-slate-200 font-medium mb-4">{heroDefinition}</p>
                 <p>{linkSeoKeywords(heroIntro)}</p>
+
+                <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
+                  {trustStats.map((stat) => (
+                    <div key={stat.label} className="text-center">
+                      <div className="text-2xl sm:text-3xl font-bold text-green-400">
+                        {stat.value}
+                      </div>
+                      <div className="text-xs sm:text-sm text-slate-300 mt-1">
+                        {stat.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="lg:col-span-5 lg:sticky lg:top-32">
@@ -736,30 +734,6 @@ export default function HomeElevatorHyderabadPage() {
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Why Choose Us
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(whyChooseUsIntro)}
-            </p>
-            <ul className="space-y-6 list-disc pl-6">
-              {whyChooseUs.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">
-                    {linkSeoKeywords(item.content)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(whyChooseUsClosing)}
-            </p>
-          </div>
-        </section>
-
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
@@ -781,6 +755,57 @@ export default function HomeElevatorHyderabadPage() {
             <p className="text-gray-700 leading-relaxed mt-8">
               {linkSeoKeywords(elevatorTypesClosing)}
             </p>
+
+            <h3 className="text-2xl font-bold text-gray-900 mt-12 mb-6">
+              Hydraulic vs MRL vs Gearless: Quick Comparison
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Best For
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Space Needed
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Maintenance
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Noise Level
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {elevatorComparison.map((row, index) => (
+                    <tr
+                      key={row.type}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.type}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.bestFor}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.space}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.maintenance}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.noise}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
