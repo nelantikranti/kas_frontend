@@ -103,16 +103,16 @@ const ctaButtons = [
 ];
 
 export const metadata: Metadata = {
-  title: "Best Home Lift in Hyderabad | Residential Lift Solutions",
+  title: "Best Home Lift in Hyderabad | #1 Trusted & Safe Lifts - KAS",
   description:
-    "Looking for the best home lift in Hyderabad? Kashome Elevators offers premium residential home lifts with safe installation, modern designs, and reliable after-sales support.",
+    "India's trusted home lift experts in Hyderabad. Premium, safe, space-saving lifts for villas & duplexes. Free expert site visit — book today!",
   alternates: {
     canonical: pageUrl,
   },
   openGraph: {
-    title: "Best Home Lift in Hyderabad | Kashome Elevators",
+    title: "Best Home Lift in Hyderabad | #1 Trusted & Safe Lifts - KAS",
     description:
-      "Discover premium home lift solutions in Hyderabad with safe installation, elegant designs, and reliable support from Kashome Elevators.",
+      "India's trusted home lift experts in Hyderabad. Premium, safe, space-saving lifts for villas & duplexes. Free expert site visit — book today!",
     url: pageUrl,
     type: "website",
     images: [
@@ -279,6 +279,30 @@ const liftTypes = [
   },
 ];
 
+const liftComparison = [
+  {
+    type: "Hydraulic",
+    bestFor: "Villas, low-rise homes",
+    space: "Moderate",
+    maintenance: "Low",
+    noise: "Low",
+  },
+  {
+    type: "MRL (Machine Room-Less)",
+    bestFor: "Space-constrained homes",
+    space: "Compact",
+    maintenance: "Low",
+    noise: "Very Low",
+  },
+  {
+    type: "Gearless",
+    bestFor: "Luxury / premium homes",
+    space: "Moderate",
+    maintenance: "Very Low",
+    noise: "Minimal",
+  },
+];
+
 const liftTypesClosing =
   "No matter which type of home lift you choose, Kashome Elevators ensures professional installation, advanced safety features, and dependable after-sales support, giving you a solution that delivers comfort, convenience, and long-term value.";
 
@@ -328,7 +352,7 @@ const faqs = [
   {
     question: "How much does a home lift in Hyderabad cost?",
     answer:
-      "The cost of a home lift depends on several factors, including the lift type, number of floors, cabin size, customization, and installation requirements. Contact Kashome Elevators for a free site inspection and a personalized quotation based on your property's needs.",
+      "A home lift in Hyderabad typically starts from around ₹4-6 lakh for a compact 2-floor hydraulic or MRL lift, and can range higher depending on the lift type, number of floors, cabin size, and customization. Contact Kashome Elevators for a free site inspection and a personalized quotation based on your property's needs.",
   },
   {
     question: "Which type of home lift is best for residential properties?",
@@ -358,7 +382,7 @@ const faqs = [
   {
     question: "How much space is required for a home lift?",
     answer:
-      "The required space depends on the lift model you choose. We offer compact home lift solutions that can be installed in homes with limited space while maintaining excellent performance and comfort.",
+      "Most compact home lifts need a shaft space of approximately 4x4 feet to 5x5 feet, depending on the model and cabin size. We offer compact home lift solutions that can be installed in homes with limited space while maintaining excellent performance and comfort.",
   },
   {
     question: "Why choose Kashome Elevators for a home lift in Hyderabad?",
@@ -435,7 +459,7 @@ const webPageSchema = {
   url: pageUrl,
   name: "Home Lift in Hyderabad",
   description:
-    "Looking for the best home lift in Hyderabad? Kashome Elevators offers premium residential home lifts with safe installation, modern designs, and reliable after-sales support.",
+    "India's trusted home lift experts in Hyderabad. Premium, safe, space-saving lifts for villas & duplexes. Free expert site visit — book today!",
   isPartOf: {
     "@type": "WebSite",
     "@id": `${siteUrl}#website`,
@@ -497,12 +521,30 @@ export default function HomeLiftHyderabadPage() {
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
+                <p className="text-slate-200 font-medium">
+                  A home lift is a compact, low-power lift installed inside a house to move safely between floors — commonly used in villas, duplex homes, and multi-storey independent houses.
+                </p>
                 <p>
                   {linkSeoKeywords("A modern home lift in Hyderabad is no longer considered a luxury—it's a smart investment that adds comfort, convenience, and long-term value to your home. Whether you're building a new villa, renovating an existing house, or looking for an easier way to move between floors, a well-designed home lift can transform your daily living experience. It offers safe and effortless mobility for every family member, especially senior citizens, children, and individuals with limited mobility.", seoLinkClassHero)}
                 </p>
                 <p>
                   {linkSeoKeywords("At Kashome Elevators, we provide premium home lift solutions and home elevators in Hyderabad that combine advanced technology, elegant design, and reliable performance. Every lift is carefully designed to suit your home's layout while maintaining the highest standards of safety and quality. From compact residential lifts to customized solutions for luxury villas, we ensure every installation blends seamlessly with your interiors and lifestyle.", seoLinkClassHero)}
                 </p>
+
+                <div className="!mt-8 grid grid-cols-3 gap-4 max-w-md">
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400">10+</div>
+                    <div className="text-xs sm:text-sm text-slate-300 mt-1">Years of Expertise</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400">500+</div>
+                    <div className="text-xs sm:text-sm text-slate-300 mt-1">Installations Completed</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400">4</div>
+                    <div className="text-xs sm:text-sm text-slate-300 mt-1">Countries Served</div>
+                  </div>
+                </div>
               </div>
 
               <div className="lg:col-span-5 lg:sticky lg:top-32">
@@ -611,6 +653,57 @@ export default function HomeLiftHyderabadPage() {
             <p className="text-gray-700 leading-relaxed mt-8">
               {linkSeoKeywords(liftTypesClosing)}
             </p>
+
+            <h3 className="text-2xl font-bold text-gray-900 mt-12 mb-6">
+              Hydraulic vs MRL vs Gearless: Quick Comparison
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Best For
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Space Needed
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Maintenance
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Noise Level
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {liftComparison.map((row, index) => (
+                    <tr
+                      key={row.type}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.type}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.bestFor}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.space}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.maintenance}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.noise}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 

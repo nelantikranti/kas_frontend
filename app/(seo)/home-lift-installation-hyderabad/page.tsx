@@ -104,16 +104,16 @@ const ctaButtons = [
 ];
 
 export const metadata: Metadata = {
-  title: "Home Lift Installation Hyderabad | Safe & Expert Services",
+  title: "Home Lift Installation Hyderabad | Best & Certified Experts",
   description:
-    "Need professional home lift installation in Hyderabad? Kashome Elevators provides safe, customized, and reliable installation solutions for every home. Get a free quote.",
+    "Looking for the best home lift installation in Hyderabad? Certified engineers, safe & customized lifts, free site inspection. Book your consultation today!",
   alternates: {
     canonical: pageUrl,
   },
   openGraph: {
-    title: "Home Lift Installation Hyderabad | Safe & Expert Services",
+    title: "Home Lift Installation Hyderabad | Best & Certified Experts",
     description:
-      "Need professional home lift installation in Hyderabad? Kashome Elevators provides safe, customized, and reliable installation solutions for every home. Get a free quote.",
+      "Looking for the best home lift installation in Hyderabad? Certified engineers, safe & customized lifts, free site inspection. Book your consultation today!",
     url: pageUrl,
     type: "website",
     images: [
@@ -320,6 +320,39 @@ const liftTypesAeo =
 
 const liftTypesClosing =
   "No matter the size or style of your home, Kashome Elevators provides professional home lift installation in Hyderabad with customized lift solutions that combine advanced technology, superior safety, modern aesthetics, and reliable long-term performance. Our experts help you choose the perfect residential elevator to meet your present and future mobility needs.";
+
+const liftTypesComparison = [
+  {
+    type: "Machine Room-Less (MRL)",
+    bestFor: "Villas, duplex & independent houses",
+    spaceNeeded: "Compact / space-saving",
+    highlight: "Low maintenance, energy-efficient",
+  },
+  {
+    type: "Hydraulic",
+    bestFor: "Low-rise & luxury homes",
+    spaceNeeded: "Moderate",
+    highlight: "Powerful, quiet, high lifting capacity",
+  },
+  {
+    type: "Gearless",
+    bestFor: "Luxury villas & high-end projects",
+    spaceNeeded: "Moderate",
+    highlight: "Smooth, energy-efficient, low maintenance",
+  },
+  {
+    type: "Glass",
+    bestFor: "Premium villas & designer homes",
+    spaceNeeded: "Moderate to spacious",
+    highlight: "Panoramic cabin, architectural appeal",
+  },
+  {
+    type: "Compact",
+    bestFor: "Existing homes with limited space",
+    spaceNeeded: "Minimal",
+    highlight: "Fits without major structural changes",
+  },
+];
 
 const solutionsIntro =
   "At Kashome Elevators, we provide complete home lift installation in Hyderabad with customized solutions for every type of residential property. Whether you are constructing a new villa, upgrading a duplex home, or renovating an existing independent house, our experienced team delivers end-to-end installation services that ensure safety, efficiency, and long-term performance. Every installation project is planned after a detailed site inspection to ensure the lift perfectly matches your property's structure, available space, and lifestyle requirements.";
@@ -612,7 +645,7 @@ const webPageSchema = {
   url: pageUrl,
   name: "Home Lift Installation Hyderabad",
   description:
-    "Need professional home lift installation in Hyderabad? Kashome Elevators provides safe, customized, and reliable installation solutions for every home. Get a free quote.",
+    "Looking for the best home lift installation in Hyderabad? Certified engineers, safe & customized lifts, free site inspection. Book your consultation today!",
   isPartOf: {
     "@type": "WebSite",
     "@id": `${siteUrl}#website`,
@@ -837,6 +870,45 @@ export default function HomeLiftInstallationHyderabadPage() {
           closing={liftTypesClosing}
           linkSeoKeywords={linkSeoKeywords}
         />
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Home Lift Types Compared
+            </h2>
+            <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-green-600 text-white">
+                    <th className="px-4 py-3 font-semibold">Lift Type</th>
+                    <th className="px-4 py-3 font-semibold">Best For</th>
+                    <th className="px-4 py-3 font-semibold">Space Needed</th>
+                    <th className="px-4 py-3 font-semibold">Key Highlight</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {liftTypesComparison.map((row, index) => (
+                    <tr
+                      key={row.type}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 font-semibold text-gray-900">
+                        {row.type}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">{row.bestFor}</td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {row.spaceNeeded}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {row.highlight}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
         <ListSection
           title="Our Home Lift Installation Solutions"
