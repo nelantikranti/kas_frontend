@@ -1,6 +1,19 @@
 [build]
   command = "npm run build"
 
+# Redirect non-www to www (canonical domain)
+[[redirects]]
+  from = "https://kashomeelevators.com/*"
+  to = "https://www.kashomeelevators.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://kashomeelevators.com/*"
+  to = "https://www.kashomeelevators.com/:splat"
+  status = 301
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 

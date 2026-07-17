@@ -4,7 +4,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/</loc>
+      <loc>https://www.kashomeelevators.com/</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -15,7 +15,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/about</loc>
+      <loc>https://www.kashomeelevators.com/about</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -26,7 +26,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/products</loc>
+      <loc>https://www.kashomeelevators.com/products</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -36,7 +36,7 @@
    </url>
    <url>
 
-      <loc>https://kashomeelevators.com/services</loc>
+      <loc>https://www.kashomeelevators.com/services</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -46,19 +46,7 @@
    </url>
    <url>
 
-      <loc>https://kashomeelevators.com/contact</loc>
-
-      <lastmod>2026-02-12</lastmod>
-
-      <changefreq>monthly</changefreq>
-
-      <priority>0.8</priority>
-
-   </url>
-
-   <url>
-
-      <loc>https://kashomeelevators.com/blogs</loc>
+      <loc>https://www.kashomeelevators.com/contact</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -70,7 +58,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/signup</loc>
+      <loc>https://www.kashomeelevators.com/blogs</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -82,7 +70,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/login</loc>
+      <loc>https://www.kashomeelevators.com/signup</loc>
 
       <lastmod>2026-02-12</lastmod>
 
@@ -94,7 +82,19 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/home-elevator-in-hyderabad</loc>
+      <loc>https://www.kashomeelevators.com/login</loc>
+
+      <lastmod>2026-02-12</lastmod>
+
+      <changefreq>monthly</changefreq>
+
+      <priority>0.8</priority>
+
+   </url>
+
+   <url>
+
+      <loc>https://www.kashomeelevators.com/home-elevator-in-hyderabad</loc>
 
       <lastmod>2026-07-08</lastmod>
 
@@ -106,7 +106,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/home-lift-in-hyderabad</loc>
+      <loc>https://www.kashomeelevators.com/home-lift-in-hyderabad</loc>
 
       <lastmod>2026-07-08</lastmod>
 
@@ -118,7 +118,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/villa-elevator-hyderabad</loc>
+      <loc>https://www.kashomeelevators.com/villa-elevator-hyderabad</loc>
 
       <lastmod>2026-07-09</lastmod>
 
@@ -130,7 +130,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/residential-elevator-hyderabad</loc>
+      <loc>https://www.kashomeelevators.com/residential-elevator-hyderabad</loc>
 
       <lastmod>2026-07-09</lastmod>
 
@@ -142,7 +142,7 @@
 
    <url>
 
-      <loc>https://kashomeelevators.com/home-lift-installation-hyderabad</loc>
+      <loc>https://www.kashomeelevators.com/home-lift-installation-hyderabad</loc>
 
       <lastmod>2026-07-10</lastmod>
 
