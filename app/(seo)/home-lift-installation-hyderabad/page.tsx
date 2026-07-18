@@ -103,38 +103,92 @@ const ctaButtons = [
   { href: "/contact", label: "Contact Kashome Elevators Today" },
 ];
 
+const seoTitle =
+  "Home Lift Installation Hyderabad | #1 Trusted & Certified Experts";
+const seoDescription =
+  "Top-rated home lift installation in Hyderabad. Certified engineers, safety-tested lifts & transparent pricing. Get a FREE site inspection — book now!";
+const lastUpdatedIso = "2026-07-18";
+const lastUpdatedDisplay = "18 July 2026";
+
 export const metadata: Metadata = {
-  title: "Home Lift Installation Hyderabad | Best & Certified Experts",
-  description:
-    "Looking for the best home lift installation in Hyderabad? Certified engineers, safe & customized lifts, free site inspection. Book your consultation today!",
+  title: seoTitle,
+  description: seoDescription,
+  keywords: [
+    "home lift installation Hyderabad",
+    "home lift installation cost Hyderabad",
+    "residential elevator installation Hyderabad",
+    "home elevator company Hyderabad",
+    "villa lift installation Hyderabad",
+    "MRL home lift installation",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
   alternates: {
     canonical: pageUrl,
   },
   openGraph: {
-    title: "Home Lift Installation Hyderabad | Best & Certified Experts",
-    description:
-      "Looking for the best home lift installation in Hyderabad? Certified engineers, safe & customized lifts, free site inspection. Book your consultation today!",
+    title: seoTitle,
+    description: seoDescription,
     url: pageUrl,
+    siteName: "Kashome Elevators",
     type: "website",
+    locale: "en_IN",
     images: [
       {
         url: imageUrl,
         alt: imageAlt,
+        width: 1200,
+        height: 900,
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: seoTitle,
+    description: seoDescription,
+    images: [imageUrl],
+  },
+  other: {
+    "last-modified": lastUpdatedIso,
+  },
 };
 
+const quickAnswer =
+  "Quick Answer: Kashome Elevators provides certified home elevator installation in Hyderabad for villas, duplexes, and independent homes — covering free site inspection, MRL/hydraulic/gearless lift options, safety-tested installation, and after-sales AMC support, typically completed within a few weeks of confirmation.";
+
+const tocLinks = [
+  { href: "#introduction", label: "Introduction" },
+  { href: "#why-choose", label: "Why Choose Professional Installation" },
+  { href: "#benefits", label: "Benefits" },
+  { href: "#features", label: "Features" },
+  { href: "#lift-types", label: "Types of Home Lifts" },
+  { href: "#solutions", label: "Installation Process" },
+  { href: "#safety", label: "Safety Standards" },
+  { href: "#maintenance", label: "Maintenance & AMC" },
+  { href: "#why-kashome", label: "Why Kashome Elevators" },
+  { href: "#faqs", label: "FAQs" },
+  { href: "#contact", label: "Contact Us" },
+];
+
 const heroParagraphs = [
-  "Looking for reliable home lift installation in Hyderabad that combines safety, precision, and long-term performance? Kashome Elevators offers professional home lift installation services designed for villas, duplex homes, independent houses, and luxury residences across Hyderabad. Whether you are constructing a new home or upgrading an existing property, our experienced team delivers customized lift installation solutions that seamlessly integrate with your home's architecture while enhancing accessibility, convenience, and overall lifestyle.",
+  "Looking for reliable residential lift installation in Hyderabad that combines safety, precision, and long-term performance? Kashome Elevators offers professional home lift installation services designed for villas, duplex homes, independent houses, and luxury residences across Hyderabad. Whether you are constructing a new home or upgrading an existing property, our experienced team delivers customized lift installation solutions that seamlessly integrate with your home's architecture while enhancing accessibility, convenience, and overall lifestyle.",
   "A professionally installed home lift is more than just a mobility solution—it is an investment in comfort, safety, and the future value of your property. At Kashome Elevators, we begin every project with a detailed site inspection to understand your space, structural requirements, and personal preferences. This allows us to recommend the most suitable home elevator system and ensure a smooth, efficient installation process that meets the highest industry standards.",
   "Our certified installation engineers use advanced techniques and premium-quality components to install hydraulic lifts, machine room-less (MRL) lifts, gearless elevators, and fully customized residential lift systems. Every home lift installation in Hyderabad is carried out with a strong focus on safety, energy efficiency, smooth operation, and long-term reliability. From planning and installation to testing, commissioning, and after-sales support, we manage every stage with complete professionalism and attention to detail.",
   "Whether you need a compact lift for limited space or a premium elevator for a luxury villa, Kashome Elevators provides tailored home lift installation services in Hyderabad that match your lifestyle and budget. Our commitment to quality workmanship, timely project completion, transparent communication, and dependable maintenance support has made us a trusted choice for homeowners seeking modern, safe, and future-ready vertical mobility solutions.",
 ];
 
 const introductionParagraphs = [
-  "Installing a home lift is no longer considered a luxury—it's a practical investment that enhances comfort, accessibility, and the overall value of your property. If you're looking for home lift installation in Hyderabad, choosing the right installation partner is just as important as selecting the right lift. A professionally installed home lift ensures smooth operation, long-term reliability, and maximum safety for every member of your family. Whether you own a villa, duplex home, bungalow, or an independent house, a customized home lift can transform the way you move between floors while complementing your home's modern architecture.",
-  "At Kashome Elevators, we specialize in providing professional home lift installation in Hyderabad using advanced technology, premium-quality components, and industry-approved installation practices. Every project begins with a detailed site inspection to understand your property's layout, structural requirements, and mobility needs. Based on this assessment, our experts recommend the most suitable lift solution and complete the installation with precision, ensuring compliance with the highest safety and quality standards.",
+  "Installing a home lift is no longer considered a luxury—it's a practical investment that enhances comfort, accessibility, and the overall value of your property. If you're looking for residential elevator installation in Hyderabad, choosing the right installation partner is just as important as selecting the right lift. A professionally installed home lift ensures smooth operation, long-term reliability, and maximum safety for every member of your family. Whether you own a villa, duplex home, bungalow, or an independent house, a customized home lift can transform the way you move between floors while complementing your home's modern architecture.",
+  "At Kashome Elevators, we specialize in providing professional home elevator installation in Hyderabad using advanced technology, premium-quality components, and industry-approved installation practices. Every project begins with a detailed site inspection to understand your property's layout, structural requirements, and mobility needs. Based on this assessment, our experts recommend the most suitable lift solution and complete the installation with precision, ensuring compliance with the highest safety and quality standards.",
   "From compact home lifts for limited spaces to premium elevators for luxury residences, we offer customized installation solutions designed to meet your specific requirements. Our experienced engineers manage every stage of the project—from planning and lift installation to testing, commissioning, and after-sales support—so you receive a hassle-free experience and complete peace of mind.",
 ];
 
@@ -142,8 +196,8 @@ const introductionAeo =
   "Home lift installation in Hyderabad is the professional process of installing a residential elevator in a home, villa, or duplex property. It includes site inspection, lift selection, structural planning, installation, safety testing, and final commissioning to ensure safe, reliable, and long-lasting performance.";
 
 const whyChooseIntro = [
-  "Choosing a professional company for home lift installation in Hyderabad is one of the most important decisions when adding a lift to your home. While selecting the right lift model matters, proper installation is what ensures long-term safety, smooth operation, and reliable performance. An expertly installed home lift not only improves accessibility but also protects your investment by reducing maintenance issues and extending the lifespan of the elevator. Whether you are building a new villa, upgrading a duplex house, or renovating an independent home, professional installation ensures your lift is integrated seamlessly with your property's structure and design.",
-  "At Kashome Elevators, every home lift installation in Hyderabad begins with a comprehensive site inspection and detailed project planning. Our experienced engineers carefully evaluate your available space, structural requirements, travel height, and usage needs before recommending the most suitable lift solution. Every installation is carried out using premium-quality components, advanced engineering practices, and strict quality control measures to deliver a safe, efficient, and aesthetically pleasing result.",
+  "Choosing a professional company for home lift setup in Hyderabad is one of the most important decisions when adding a lift to your home. While selecting the right lift model matters, proper installation is what ensures long-term safety, smooth operation, and reliable performance. An expertly installed home lift not only improves accessibility but also protects your investment by reducing maintenance issues and extending the lifespan of the elevator. Whether you are building a new villa, upgrading a duplex house, or renovating an independent home, professional installation ensures your lift is integrated seamlessly with your property's structure and design.",
+  "At Kashome Elevators, every residential elevator installation in Hyderabad begins with a comprehensive site inspection and detailed project planning. Our experienced engineers carefully evaluate your available space, structural requirements, travel height, and usage needs before recommending the most suitable lift solution. Every installation is carried out using premium-quality components, advanced engineering practices, and strict quality control measures to deliver a safe, efficient, and aesthetically pleasing result.",
   "From compact home elevators for limited spaces to luxury lifts for premium villas, our installation team follows industry best practices throughout the project. We prioritize precision, safety, and customer satisfaction, ensuring every lift operates smoothly while complementing your home's architecture. With complete installation support, testing, commissioning, and after-sales service, Kashome Elevators delivers a hassle-free experience that homeowners can rely on for years to come.",
 ];
 
@@ -177,7 +231,7 @@ const whyChooseClosing =
   "Installing a home lift is a long-term investment, and choosing the right installation partner makes all the difference. With expert planning, certified engineers, advanced safety standards, and dependable after-sales support, Kashome Elevators provides professional home lift installation solutions that deliver comfort, convenience, and lasting value for your home.";
 
 const benefitsIntro =
-  "Investing in professional home lift installation in Hyderabad offers far more than convenient movement between floors. A properly installed home lift enhances your property's safety, accessibility, comfort, and long-term value while ensuring reliable performance for years to come. Whether you're building a new villa, renovating a duplex house, or upgrading an independent home, expert installation guarantees that your lift operates efficiently and complies with the highest safety standards. Choosing experienced professionals also minimizes future maintenance issues, reduces installation risks, and ensures the elevator integrates seamlessly with your home's design.";
+  "Investing in professional residential lift installation in Hyderabad offers far more than convenient movement between floors. A properly installed home lift enhances your property's safety, accessibility, comfort, and long-term value while ensuring reliable performance for years to come. Whether you're building a new villa, renovating a duplex house, or upgrading an independent home, expert installation guarantees that your lift operates efficiently and complies with the highest safety standards. Choosing experienced professionals also minimizes future maintenance issues, reduces installation risks, and ensures the elevator integrates seamlessly with your home's design.";
 
 const benefitsSubIntro =
   "At Kashome Elevators, we believe every homeowner deserves a lift installation that delivers both functionality and peace of mind. Our experienced engineers carefully plan every stage of the installation process, using premium components and advanced engineering techniques to provide a safe, smooth, and energy-efficient residential lift solution. With customized installation services, comprehensive testing, and dedicated after-sales support, we help homeowners enjoy the full benefits of modern vertical mobility.";
@@ -186,7 +240,7 @@ const benefits = [
   {
     title: "Enhanced Accessibility for Every Family Member",
     content:
-      "One of the biggest advantages of professional home lift installation in Hyderabad is improved accessibility throughout your home. A residential lift allows senior citizens, children, pregnant women, and individuals with mobility challenges to move safely and comfortably between floors without depending on stairs. It creates a barrier-free living environment that promotes independence and convenience for every family member.",
+      "One of the biggest advantages of professional home lift setup in Hyderabad is improved accessibility throughout your home. A residential lift allows senior citizens, children, pregnant women, and individuals with mobility challenges to move safely and comfortably between floors without depending on stairs. It creates a barrier-free living environment that promotes independence and convenience for every family member.",
   },
   {
     title: "Increased Property Value and Future Readiness",
@@ -209,9 +263,9 @@ const benefits = [
       "Modern home lifts are designed to deliver outstanding performance while consuming minimal energy. Professional installation helps optimize system efficiency, reduces wear on components, and minimizes long-term maintenance requirements. This results in lower operating costs and reliable performance throughout the lift's lifespan.",
   },
   {
-    title: "Customized Installation for Every Home",
+    title: "Tailored Cabin Design and Finish Options",
     content:
-      "Every property has unique architectural and structural requirements. Our home lift installation services in Hyderabad are fully customized to match your available space, interior aesthetics, lifestyle, and mobility needs. Whether you require a compact lift for limited spaces or a luxury elevator for a premium villa, we deliver tailored solutions that blend perfectly with your home.",
+      "Beyond fitting the lift to your available space, we personalize the cabin itself — interior finishes, door style, capacity, and control panel — so the final result matches your home's interior design instead of looking like a generic add-on.",
   },
   {
     title: "Professional Support from Installation to Maintenance",
@@ -246,7 +300,7 @@ const features = [
   {
     title: "Certified Installation Engineers",
     content:
-      "Our team consists of trained and experienced professionals who follow industry-approved installation practices. Every home lift installation in Hyderabad is completed with precision, ensuring proper alignment, smooth operation, structural stability, and compliance with all recommended safety standards.",
+      "Our team consists of trained and experienced professionals who follow industry-approved installation practices. Every home elevator installation in Hyderabad is completed with precision, ensuring proper alignment, smooth operation, structural stability, and compliance with all recommended safety standards.",
   },
   {
     title: "Advanced Safety Testing and Quality Checks",
@@ -277,7 +331,7 @@ const featuresClosing =
   "Choosing Kashome Elevators means partnering with a team that prioritizes quality, safety, and customer satisfaction at every stage of the installation journey. Our customized home lift installation services in Hyderabad are designed to deliver dependable performance, modern aesthetics, and complete peace of mind for homeowners.";
 
 const liftTypesIntro =
-  "Choosing the right lift is one of the most important steps in any home lift installation in Hyderabad. Every home has different architectural designs, space availability, travel height, and accessibility requirements, which is why a single lift solution cannot suit every property. At Kashome Elevators, we offer a wide range of home lift installation solutions designed to match your lifestyle, budget, and home structure. Whether you are building a new villa, renovating a duplex house, or upgrading an independent home, our experts help you select the most suitable residential elevator for maximum safety, comfort, and long-term performance.";
+  "Choosing the right lift is one of the most important steps in any residential lift installation in Hyderabad. Every home has different architectural designs, space availability, travel height, and accessibility requirements, which is why a single lift solution cannot suit every property. At Kashome Elevators, we offer a wide range of home lift installation solutions designed to match your lifestyle, budget, and home structure. Whether you are building a new villa, renovating a duplex house, or upgrading an independent home, our experts help you select the most suitable residential elevator for maximum safety, comfort, and long-term performance.";
 
 const liftTypesSubIntro =
   "Our experienced team evaluates your property's layout, available installation space, usage requirements, and future needs before recommending the ideal home lift system. Every home lift installation in Hyderabad is completed using premium components, advanced engineering practices, and strict safety standards, ensuring reliable operation and seamless integration with your home's interior.";
@@ -319,7 +373,7 @@ const liftTypesAeo =
   "The best type of home lift depends on your home's structure, available space, travel height, and usage requirements. Machine Room-Less (MRL), hydraulic, gearless, glass, compact, and customized home lifts each offer unique advantages, allowing homeowners to choose the ideal solution for safe, efficient, and comfortable vertical mobility.";
 
 const liftTypesClosing =
-  "No matter the size or style of your home, Kashome Elevators provides professional home lift installation in Hyderabad with customized lift solutions that combine advanced technology, superior safety, modern aesthetics, and reliable long-term performance. Our experts help you choose the perfect residential elevator to meet your present and future mobility needs.";
+  "No matter the size or style of your home, Kashome Elevators provides professional residential elevator installation in Hyderabad with customized lift solutions that combine advanced technology, superior safety, modern aesthetics, and reliable long-term performance. Our experts help you choose the perfect residential elevator to meet your present and future mobility needs.";
 
 const liftTypesComparison = [
   {
@@ -355,7 +409,7 @@ const liftTypesComparison = [
 ];
 
 const solutionsIntro =
-  "At Kashome Elevators, we provide complete home lift installation in Hyderabad with customized solutions for every type of residential property. Whether you are constructing a new villa, upgrading a duplex home, or renovating an existing independent house, our experienced team delivers end-to-end installation services that ensure safety, efficiency, and long-term performance. Every installation project is planned after a detailed site inspection to ensure the lift perfectly matches your property's structure, available space, and lifestyle requirements.";
+  "At Kashome Elevators, we provide complete home elevator installation in Hyderabad with customized solutions for every type of residential property. Whether you are constructing a new villa, upgrading a duplex home, or renovating an existing independent house, our experienced team delivers end-to-end installation services that ensure safety, efficiency, and long-term performance. Every installation project is planned after a detailed site inspection to ensure the lift perfectly matches your property's structure, available space, and lifestyle requirements.";
 
 const solutionsSubIntro =
   "We install premium-quality home lifts using advanced technology and industry-approved engineering practices. From compact home lifts for limited spaces to luxury residential elevators for premium villas, every solution is designed to deliver smooth operation, energy efficiency, and exceptional reliability while complementing your home's architecture.";
@@ -425,7 +479,7 @@ const safetyClosing =
   "With Kashome Elevators, homeowners receive professionally installed lift systems that prioritize passenger safety, engineering precision, and dependable daily performance.";
 
 const maintenanceIntro =
-  "Professional installation is only the beginning of a reliable elevator system. Kashome Elevators provides complete maintenance and after-sales support for every home lift installation in Hyderabad, helping homeowners keep their residential elevators operating safely and efficiently throughout their lifespan. Our dedicated service team responds quickly to maintenance requirements while performing regular inspections to maximize performance and minimize unexpected breakdowns.";
+  "Professional installation is only the beginning of a reliable elevator system. Kashome Elevators provides complete maintenance and after-sales support for every home lift setup in Hyderabad, helping homeowners keep their residential elevators operating safely and efficiently throughout their lifespan. Our dedicated service team responds quickly to maintenance requirements while performing regular inspections to maximize performance and minimize unexpected breakdowns.";
 
 const maintenanceSubIntro =
   "Routine maintenance not only extends the life of your home lift but also ensures every safety system continues functioning as intended.";
@@ -460,7 +514,7 @@ const maintenanceClosing =
   "Our long-term maintenance commitment ensures your investment continues delivering comfort, safety, and dependable performance for many years after installation.";
 
 const whyKashomeIntro = [
-  "Choosing the right company for home lift installation in Hyderabad is essential for ensuring safety, quality, and long-term satisfaction. Kashome Elevators has earned the trust of homeowners by delivering customized residential elevator solutions backed by experienced engineers, advanced technology, premium-quality products, and dedicated customer support. Every installation is planned carefully, executed professionally, and supported with comprehensive after-sales service.",
+  "Choosing the right company for residential elevator installation in Hyderabad is essential for ensuring safety, quality, and long-term satisfaction. Kashome Elevators has earned the trust of homeowners by delivering customized residential elevator solutions backed by experienced engineers, advanced technology, premium-quality products, and dedicated customer support. Every installation is planned carefully, executed professionally, and supported with comprehensive after-sales service.",
   "Our focus is not only on installing home lifts but also on creating safe, convenient, and future-ready living spaces that improve everyday life.",
 ];
 
@@ -525,9 +579,9 @@ const faqs = [
       "Yes. Routine maintenance is essential for ensuring smooth performance, passenger safety, and long-term reliability. Regular servicing also helps reduce unexpected breakdowns and extends the lifespan of your home lift.",
   },
   {
-    question: "Do you provide customized home lift installation in Hyderabad?",
+    question: "Do you provide customized residential lift installation in Hyderabad?",
     answer:
-      "Absolutely. Kashome Elevators offers fully customized home lift installation in Hyderabad based on your home's architecture, available space, design preferences, lift capacity, and mobility requirements.",
+      "Absolutely. Kashome Elevators offers fully customized home lift setup in Hyderabad based on your home's architecture, available space, design preferences, lift capacity, and mobility requirements.",
   },
   {
     question: "What safety checks are performed before handover?",
@@ -545,10 +599,25 @@ const faqs = [
     answer:
       "Kashome Elevators provides professional home lift installation services backed by experienced engineers, customized solutions, premium-quality lift systems, advanced safety standards, timely project completion, and dependable after-sales support, making us a trusted choice for homeowners across Hyderabad.",
   },
+  {
+    question: "Is government or society approval required for a home lift in Hyderabad?",
+    answer:
+      "Requirements vary by property type and location. Independent villas generally need standard structural and electrical compliance, while apartment or gated-community installations may require society or association approval. Our team can guide you through the applicable local approvals before installation begins.",
+  },
+  {
+    question: "What warranty do you provide on home lift installation?",
+    answer:
+      "Kashome Elevators provides a standard manufacturer warranty on lift components, with the exact coverage period depending on the lift model and manufacturer. We also offer optional extended warranty and Annual Maintenance Contract (AMC) plans for continued protection after installation.",
+  },
+  {
+    question: "How much space is required to install a home lift?",
+    answer:
+      "A compact Machine Room-Less (MRL) home lift can fit into as little as 4 to 5 square feet of shaft space, making it suitable for most villas and duplex homes. Our engineers assess your exact space during the free site inspection and recommend the best-fit lift model.",
+  },
 ];
 
 const contactParagraphs = [
-  "Looking for trusted home lift installation in Hyderabad? Kashome Elevators is your reliable partner for safe, customized, and professionally installed home lift solutions. Whether you need a home lift for a villa, duplex house, bungalow, or independent home, our experienced team is here to help you choose the right elevator and ensure a smooth installation process from start to finish.",
+  "Looking for trusted home elevator installation in Hyderabad? Kashome Elevators is your reliable partner for safe, customized, and professionally installed home lift solutions. Whether you need a home lift for a villa, duplex house, bungalow, or independent home, our experienced team is here to help you choose the right elevator and ensure a smooth installation process from start to finish.",
   "We offer end-to-end support, including free consultation, site inspection, lift selection, customized design recommendations, professional installation, safety testing, commissioning, and dependable after-sales service. Our goal is to provide every homeowner with a high-quality home lift solution that enhances comfort, accessibility, and long-term property value.",
 ];
 
@@ -571,7 +640,7 @@ const contactSections = [
 ];
 
 const contactPoints = [
-  "Professional Home Lift Installation in Hyderabad",
+  "Professional Residential lift installation in Hyderabad",
   "Customized Residential Lift Solutions",
   "Certified Installation Engineers",
   "Premium Quality Lift Systems",
@@ -644,8 +713,8 @@ const webPageSchema = {
   "@id": `${pageUrl}#webpage`,
   url: pageUrl,
   name: "Home Lift Installation Hyderabad",
-  description:
-    "Looking for the best home lift installation in Hyderabad? Certified engineers, safe & customized lifts, free site inspection. Book your consultation today!",
+  description: seoDescription,
+  dateModified: lastUpdatedIso,
   isPartOf: {
     "@type": "WebSite",
     "@id": `${siteUrl}#website`,
@@ -654,6 +723,10 @@ const webPageSchema = {
   },
   breadcrumb: {
     "@id": `${pageUrl}#breadcrumb`,
+  },
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["#quick-answer", "h1"],
   },
 };
 
@@ -690,7 +763,23 @@ const faqSchema = {
   })),
 };
 
+const howToSchema = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "How Home Lift Installation Works in Hyderabad",
+  description:
+    "The step-by-step process Kashome Elevators follows for professional home lift installation in Hyderabad, from consultation to after-sales support.",
+  totalTime: "P2W",
+  step: solutions.map((item, index) => ({
+    "@type": "HowToStep",
+    position: index + 1,
+    name: item.title,
+    text: item.content,
+  })),
+};
+
 function ListSection({
+  id,
   title,
   intro,
   subIntro,
@@ -700,6 +789,7 @@ function ListSection({
   bgWhite = false,
   linkSeoKeywords,
 }: {
+  id?: string;
   title: string;
   intro?: string;
   subIntro?: string;
@@ -710,7 +800,7 @@ function ListSection({
   linkSeoKeywords: (text: string) => ReactNode;
 }) {
   return (
-    <section className={`py-16 ${bgWhite ? "bg-white" : ""}`}>
+    <section id={id} className={`py-16 ${bgWhite ? "bg-white" : ""}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
           {title}
@@ -761,9 +851,27 @@ export default function HomeLiftInstallationHyderabadPage() {
         <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.12),_transparent_45%)]" />
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 lg:mb-10 max-w-4xl">
+            <nav aria-label="Breadcrumb" className="mb-6 text-sm text-slate-300">
+              <ol className="flex flex-wrap items-center gap-2">
+                <li>
+                  <Link href="/" className="hover:text-white">
+                    Home
+                  </Link>
+                </li>
+                <li aria-hidden="true">/</li>
+                <li className="text-white" aria-current="page">
+                  Home Lift Installation Hyderabad
+                </li>
+              </ol>
+            </nav>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 max-w-4xl">
               Home Lift Installation Hyderabad
             </h1>
+            <p className="text-slate-300 text-sm mb-8 lg:mb-10">
+              Trusted by Hyderabad homeowners · Certified engineers · Last
+              updated {lastUpdatedDisplay}
+            </p>
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
@@ -795,7 +903,35 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section className="py-16">
+        <section className="py-10 bg-white border-b border-gray-100">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <p
+              id="quick-answer"
+              className="text-gray-800 leading-relaxed rounded-xl border border-green-200 bg-green-50 px-5 py-4 font-medium"
+            >
+              {quickAnswer}
+            </p>
+            <nav aria-label="Table of contents" className="mt-6">
+              <p className="text-sm font-semibold text-gray-900 mb-2">
+                On this page:
+              </p>
+              <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                {tocLinks.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      className="text-green-700 underline underline-offset-2 hover:text-green-800"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </section>
+
+        <section id="introduction" className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Introduction
@@ -808,10 +944,26 @@ export default function HomeLiftInstallationHyderabadPage() {
                 {linkSeoKeywords(introductionAeo)}
               </p>
             </div>
+            <figure className="mt-10">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-green-100 shadow-lg">
+                <Image
+                  src="/home-lift-installed-villa-hyderabad.webp"
+                  alt="Residential home lift installed in a villa in Hyderabad by Kashome Elevators"
+                  title="Home Lift Installation Completed in a Hyderabad Villa"
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 1200px"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="mt-3 text-center text-sm text-gray-600">
+                A fully installed and tested home lift in a Hyderabad villa,
+                completed by Kashome Elevators&apos; certified engineering team.
+              </figcaption>
+            </figure>
           </div>
         </section>
 
-        <section className="py-16 bg-white">
+        <section id="why-choose" className="py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose Professional Home Lift Installation in Hyderabad?
@@ -821,6 +973,22 @@ export default function HomeLiftInstallationHyderabadPage() {
                 <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
               ))}
             </div>
+            <figure className="mb-10">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-200 shadow-lg">
+                <Image
+                  src="/site-inspection-home-lift-hyderabad.webp"
+                  alt="Certified engineers inspecting site for home lift installation in Hyderabad"
+                  title="Site Inspection for Home Lift Installation in Hyderabad"
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 1200px"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="mt-3 text-center text-sm text-gray-600">
+                Kashome Elevators&apos; engineers conducting a detailed site
+                inspection before beginning a home lift installation project.
+              </figcaption>
+            </figure>
             <ul className="space-y-6 list-disc pl-6">
               {whyChooseItems.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
@@ -841,6 +1009,7 @@ export default function HomeLiftInstallationHyderabadPage() {
         </section>
 
         <ListSection
+          id="benefits"
           title="Benefits of Professional Home Lift Installation"
           intro={benefitsIntro}
           subIntro={benefitsSubIntro}
@@ -851,6 +1020,7 @@ export default function HomeLiftInstallationHyderabadPage() {
         />
 
         <ListSection
+          id="features"
           title="Features of Our Home Lift Installation Services"
           intro={featuresIntro}
           subIntro={featuresSubIntro}
@@ -862,6 +1032,7 @@ export default function HomeLiftInstallationHyderabadPage() {
         />
 
         <ListSection
+          id="lift-types"
           title="Types of Home Lifts We Install"
           intro={liftTypesIntro}
           subIntro={liftTypesSubIntro}
@@ -911,6 +1082,7 @@ export default function HomeLiftInstallationHyderabadPage() {
         </section>
 
         <ListSection
+          id="solutions"
           title="Our Home Lift Installation Solutions"
           intro={solutionsIntro}
           subIntro={solutionsSubIntro}
@@ -922,6 +1094,7 @@ export default function HomeLiftInstallationHyderabadPage() {
         />
 
         <ListSection
+          id="safety"
           title="Safety Standards We Follow During Home Lift Installation"
           intro={safetyIntro}
           subIntro={safetySubIntro}
@@ -932,6 +1105,7 @@ export default function HomeLiftInstallationHyderabadPage() {
         />
 
         <ListSection
+          id="maintenance"
           title="Maintenance & After-Sales Support"
           intro={maintenanceIntro}
           subIntro={maintenanceSubIntro}
@@ -942,7 +1116,7 @@ export default function HomeLiftInstallationHyderabadPage() {
           linkSeoKeywords={linkSeoKeywords}
         />
 
-        <section className="py-16">
+        <section id="why-kashome" className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose Kashome Elevators for Home Lift Installation in
@@ -972,7 +1146,7 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section className="py-16 bg-white">
+        <section id="faqs" className="py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
               Frequently Asked Questions (FAQs)
@@ -990,7 +1164,7 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section className="py-16">
+        <section id="contact" className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 shadow-sm">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
@@ -1054,6 +1228,10 @@ export default function HomeLiftInstallationHyderabadPage() {
         </section>
       </main>
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
