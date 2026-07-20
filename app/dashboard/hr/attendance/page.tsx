@@ -23,6 +23,7 @@ import {
   type LeaveExportRow,
 } from "@/lib/attendanceExport";
 import { formatInr } from "@/components/hr/hrDocumentUtils";
+import { computeAttendancePayroll, type SalaryComponentsInput } from "@/lib/payrollCalculation";
 import {
   IoTime,
   IoPeople,
@@ -230,7 +231,7 @@ export default function HrAttendancePage() {
   const [checkOutTime, setCheckOutTime] = useState("");
   const [saving, setSaving] = useState(false);
   const [leaves, setLeaves] = useState<LeaveExportRow[]>([]);
-  const [employeeSalary, setEmployeeSalary] = useState<number | null>(null);
+  const [salaryComponents, setSalaryComponents] = useState<SalaryComponentsInput | null>(null);
 
   const currentUser = readCurrentUser();
   const canEditTimes = (rowUserId: string) =>
@@ -293,16 +294,29 @@ export default function HrAttendancePage() {
 
   useEffect(() => {
     if (!employeeId) {
-      setEmployeeSalary(null);
+      setSalaryComponents(null);
       return;
     }
     hrAPI
       .getEmployeeSalary(employeeId)
-      .then((status: { salary?: { monthlyGross?: number } }) => {
-        const gross = status?.salary?.monthlyGross;
-        setEmployeeSalary(gross != null && Number.isFinite(Number(gross)) ? Number(gross) : null);
+      .then((status: { configured?: boolean; salary?: SalaryComponentsInput | null }) => {
+        if (!status?.configured || !status.salary) {
+          setSalaryComponents(null);
+          return;
+        }
+        const s = status.salary;
+        setSalaryComponents({
+          basic: Number(s.basic) || 0,
+          hra: Number(s.hra) || 0,
+          da: Number(s.da) || 0,
+          allowances: Number(s.allowances) || 0,
+          pf: Number(s.pf) || 0,
+          esi: Number(s.esi) || 0,
+          tds: Number(s.tds) || 0,
+          professionalTax: Number(s.professionalTax) || 0,
+        });
       })
-      .catch(() => setEmployeeSalary(null));
+      .catch(() => setSalaryComponents(null));
   }, [employeeId]);
 
   const selectedEmployee = useMemo(
@@ -325,6 +339,20 @@ export default function HrAttendancePage() {
       summaryRange.end
     );
   }, [employeeId, rows, leaves, summaryRange.start, summaryRange.end]);
+
+  const employeeSalary = useMemo(() => {
+    if (!salaryComponents || !employeeStats) return null;
+    const unpaidLeaveDays = Math.max(0, employeeStats.lop - employeeStats.absent);
+    const result = computeAttendancePayroll({
+      components: salaryComponents,
+      presentDays: employeeStats.present,
+      paidLeaveDays: employeeStats.leave,
+      unpaidLeaveDays,
+      absentDays: employeeStats.absent,
+      manualIncentive: 0,
+    });
+    return result.netPay;
+  }, [salaryComponents, employeeStats]);
 
   const today = todayLocalDate();
   const todayStats = useMemo(
