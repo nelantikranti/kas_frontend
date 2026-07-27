@@ -16,7 +16,7 @@ import { toast } from "@/components/Toast";
 import { hrAPI } from "@/lib/api";
 import { downloadBlob } from "@/lib/hrShare";
 import { can, getUserPermissions, PERMISSIONS } from "@/lib/permissions";
-import { formatInr, formatLetterDate, formatPayrollMonth } from "@/components/hr/hrDocumentUtils";
+import { formatInr, formatLetterDate, formatPayrollMonth, maskAccountNumber } from "@/components/hr/hrDocumentUtils";
 import PayslipEditPanel from "@/components/hr/PayslipEditPanel";
 import { refreshCalculationFromSalary, type SalaryComponentsInput } from "@/lib/payrollCalculation";
 import HrListFilters from "@/components/hr/HrListFilters";
@@ -581,7 +581,7 @@ export default function HrPayrollPage() {
                         <div className="flex justify-between sm:block gap-2">
                           <dt className="text-gray-500">Account no.</dt>
                           <dd className="font-medium text-gray-900 sm:mt-0.5">
-                            {selectedEmployee.accountNumber || "—"}
+                            {maskAccountNumber(selectedEmployee.accountNumber)}
                           </dd>
                         </div>
                         <div className="flex justify-between sm:block gap-2">

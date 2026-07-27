@@ -1,7 +1,7 @@
 "use client";
 
 import HrDocumentLetterhead from "./HrDocumentLetterhead";
-import { COMPANY_NAME, formatInr, formatLetterDate, formatPayrollMonth } from "./hrDocumentUtils";
+import { formatInr, formatLetterDate, formatPayrollMonth, maskAccountNumber } from "./hrDocumentUtils";
 import { normalizePayslipDocument, resolvePayslipDeductions, resolvePayslipEarnings } from "./payslipNormalize";
 import { buildPayslipDeductionLines, statutoryDeductionTotal } from "@/lib/payslipDisplay";
 
@@ -64,7 +64,7 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
         <div className="space-y-1">
           <p><span className="font-semibold">Employee Name:</span> {slip.employeeName}</p>
           <p><span className="font-semibold">Employee ID:</span> {slip.employeeId || "—"}</p>
-          <p><span className="font-semibold">Account Number:</span> {slip.accountNumber || "—"}</p>
+          <p><span className="font-semibold">Account Number:</span> {maskAccountNumber(slip.accountNumber)}</p>
           <p><span className="font-semibold">Pan Number:</span> {slip.panNumber || "—"}</p>
           <p><span className="font-semibold">UAN Number:</span> {slip.uanNumber || "—"}</p>
         </div>
@@ -130,18 +130,9 @@ export default function PayslipDocument({ data }: { data: PayslipDocumentData })
         <span className="text-2xl font-bold tabular-nums">{formatInr(slip.netPay)}</span>
       </div>
 
-      <div className="px-8 py-6 grid sm:grid-cols-2 gap-8 text-xs text-gray-600">
-        <div>
-          <p>Generated on: {generatedOn}</p>
-          <p className="mt-1">This is a system-generated document. For queries, contact HR.</p>
-        </div>
-        <div className="sm:text-right">
-          <p className="font-semibold text-gray-900">For {COMPANY_NAME}</p>
-          <div className="mt-10 border-t border-gray-400 pt-1 inline-block min-w-[160px]">
-            <p className="text-gray-800">Authorized Signatory</p>
-            <p>Human Resources</p>
-          </div>
-        </div>
+      <div className="px-8 py-6 text-xs text-gray-600">
+        <p>Generated on: {generatedOn}</p>
+        <p className="mt-1">This is a system-generated document. For queries, contact HR.</p>
       </div>
     </div>
   );

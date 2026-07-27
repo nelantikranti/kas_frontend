@@ -23,7 +23,11 @@ import {
   type LeaveExportRow,
 } from "@/lib/attendanceExport";
 import { formatInr } from "@/components/hr/hrDocumentUtils";
-import { computeAttendancePayroll, type SalaryComponentsInput } from "@/lib/payrollCalculation";
+import {
+  computeAttendancePayroll,
+  computeMonthlyPackage,
+  type SalaryComponentsInput,
+} from "@/lib/payrollCalculation";
 import {
   IoTime,
   IoPeople,
@@ -340,8 +344,15 @@ export default function HrAttendancePage() {
     );
   }, [employeeId, rows, leaves, summaryRange.start, summaryRange.end]);
 
+  const hasDateFilter = Boolean(debouncedFrom || debouncedTo);
+
   const employeeSalary = useMemo(() => {
-    if (!salaryComponents || !employeeStats) return null;
+    if (!salaryComponents) return null;
+    // Employee only (no From/To): show configured monthly package, not cumulative attendance pay.
+    if (!hasDateFilter) {
+      return computeMonthlyPackage(salaryComponents);
+    }
+    if (!employeeStats) return null;
     const unpaidLeaveDays = Math.max(0, employeeStats.lop - employeeStats.absent);
     const result = computeAttendancePayroll({
       components: salaryComponents,
@@ -352,7 +363,7 @@ export default function HrAttendancePage() {
       manualIncentive: 0,
     });
     return result.netPay;
-  }, [salaryComponents, employeeStats]);
+  }, [salaryComponents, employeeStats, hasDateFilter]);
 
   const today = todayLocalDate();
   const todayStats = useMemo(

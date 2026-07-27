@@ -1,7 +1,7 @@
 "use client";
 
 import HrDocumentLetterhead from "./HrDocumentLetterhead";
-import { formatInr, formatLetterDate, formatPayrollMonth } from "./hrDocumentUtils";
+import { formatInr, formatLetterDate, formatPayrollMonth, maskAccountNumber } from "./hrDocumentUtils";
 import { buildPayslipDeductionLines, statutoryDeductionTotal } from "@/lib/payslipDisplay";
 
 export type CalculationData = {
@@ -44,7 +44,7 @@ export default function PayslipCalculationPreview({ data }: { data: CalculationD
         <div>
           <p><span className="font-semibold">Employee Name:</span> {data.employeeName}</p>
           <p><span className="font-semibold">Employee ID:</span> {data.employeeId || "—"}</p>
-          <p><span className="font-semibold">Account Number:</span> {data.accountNumber || "—"}</p>
+          <p><span className="font-semibold">Account Number:</span> {maskAccountNumber(data.accountNumber)}</p>
           <p><span className="font-semibold">Pan Number:</span> {data.panNumber || "—"}</p>
           <p><span className="font-semibold">UAN Number:</span> {data.uanNumber || "—"}</p>
         </div>
