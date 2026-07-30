@@ -95,6 +95,115 @@ const heroDefinition =
 const heroIntro =
   "Looking for a reliable home elevator in Hyderabad? KAS Home Elevators designs and installs safe, compact, and low-maintenance home lifts for villas, duplex homes, and independent houses across the city. Whether you need a lift for elderly family members, added convenience, or to future-proof your home, our home elevators in Hyderabad are built for Indian homes with minimal civil work, low power consumption, and a design that blends into your interiors.";
 
+const addedHeroParagraphs = [
+  "Looking for a home elevator in Hyderabad that fits a small footprint without a full civil overhaul? KAS Home Elevators has installed 500+ home lifts across the city over 10+ years, offering hydraulic, MRL, and gearless options starting at ₹4–6 lakh, with installation completed in 2–4 weeks in as little as 4x4 ft of space.",
+];
+
+const whatIsHomeElevatorIntro =
+  "A home elevator is a compact, low-capacity lift designed for residential buildings — villas, duplexes, and multi-storey independent houses — typically carrying 2–4 people or up to 400 kg. Unlike commercial elevators, home lifts need minimal shaft space, run on standard household power, and can be retrofitted into existing homes without major structural changes.";
+
+const whatIsHomeElevatorDetails =
+  "Home elevators solve a specific problem: ageing family members, mobility limitations, or simply the daily friction of stairs in a multi-floor home. In Hyderabad's growing stock of G+2 and G+3 independent houses in areas like Kondapur, Kokapet, and Manikonda, retrofitting has become as common as new-build installation.";
+
+const costIntro =
+  "A home elevator in Hyderabad typically costs ₹4–6 lakh for a compact 2-floor hydraulic or MRL lift. Pricing scales with the number of floors, cabin size, load capacity, and elevator type — gearless models generally sit at the higher end. Installation takes 2–4 weeks once the site is confirmed.";
+
+const costDetails =
+  "Three variables move the price most: floors served (each additional stop adds to shaft and rail cost), cabin finish (standard vs. premium glass/wood interiors), and elevator type (hydraulic is typically the most cost-efficient entry point; gearless and MRL cost more but need less maintenance space). We provide a fixed, itemised quote after a free site visit — no hidden charges added later for shaft prep, wiring, or finishing.";
+
+const addedBenefitsIntro =
+  "A home elevator improves daily mobility for elderly and differently-abled family members, adds resale value to multi-storey homes, and reduces the physical strain of repeated stair use. In Hyderabad specifically, it also future-proofs homes against long-term mobility needs without requiring a move to a single-storey property.";
+
+const addedBenefitsDetails =
+  "Beyond mobility, there's a practical real-estate angle Hyderabad buyers increasingly ask about: a home elevator on a resale listing in premium micro-markets — Jubilee Hills, Banjara Hills, Financial District — signals a higher-spec build and can shorten time-on-market. It's also a genuine safety upgrade during power cuts and emergencies, since our systems include Automatic Rescue Devices (ARD) that bring the cabin to the nearest floor and open doors automatically if power fails mid-transit.";
+
+const addedTypesIntro =
+  "Three home elevator types are common in Hyderabad: hydraulic (cost-efficient, needs a small machine room), MRL — Machine Room-Less (space-saving, no separate machine room), and gearless (quietest, lowest long-term maintenance). The right choice depends on available space, budget, and how many floors the elevator needs to serve.";
+
+const addedTypesDetails =
+  "Hydraulic elevators remain the most requested option for retrofits because they need the smallest shaft footprint and are the fastest to install. MRL elevators suit homes with limited external space since the drive mechanism sits within the shaft itself. Gearless elevators, while priced higher, are increasingly chosen for new-build villas in Kokapet and Gachibowli where owners prioritise silent operation and minimal upkeep over the building's lifetime.";
+
+const detailedComparison = [
+  {
+    feature: "Shaft space needed",
+    hydraulic: "Smallest",
+    mrl: "Small",
+    gearless: "Small–Medium",
+  },
+  {
+    feature: "Machine room",
+    hydraulic: "Separate, compact",
+    mrl: "Not required",
+    gearless: "Not required",
+  },
+  {
+    feature: "Noise level",
+    hydraulic: "Moderate",
+    mrl: "Low",
+    gearless: "Lowest",
+  },
+  {
+    feature: "Power-cut behaviour",
+    hydraulic: "Manual lowering + ARD",
+    mrl: "ARD-enabled",
+    gearless: "ARD-enabled",
+  },
+  {
+    feature: "Best for",
+    hydraulic: "Retrofits, budget projects",
+    mrl: "Space-constrained homes",
+    gearless: "New-build villas, low-maintenance priority",
+  },
+  {
+    feature: "Relative cost",
+    hydraulic: "₹",
+    mrl: "₹₹",
+    gearless: "₹₹₹",
+  },
+];
+
+const technicalSpecs = [
+  { spec: "Cabin size", range: "900 x 1200 mm – 1100 x 1400 mm" },
+  { spec: "Load capacity", range: "250 kg – 400 kg (2–4 persons)" },
+  { spec: "Speed", range: "0.15 – 0.4 m/s" },
+  { spec: "Shaft space required", range: "From 4x4 ft" },
+  { spec: "Max travel height", range: "Up to G+4 (site-dependent)" },
+];
+
+const technicalSpecsIntro =
+  "Actual specifications vary by model and site — confirmed during your free site visit. Figures below reflect typical home elevator ranges across the industry.";
+
+const safetyIntro =
+  "Home elevator installation in Telangana is subject to inspection and approval requirements under the state's electrical inspectorate framework, and lift design generally follows IS 14665 — the Indian Standard covering electric lift installation, safety, and maintenance. Ask any installer, including us, to confirm current compliance documentation before signing a contract.";
+
+const safetyDetails =
+  "We build every installation with standard safety features: door interlocks that prevent movement with an open door, overload sensors, emergency alarm and lighting, and Automatic Rescue Devices for power-cut scenarios. We recommend every Hyderabad homeowner explicitly ask their elevator company for proof of Telangana State Electrical Inspectorate approval and IS-code compliance before installation — a legitimate installer will provide this without hesitation, and it's a reasonable, low-effort question that filters out unlicensed operators in this space.";
+
+const projectsIntro =
+  "KAS Home Elevators has completed 500+ residential installations across Hyderabad, spanning independent villas, duplexes, and multi-storey homes in localities across the city. Project photography and locality-specific case studies are available on request during your consultation.";
+
+const customersIntro =
+  "Homeowners across Hyderabad have chosen KAS Home Elevators for transparent pricing, compact retrofits, and after-installation maintenance support.";
+
+const addedWhyChooseIntro =
+  "KAS Home Elevators brings 10+ years of experience and 500+ completed installations across Hyderabad, with transparent, itemised pricing and no charges added after the initial quote. Our process is designed around minimal disruption to existing homes during retrofit installation.";
+
+const addedWhyChooseDetails =
+  "What differentiates a retrofit-focused installer from a generic elevator vendor is site assessment quality — most cost overruns in home elevator projects come from underestimating shaft prep or electrical work discovered mid-installation. Our free site visit is designed to catch these variables before quoting, not after signing. Combined with a documented safety-compliance process and post-installation maintenance support, this is built for homeowners who want a predictable project timeline, not just a lift.";
+
+const quoteProcessIntro =
+  "Getting a home elevator installed in Hyderabad with KAS involves four steps: a free site visit, a fixed itemised quote, installation over 2–4 weeks, and final safety testing before handover.";
+
+const quoteProcessSteps = [
+  "Book a free site visit — our team assesses your available space, floor count, and structural requirements at no cost.",
+  "Receive a fixed, itemised quote — covering elevator type, cabin finish, shaft prep, and any electrical work, with no charges added later.",
+  "Installation (2–4 weeks) — scheduled around your household's routine to minimise disruption.",
+  "Safety testing and handover — every installation is tested for door interlocks, overload sensors, and ARD function before you take delivery.",
+];
+
+const quoteProcessClosing =
+  "Ready to see what fits your home? Book your free site visit or chat with us on WhatsApp for a same-day response on pricing and timelines.";
+
 const trustStats = [
   { value: "10+", label: "Years of Elevator Expertise" },
   { value: "500+", label: "Installations Completed" },
@@ -400,16 +509,26 @@ const serviceAreas = [
   "Banjara Hills",
   "Gachibowli",
   "Kondapur",
+  "Madhapur",
+  "HITEC City",
   "Kokapet",
+  "Manikonda",
   "Financial District",
+  "Kompally",
   "Nallagandla",
 ];
+
+const serviceAreasIntro =
+  "KAS Home Elevators installs and services home lifts across Hyderabad, including Jubilee Hills, Banjara Hills, Gachibowli, Kondapur, Madhapur, HITEC City, Kokapet, Manikonda, Financial District, and Kompally, with site visits available across the broader metropolitan area.";
+
+const serviceAreasDetails =
+  "Coverage spans both established residential pockets and newer villa developments on the city's western and southwestern growth corridors, where independent G+2/G+3 houses — the most common home-elevator retrofit candidates — are concentrated. If your locality isn't listed above, ask during your free site visit; we regularly extend service to new areas on request rather than restricting to a fixed list.";
 
 const faqs = [
   {
     question: "What is the cost of a home elevator in Hyderabad?",
     answer:
-      "A home elevator in Hyderabad typically starts from around ₹4-6 lakh for a compact 2-floor hydraulic or MRL lift, and can range higher depending on the number of floors, cabin size, finish, and customization. Contact Kashome Elevators for a free site inspection and a customized quotation based on your home's needs.",
+      "A compact 2-floor home elevator typically costs ₹4–6 lakh in Hyderabad, depending on elevator type, cabin size, and number of floors served. Pricing can range higher for gearless models, larger cabins, and premium finishes. Contact Kashome Elevators for a free site inspection and a fixed, itemised quotation based on your home's needs.",
   },
   {
     question: "Which type of home elevator is best for residential properties?",
@@ -424,7 +543,7 @@ const faqs = [
   {
     question: "How long does home lift installation take?",
     answer:
-      "The installation timeline varies depending on the elevator type and project requirements. In most cases, a residential home elevator can be installed within a few weeks after finalizing the design and site preparation.",
+      "Installation typically takes 2–4 weeks from site confirmation to handover, depending on elevator type, number of floors, and whether any civil/electrical prep work is required beforehand. In most cases, a residential home elevator can be installed within a few weeks after finalizing the design and site preparation.",
   },
   {
     question: "Are home elevators safe for children and senior citizens?",
@@ -455,6 +574,36 @@ const faqs = [
     question: "Why choose Kashome Elevators for home elevators in Hyderabad?",
     answer:
       "Kashome Elevators provides premium home elevator solutions with customized designs, high-quality components, advanced safety features, professional installation, and dependable after-sales support. Our focus on quality, customer satisfaction, and reliable service makes us a trusted choice for homeowners looking for a home elevator in Hyderabad.",
+  },
+  {
+    question: "How much space does a home elevator need?",
+    answer:
+      "As little as 4x4 ft of shaft space is enough for a compact hydraulic or MRL home elevator, making retrofits possible in most existing independent houses without major structural changes.",
+  },
+  {
+    question: "Which is better for my home — hydraulic or MRL?",
+    answer:
+      "Hydraulic suits budget-conscious retrofits needing the smallest footprint; MRL suits homes wanting space-efficiency without a separate machine room. The right choice depends on your site — confirmed during a free visit.",
+  },
+  {
+    question: "What happens to the elevator during a power cut?",
+    answer:
+      "Our home elevators include an Automatic Rescue Device (ARD) that brings the cabin to the nearest floor and opens the doors automatically during a power failure, so passengers are never trapped mid-transit.",
+  },
+  {
+    question: "Is KAS Home Elevators certified for installation in Telangana?",
+    answer:
+      "We follow IS 14665 design and safety guidelines and support the Telangana State Electrical Inspectorate approval process required for residential lifts. Ask us for current compliance documentation during your consultation.",
+  },
+  {
+    question: "Do you offer annual maintenance contracts (AMC)?",
+    answer:
+      "Yes, AMC plans are available covering routine servicing, safety checks, and priority breakdown support. Exact AMC pricing depends on elevator type and usage — confirmed during your quote.",
+  },
+  {
+    question: "Can I see real installations you've completed near Hyderabad?",
+    answer:
+      "Yes — we can arrange for you to view completed installations in your locality on request, subject to existing customers' availability and privacy preferences.",
   },
 ];
 
@@ -587,11 +736,16 @@ export default function HomeElevatorHyderabadPage() {
             </h1>
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-              <div className="lg:col-span-7 text-lg sm:text-xl text-slate-100 leading-relaxed">
-                <p className="text-slate-200 font-medium mb-4">{heroDefinition}</p>
-                <p>{linkSeoKeywords(heroIntro)}</p>
+              <div className="lg:col-span-7 text-lg sm:text-xl text-slate-100 leading-relaxed space-y-5">
+                <p className="text-slate-200 font-medium">{heroDefinition}</p>
+                <p>{linkSeoKeywords(heroIntro, seoLinkClassHero)}</p>
+                {addedHeroParagraphs.map((paragraph) => (
+                  <p key={paragraph}>
+                    {linkSeoKeywords(paragraph, seoLinkClassHero)}
+                  </p>
+                ))}
 
-                <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
+                <div className="!mt-10 grid grid-cols-3 gap-4 max-w-md">
                   {trustStats.map((stat) => (
                     <div key={stat.label} className="text-center">
                       <div className="text-2xl sm:text-3xl font-bold text-green-400">
@@ -621,14 +775,40 @@ export default function HomeElevatorHyderabadPage() {
           </div>
         </section>
 
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              What Is a Home Elevator?
+            </h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>{linkSeoKeywords(whatIsHomeElevatorIntro)}</p>
+              <p>{linkSeoKeywords(whatIsHomeElevatorDetails)}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Home Elevator Cost in Hyderabad
+            </h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>{linkSeoKeywords(costIntro)}</p>
+              <p>{linkSeoKeywords(costDetails)}</p>
+            </div>
+          </div>
+        </section>
+
         <section className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Benefits of Installing a Home Elevator in Hyderabad
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(benefitsIntro)}
-            </p>
+            <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
+              <p>{linkSeoKeywords(addedBenefitsIntro)}</p>
+              <p>{linkSeoKeywords(addedBenefitsDetails)}</p>
+              <p>{linkSeoKeywords(benefitsIntro)}</p>
+            </div>
             <ul className="space-y-6 list-disc pl-6">
               {benefits.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
@@ -712,9 +892,11 @@ export default function HomeElevatorHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose Kashome Elevators for Home Elevators in Hyderabad?
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(whyChooseKasIntro)}
-            </p>
+            <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
+              <p>{linkSeoKeywords(addedWhyChooseIntro)}</p>
+              <p>{linkSeoKeywords(addedWhyChooseDetails)}</p>
+              <p>{linkSeoKeywords(whyChooseKasIntro)}</p>
+            </div>
             <ul className="space-y-6 list-disc pl-6">
               {whyChooseKas.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
@@ -739,9 +921,11 @@ export default function HomeElevatorHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Types of Home Elevators
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(elevatorTypesIntro)}
-            </p>
+            <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
+              <p>{linkSeoKeywords(addedTypesIntro)}</p>
+              <p>{linkSeoKeywords(addedTypesDetails)}</p>
+              <p>{linkSeoKeywords(elevatorTypesIntro)}</p>
+            </div>
             <ul className="space-y-6 list-disc pl-6">
               {elevatorTypes.map((item) => (
                 <li key={item.title} className="text-gray-700 leading-relaxed">
@@ -806,6 +990,125 @@ export default function HomeElevatorHyderabadPage() {
                 </tbody>
               </table>
             </div>
+
+            <h3 className="text-2xl font-bold text-gray-900 mt-12 mb-6">
+              Hydraulic vs MRL vs Gearless — Detailed Comparison
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Feature
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Hydraulic
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      MRL
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Gearless
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detailedComparison.map((row, index) => (
+                    <tr
+                      key={row.feature}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.feature}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.hydraulic}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.mrl}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.gearless}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Technical Specifications (Typical Ranges)
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(technicalSpecsIntro)}
+            </p>
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Spec
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Typical Range
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {technicalSpecs.map((row, index) => (
+                    <tr
+                      key={row.spec}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.spec}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.range}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Safety &amp; Certifications
+            </h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>{linkSeoKeywords(safetyIntro)}</p>
+              <p>{linkSeoKeywords(safetyDetails)}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Our Completed Projects in Hyderabad
+            </h2>
+            <p className="text-gray-700 leading-relaxed">
+              {linkSeoKeywords(projectsIntro)}
+            </p>
+          </div>
+        </section>
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              What Our Customers Say
+            </h2>
+            <p className="text-gray-700 leading-relaxed">
+              {linkSeoKeywords(customersIntro)}
+            </p>
           </div>
         </section>
 
@@ -816,11 +1119,15 @@ export default function HomeElevatorHyderabadPage() {
                 <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                   Service Areas in Hyderabad
                 </h2>
-                <p className="text-gray-700 leading-relaxed">
-                  We install and service home elevators across Hyderabad&apos;s top residential
-                  neighbourhoods. Wherever you are in the city, our team can visit your site,
-                  recommend the right lift, and handle installation end to end.
-                </p>
+                <div className="space-y-4 text-gray-700 leading-relaxed">
+                  <p>{linkSeoKeywords(serviceAreasIntro)}</p>
+                  <p>{linkSeoKeywords(serviceAreasDetails)}</p>
+                  <p>
+                    We install and service home elevators across Hyderabad&apos;s top residential
+                    neighbourhoods. Wherever you are in the city, our team can visit your site,
+                    recommend the right lift, and handle installation end to end.
+                  </p>
+                </div>
               </div>
               <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 list-none">
                 {serviceAreas.map((area) => (
@@ -913,9 +1220,22 @@ export default function HomeElevatorHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Get a Free Home Elevator Quote in Hyderabad
             </h2>
-            <p className="text-green-50 text-lg leading-relaxed mb-8">
+            <p className="text-green-50 text-lg leading-relaxed mb-6 max-w-3xl mx-auto">
               Book a free site visit with KAS Home Elevators and get a tailored recommendation
               for your villa, duplex, or independent home.
+            </p>
+            <p className="text-green-50 text-base leading-relaxed mb-8 max-w-3xl mx-auto">
+              {quoteProcessIntro}
+            </p>
+            <ol className="text-left max-w-3xl mx-auto space-y-3 mb-8 list-decimal pl-6 text-green-50">
+              {quoteProcessSteps.map((step) => (
+                <li key={step} className="leading-relaxed">
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <p className="text-green-50 text-base leading-relaxed mb-8 max-w-3xl mx-auto">
+              {quoteProcessClosing}
             </p>
             <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center">
               {ctaButtons.map((cta) => (
