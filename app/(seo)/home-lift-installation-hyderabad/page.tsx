@@ -265,9 +265,6 @@ const serviceAreas = [
 const serviceAreasIntro =
   "KAS Home Elevators provides lift installation services across Hyderabad, including Banjara Hills, Jubilee Hills, Gachibowli, Madhapur, Kondapur, Kukatpally, Miyapur, HITEC City, Kompally, Manikonda, Tellapur, Shamshabad, Secunderabad, Uppal, and LB Nagar.";
 
-const serviceAreasDetails =
-  "We install and service home lifts for villa communities and independent homeowners across all major residential zones of Hyderabad — from Banjara Hills and Jubilee Hills to the fast-growing western corridor of Gachibowli, Kondapur, Kokapet, and Tellapur, as well as Kompally and Secunderabad. Our site-inspection team can visit anywhere in Hyderabad within a few days of enquiry.";
-
 const addedWhyKasIntro =
   "KAS Home Elevators brings 10+ years of experience, 500+ completed lift installations, and multi-country operations (India, UAE, Malaysia), with certified engineers, transparent pricing, and dependable after-sales AMC support.";
 
@@ -280,23 +277,32 @@ const addedWhyKasPoints = [
   "Comprehensive maintenance and AMC support after installation",
 ];
 
+const addedMaintenanceList = [
+  "Preventive maintenance services with scheduled inspections",
+  "Flexible AMC plans covering routine servicing and performance checks",
+  "Fast technical assistance to minimize downtime",
+  "Genuine, manufacturer-recommended replacement components",
+];
+
 const ctaQuoteIntro =
   "Planning lift installation for your villa, duplex, or independent house in Hyderabad? Book a free site inspection with KAS Home Elevators and get a personalized quotation based on your home's exact layout and budget.";
 
+const businessPhone = "+91-8019219911";
+const businessPhoneTel = "tel:+918019219911";
+const businessEmail = "assist@kashomeelevators.com";
+
 const tocLinks = [
   { href: "#what-involve", label: "What Installation Involves" },
-  { href: "#introduction", label: "Introduction" },
   { href: "#why-choose", label: "Why Choose Professional Installation" },
   { href: "#benefits", label: "Benefits" },
   { href: "#features", label: "Features" },
   { href: "#lift-types", label: "Types of Home Lifts" },
   { href: "#cost", label: "Cost" },
   { href: "#process", label: "Process & Timeline" },
-  { href: "#solutions", label: "Installation Process" },
-  { href: "#safety", label: "Safety Standards" },
   { href: "#maintenance", label: "Maintenance & AMC" },
+  { href: "#solutions", label: "Installation Solutions" },
   { href: "#areas", label: "Areas We Serve" },
-  { href: "#why-kashome", label: "Why Kashome Elevators" },
+  { href: "#why-kashome", label: "Why KAS Home Elevators" },
   { href: "#faqs", label: "FAQs" },
   { href: "#contact", label: "Contact Us" },
 ];
@@ -524,7 +530,7 @@ const liftTypesComparison = [
   },
   {
     type: "Compact",
-    bestFor: "Existing homes with limited space",
+    bestFor: "Existing homes, limited space",
     spaceNeeded: "Minimal",
     highlight: "Fits without major structural changes",
   },
@@ -762,18 +768,15 @@ const contactSections = [
 ];
 
 const contactPoints = [
-  "Professional Residential lift installation in Hyderabad",
-  "Customized Residential Lift Solutions",
-  "Certified Installation Engineers",
-  "Premium Quality Lift Systems",
-  "Advanced Safety Standards",
-  "Timely Project Completion",
-  "Comprehensive Maintenance & AMC Support",
-  "Customer-Focused Service",
+  "📞 Call our elevator experts for a free consultation.",
+  "📧 Send us your enquiry, and our team will respond promptly.",
+  "🏡 Schedule a free site inspection at your home.",
+  "💰 Request a customized quotation based on your project requirements.",
+  "🔧 Get professional guidance on choosing the right residential elevator for your property.",
 ];
 
 const contactClosing =
-  "Whether you're constructing a new home or upgrading an existing property, Kashome Elevators is committed to delivering safe, reliable, and efficient home lift installation in Hyderabad. Contact our team today to schedule your free consultation and discover the perfect home lift solution for your residence.";
+  "Take the first step towards a safer, smarter, and more accessible home with Kashome Elevators. Contact us today to discuss your project and discover why homeowners trust us for premium residential elevator installation in Hyderabad backed by quality, innovation, and dependable customer support.";
 
 const localBusinessSchema = {
   "@context": "https://schema.org",
@@ -1003,11 +1006,9 @@ export default function HomeLiftInstallationHyderabadPage() {
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
-                {addedHeroParagraphs.map((paragraph) => (
-                  <p key={paragraph}>
-                    {linkSeoKeywords(paragraph, seoLinkClassHero)}
-                  </p>
-                ))}
+                <p>
+                  {linkSeoKeywords(addedHeroParagraphs[0], seoLinkClassHero)}
+                </p>
                 <p>{linkSeoKeywords(heroParagraphs[0], seoLinkClassHero)}</p>
                 <p>{linkSeoKeywords(heroParagraphs[1], seoLinkClassHero)}</p>
 
@@ -1040,6 +1041,9 @@ export default function HomeLiftInstallationHyderabadPage() {
             </div>
 
             <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
+              <p>
+                {linkSeoKeywords(addedHeroParagraphs[1], seoLinkClassHero)}
+              </p>
               {heroParagraphs.slice(2).map((paragraph) => (
                 <p key={paragraph}>
                   {linkSeoKeywords(paragraph, seoLinkClassHero)}
@@ -1086,38 +1090,6 @@ export default function HomeLiftInstallationHyderabadPage() {
               <p>{linkSeoKeywords(whatInstallationInvolveIntro)}</p>
               <p>{linkSeoKeywords(whatInstallationInvolveDetails)}</p>
             </div>
-          </div>
-        </section>
-
-        <section id="introduction" className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Introduction
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              {introductionParagraphs.map((paragraph) => (
-                <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
-              ))}
-              <p className="rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
-                {linkSeoKeywords(introductionAeo)}
-              </p>
-            </div>
-            <figure className="mt-10">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-green-100 shadow-lg">
-                <Image
-                  src="/home-lift-installed-villa-hyderabad.webp"
-                  alt="Residential home lift installed in a villa in Hyderabad by Kashome Elevators"
-                  title="Home Lift Installation Completed in a Hyderabad Villa"
-                  fill
-                  sizes="(max-width: 1280px) 100vw, 1200px"
-                  className="object-cover"
-                />
-              </div>
-              <figcaption className="mt-3 text-center text-sm text-gray-600">
-                A fully installed and tested home lift in a Hyderabad villa,
-                completed by Kashome Elevators&apos; certified engineering team.
-              </figcaption>
-            </figure>
           </div>
         </section>
 
@@ -1213,10 +1185,9 @@ export default function HomeLiftInstallationHyderabadPage() {
         <ListSection
           id="features"
           title="Features of Our Home Lift Installation Services"
-          intro={featuresIntro}
-          subIntro={featuresSubIntro}
+          intro={featuresAeo}
+          subIntro={`${featuresIntro} ${featuresSubIntro ?? ""}`.trim()}
           items={features}
-          aeo={featuresAeo}
           closing={featuresClosing}
           bgWhite
           linkSeoKeywords={linkSeoKeywords}
@@ -1233,11 +1204,8 @@ export default function HomeLiftInstallationHyderabadPage() {
           linkSeoKeywords={linkSeoKeywords}
         />
 
-        <section className="py-16 bg-white">
+        <section className="pb-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Home Lift Types Compared
-            </h2>
             <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -1272,7 +1240,7 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section id="cost" className="py-16 scroll-mt-24">
+        <section id="cost" className="py-16 bg-white scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Lift Installation Cost in Hyderabad
@@ -1315,7 +1283,7 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section id="process" className="py-16 bg-white scroll-mt-24">
+        <section id="process" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Our Installation Process & Timeline
@@ -1334,6 +1302,22 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
+        <section id="maintenance" className="py-16 bg-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Maintenance & After-Sales Support
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {linkSeoKeywords(addedMaintenanceIntro)}
+            </p>
+            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed">
+              {addedMaintenanceList.map((item) => (
+                <li key={item}>{linkSeoKeywords(item)}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
         <ListSection
           id="solutions"
           title="Our Home Lift Installation Solutions"
@@ -1342,34 +1326,10 @@ export default function HomeLiftInstallationHyderabadPage() {
           items={solutions}
           aeo={solutionsAeo}
           closing={solutionsClosing}
-          bgWhite
           linkSeoKeywords={linkSeoKeywords}
         />
 
-        <ListSection
-          id="safety"
-          title="Safety Standards We Follow During Home Lift Installation"
-          intro={addedSafetyIntro}
-          subIntro={`${safetyIntro} ${safetySubIntro ?? ""}`.trim()}
-          items={safetyItems}
-          aeo={safetyAeo}
-          closing={safetyClosing}
-          linkSeoKeywords={linkSeoKeywords}
-        />
-
-        <ListSection
-          id="maintenance"
-          title="Maintenance & After-Sales Support"
-          intro={addedMaintenanceIntro}
-          subIntro={`${maintenanceIntro} ${maintenanceSubIntro ?? ""}`.trim()}
-          items={maintenanceItems}
-          aeo={maintenanceAeo}
-          closing={maintenanceClosing}
-          bgWhite
-          linkSeoKeywords={linkSeoKeywords}
-        />
-
-        <section id="areas" className="py-16 scroll-mt-24">
+        <section id="areas" className="py-16 bg-white scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-white p-8 sm:p-10 shadow-sm">
               <div className="max-w-3xl mb-8">
@@ -1378,7 +1338,6 @@ export default function HomeLiftInstallationHyderabadPage() {
                 </h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed">
                   <p>{linkSeoKeywords(serviceAreasIntro)}</p>
-                  <p>{linkSeoKeywords(serviceAreasDetails)}</p>
                 </div>
               </div>
               <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 list-none">
@@ -1421,41 +1380,16 @@ export default function HomeLiftInstallationHyderabadPage() {
         <section id="why-kashome" className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Why Choose KAS Home Elevators
+              Why Choose KAS Home Elevators in Hyderabad
             </h2>
             <p className="text-gray-700 leading-relaxed mb-6">
               {linkSeoKeywords(addedWhyKasIntro)}
             </p>
-            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed mb-10">
+            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed">
               {addedWhyKasPoints.map((item) => (
                 <li key={item}>{linkSeoKeywords(item)}</li>
               ))}
             </ul>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Why Choose Kashome Elevators for Home Lift Installation in
-              Hyderabad?
-            </h3>
-            <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
-              {whyKashomeIntro.map((paragraph) => (
-                <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
-              ))}
-            </div>
-            <ul className="space-y-6 list-disc pl-6">
-              {whyKashome.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold">
-                    {linkSeoKeywords(item.title)}
-                  </h3>
-                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8 rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
-              {linkSeoKeywords(whyKashomeAeo)}
-            </p>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(whyKashomeClosing)}
-            </p>
           </div>
         </section>
 
@@ -1477,33 +1411,35 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section id="contact" className="py-16">
+        <section id="contact" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 shadow-sm">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                Contact Us / Get a Free Quote
-              </h2>
-              <p className="text-gray-700 leading-relaxed mb-6">
-                {linkSeoKeywords(ctaQuoteIntro)}
-              </p>
-              <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
-                {contactParagraphs.map((paragraph) => (
-                  <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
-                ))}
-              </div>
-              {contactSections.map((section) => (
-                <div key={section.title} className="mb-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                    {section.title}
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed">
-                    {linkSeoKeywords(section.content)}
-                  </p>
-                </div>
-              ))}
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">Contact Us</h2>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Why Contact Kashome Elevators?
+                Get in Touch with Kashome Elevators
               </h3>
+              <div className="grid sm:grid-cols-3 gap-4 mb-6 text-sm">
+                <a
+                  href={businessPhoneTel}
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:border-green-600 transition-colors"
+                >
+                  <span className="block font-semibold text-gray-900">Call Us</span>
+                  <span className="text-gray-700">{businessPhone}</span>
+                </a>
+                <a
+                  href={`mailto:${businessEmail}`}
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:border-green-600 transition-colors"
+                >
+                  <span className="block font-semibold text-gray-900">Email Us</span>
+                  <span className="text-gray-700">{businessEmail}</span>
+                </a>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                  <span className="block font-semibold text-gray-900">Visit Us</span>
+                  <span className="text-gray-700">
+                    Jeedimetla, Hyderabad, Telangana 500055
+                  </span>
+                </div>
+              </div>
               <ul className="space-y-3 text-gray-700 leading-relaxed mb-8 list-none">
                 {contactPoints.map((point) => (
                   <li
@@ -1517,12 +1453,20 @@ export default function HomeLiftInstallationHyderabadPage() {
               <p className="text-gray-700 leading-relaxed mb-8">
                 {linkSeoKeywords(contactClosing)}
               </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors"
-              >
-                Contact Us Today
-              </Link>
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center px-8 py-4 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Contact Us Today
+                </Link>
+                <a
+                  href={businessPhoneTel}
+                  className="inline-flex items-center justify-center px-8 py-4 rounded-lg border border-green-600 text-green-700 font-semibold hover:bg-green-50 transition-colors"
+                >
+                  Call {businessPhone}
+                </a>
+              </div>
             </div>
           </div>
         </section>

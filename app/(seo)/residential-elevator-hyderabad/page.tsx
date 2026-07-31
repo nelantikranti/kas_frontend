@@ -123,11 +123,10 @@ const tocSections = [
   { id: "features", label: "Features" },
   { id: "types", label: "Types" },
   { id: "cost", label: "Cost" },
-  { id: "solutions", label: "Solutions" },
   { id: "installation", label: "Installation Process" },
   { id: "safety", label: "Safety Features" },
+  { id: "solutions", label: "Solutions" },
   { id: "areas", label: "Areas We Serve" },
-  { id: "why-kashome", label: "Why Kashome" },
   { id: "faqs", label: "FAQs" },
   { id: "contact", label: "Contact" },
 ];
@@ -200,6 +199,7 @@ const trustStats = [
 
 const addedHeroParagraphs = [
   "A residential elevator in Hyderabad is a home lift installed in villas, duplex homes, and independent houses for safe, effortless floor-to-floor movement. KAS Home Elevators designs, installs, and maintains custom residential elevators across Hyderabad with advanced safety systems like Automatic Rescue Device (ARD) and battery backup, serving villas, duplexes, and independent homes with hydraulic, MRL, gearless, and smart options.",
+  "Finding the right residential elevator in Hyderabad means combining comfort, safety, and modern living in one solution. At KAS Home Elevators, we specialize in premium residential elevator solutions across Hyderabad, engineered with advanced technology, premium materials, and international safety standards for smooth, quiet, long-term performance.",
   "As a trusted residential elevator company in Hyderabad, we offer complete end-to-end service — site inspection, design, manufacturing, installation, testing, and after-sales maintenance — backed by 10+ years of experience and 500+ completed installations.",
 ];
 
@@ -225,7 +225,7 @@ const addedBenefitsList = [
 ];
 
 const addedTypesIntro =
-  "KAS offers Hydraulic, MRL, Gearless, Villa, Compact, Customized, and Smart residential elevators — Hydraulic and MRL suit most villas and duplex homes, Gearless suits luxury properties, and Compact/Smart options suit space-constrained or tech-forward homes.";
+  "KAS Home Elevators offers Hydraulic, MRL, Gearless, Villa, Compact, Customized, and Smart residential elevators — Hydraulic and MRL suit most villas and duplex homes, Gearless suits luxury properties, and Compact/Smart options suit space-constrained or tech-forward homes.";
 
 const costIntro =
   "A residential elevator in Hyderabad typically costs ₹5 lakh to ₹8 lakh for a compact 2-floor hydraulic or MRL elevator, ₹8-11 lakh for a 3-floor villa elevator, and ₹12 lakh+ for premium gearless or fully customized cabins. Final pricing depends on floors, capacity, and finish.";
@@ -249,17 +249,56 @@ const costTable = [
   },
 ];
 
-const costNote =
-  "These are indicative ranges — final cost is confirmed after a free site inspection, since structural conditions vary from home to home.";
-
 const addedInstallationIntro =
   "KAS follows a 7-stage residential elevator installation process — site inspection, design, engineering, installation, testing, handover, and after-sales maintenance. Most installations are completed within 4-7 weeks after design approval, depending on elevator type and civil work required.";
+
+const installationProcessSteps = [
+  {
+    title: "Free Site Inspection & Requirement Analysis",
+    content: "assessing space, structure, floors, and mobility needs.",
+  },
+  {
+    title: "Customized Design & Planning",
+    content:
+      "cabin style, door type, finishes, control panel, and safety features.",
+  },
+  {
+    title: "Professional Engineering & Manufacturing",
+    content: "premium materials and strict quality control.",
+  },
+  {
+    title: "Expert Installation",
+    content:
+      "certified technicians install with minimal disruption to your routine.",
+  },
+  {
+    title: "Safety Testing & Quality Inspection",
+    content:
+      "ARD, door interlocks, overload protection, and ride quality checked.",
+  },
+  {
+    title: "Final Handover & User Training",
+    content: "full demonstration of operation and emergency procedures.",
+  },
+  {
+    title: "After-Sales Service & Preventive Maintenance",
+    content: "periodic inspections and technical support.",
+  },
+];
 
 const installationTimeline =
   "Typical timeline: 4-5 weeks for compact MRL elevators in existing homes; 6-7 weeks for villa or gearless elevators requiring civil work.";
 
 const addedSafetyIntro =
   "Every KAS residential elevator includes an Automatic Rescue Device (ARD), emergency battery backup, door interlock systems, overload protection, emergency alarms, and smooth start-stop technology — engineered for the safety of children, seniors, and every family member.";
+
+const addedSafetyList = [
+  "Automatic Rescue Device (ARD) — moves the cabin to the nearest floor safely during a power failure",
+  "Emergency battery backup for uninterrupted operation",
+  "Door interlock system and overload protection",
+  "Emergency alarm and communication system",
+  "Smooth start and soft stop technology, anti-skid flooring, LED cabin lighting",
+];
 
 const serviceAreas = [
   "Banjara Hills",
@@ -284,18 +323,6 @@ const serviceAreasIntro =
 
 const serviceAreasDetails =
   "We serve villa communities and independent homeowners across all major residential zones of Hyderabad — from established neighborhoods like Banjara Hills and Jubilee Hills, to the fast-growing western corridor of Gachibowli, Kondapur, Kokapet, and Tellapur, as well as Kompally and Secunderabad. Our site-inspection team can visit anywhere in Hyderabad within a few days of enquiry.";
-
-const addedWhyKasIntro =
-  "KAS Home Elevators brings 10+ years of experience, 500+ completed installations, and multi-country operations (India, UAE, Malaysia), with transparent pricing, in-house certified engineers, and dependable after-sales AMC support — a locally responsive alternative to import-dependent competitors.";
-
-const addedWhyKasPoints = [
-  "10+ years of dedicated residential elevator experience",
-  "500+ installations completed across villas, duplexes, and independent houses",
-  "Multi-country presence — offices in Hyderabad, Abu Dhabi, Kuala Lumpur, and Lucknow",
-  "Transparent pricing with no hidden costs",
-  "In-house certified engineers — no outsourced sub-contracting",
-  "Local Hyderabad-based team — faster response and AMC support vs. import-dependent competitors",
-];
 
 const ctaQuoteIntro =
   "Planning a residential elevator for your villa, duplex, or independent house in Hyderabad? Book a free site inspection with KAS Home Elevators and get a personalized quotation based on your home's exact layout and budget.";
@@ -520,163 +547,11 @@ const solutions = [
 const solutionsClosing =
   "Choosing Kashome Elevators means choosing a trusted partner for high-quality residential elevator solutions in Hyderabad. With innovative technology, customized designs, expert installation, and dependable customer support, we help homeowners create safer, smarter, and more accessible living spaces that deliver lasting value.";
 
-const installationIntro =
-  "Installing a residential elevator in Hyderabad requires careful planning, technical expertise, and precision engineering to ensure long-term safety and reliable performance. At Kashome Elevators, we follow a systematic installation process that guarantees every residential elevator is installed according to industry standards while meeting your home's structural and aesthetic requirements. From the initial consultation to final testing, our experienced professionals ensure a smooth and hassle-free installation experience.";
-
-const installationSteps = [
-  {
-    title: "Free Site Inspection & Requirement Analysis",
-    content:
-      "Every successful project begins with a detailed site inspection. Our experts visit your property to evaluate the available space, building structure, number of floors, and mobility requirements. Based on this assessment, we recommend the most suitable residential elevator solution in Hyderabad that fits your home perfectly.",
-  },
-  {
-    title: "Customized Design & Planning",
-    content:
-      "After understanding your requirements, our design team creates a customized elevator plan that complements your home's architecture and interior design. We help you choose the right cabin style, door type, finishes, control panel, and safety features while ensuring maximum space utilization and functionality.",
-  },
-  {
-    title: "Professional Engineering & Manufacturing",
-    content:
-      "Once the design is approved, we manufacture your residential elevator using premium-quality materials, advanced technology, and strict quality control standards. Every component is carefully engineered to deliver smooth performance, durability, and long-term reliability.",
-  },
-  {
-    title: "Expert Residential Elevator Installation",
-    content:
-      "Our certified technicians carry out the residential elevator installation in Hyderabad with complete precision and attention to detail. We follow all safety guidelines and industry best practices to ensure the elevator is installed efficiently with minimal disruption to your daily routine.",
-  },
-  {
-    title: "Safety Testing & Quality Inspection",
-    content:
-      "Before handing over the elevator, our engineers perform comprehensive safety inspections and performance tests. Every system, including emergency backup, door interlocks, control panels, overload protection, and ride quality, is thoroughly checked to ensure your residential elevator operates safely and efficiently.",
-  },
-  {
-    title: "Final Handover & User Training",
-    content:
-      "After successful testing, we provide a complete demonstration of your elevator's operation and safety features. Our team explains the control system, emergency procedures, and maintenance guidelines so you can use your elevator confidently from day one.",
-  },
-  {
-    title: "After-Sales Service & Preventive Maintenance",
-    content:
-      "Our relationship with customers continues long after installation. We offer reliable maintenance services, periodic inspections, and prompt technical support to keep your residential elevator in Hyderabad operating smoothly for years. Regular servicing helps improve safety, extend the elevator's lifespan, and maintain optimal performance.",
-  },
-];
-
-const installationClosing =
-  "Choosing Kashome Elevators means choosing a trusted partner for residential elevator installation in Hyderabad. With expert planning, customized solutions, professional installation, rigorous quality checks, and dependable after-sales support, we ensure every homeowner receives a safe, efficient, and long-lasting elevator solution tailored to their needs.";
-
-const safetyIntro =
-  "Safety is the foundation of every residential elevator in Hyderabad we design and install. At Kashome Elevators, we understand that a home elevator is used daily by children, senior citizens, and every member of the family. That's why every residential elevator is engineered with advanced safety technologies, premium-quality components, and strict quality standards to ensure a secure, smooth, and worry-free riding experience. Our goal is to provide homeowners with reliable mobility solutions that deliver complete peace of mind for years to come.";
-
-const safetyFeatures = [
-  {
-    title: "Automatic Rescue Device (ARD)",
-    content:
-      "Power interruptions should never compromise your safety. Our residential elevators are equipped with an Automatic Rescue Device (ARD) that automatically moves the elevator to the nearest floor and opens the doors safely during a power failure, allowing passengers to exit without difficulty.",
-  },
-  {
-    title: "Emergency Battery Backup",
-    content:
-      "Every residential elevator installation in Hyderabad includes a dependable battery backup system that supports essential elevator functions during unexpected power outages. This feature enhances passenger safety and ensures uninterrupted emergency operation.",
-  },
-  {
-    title: "Door Interlock Safety System",
-    content:
-      "Our elevators feature advanced door interlock technology that prevents the elevator from operating unless all doors are securely closed. This important safety feature minimizes the risk of accidents and ensures safe operation every time.",
-  },
-  {
-    title: "Overload Protection System",
-    content:
-      "The intelligent overload protection system continuously monitors the elevator's carrying capacity. If the load exceeds the recommended limit, the elevator alerts users and temporarily prevents operation until the excess weight is removed, protecting both passengers and the equipment.",
-  },
-  {
-    title: "Emergency Alarm and Communication System",
-    content:
-      "Every residential elevator is fitted with an emergency alarm button that allows passengers to quickly seek assistance whenever required. This feature provides additional confidence and security, especially for senior citizens and children.",
-  },
-  {
-    title: "Smooth Start and Soft Stop Technology",
-    content:
-      "Our advanced drive systems ensure smooth acceleration and gentle stopping, eliminating sudden jerks during travel. This improves ride comfort while enhancing safety for elderly passengers, young children, and individuals with mobility challenges.",
-  },
-  {
-    title: "Anti-Skid Flooring and LED Cabin Lighting",
-    content:
-      "Passenger safety also depends on cabin design. Our elevators include anti-skid flooring for improved grip and bright energy-efficient LED lighting to provide better visibility, creating a safe and comfortable environment inside the elevator cabin.",
-  },
-  {
-    title: "Premium Quality Components",
-    content:
-      "Every residential elevator solution in Hyderabad is manufactured using high-quality components sourced from trusted suppliers. Each part undergoes rigorous quality checks to ensure maximum durability, dependable performance, and long-term operational safety.",
-  },
-  {
-    title: "Regular Maintenance and Safety Inspections",
-    content:
-      "Safety doesn't end after installation. Kashome Elevators provides preventive maintenance, periodic inspections, and prompt technical support to ensure your residential elevator continues to operate efficiently while maintaining the highest safety standards throughout its lifespan.",
-  },
-];
-
-const safetyClosing =
-  "When you choose Kashome Elevators, you're choosing a company that places safety above everything else. Our advanced safety technologies, professional installation process, and reliable after-sales support ensure every residential elevator in Hyderabad delivers secure, smooth, and dependable performance, making your home safer, smarter, and more accessible for every member of your family.";
-
-const whyKashomeIntro =
-  "Selecting the right company for your residential elevator in Hyderabad is just as important as choosing the elevator itself. At Kashome Elevators, we are committed to delivering premium residential elevator solutions that combine innovative technology, superior safety, elegant design, and exceptional customer service. With years of industry expertise and a customer-first approach, we help homeowners transform their living spaces with reliable, customized, and future-ready elevator solutions. From consultation to installation and long-term maintenance, we ensure a seamless experience at every stage.";
-
-const whyKashome = [
-  {
-    title: "Customized Residential Elevator Solutions",
-    content:
-      "Every home is unique, and so are its requirements. We design and install customized residential elevator solutions in Hyderabad that perfectly match your home's architecture, available space, interior aesthetics, and mobility needs. Whether it's a luxury villa, duplex home, bungalow, or independent house, we deliver solutions tailored specifically for you.",
-  },
-  {
-    title: "Advanced Safety Standards",
-    content:
-      "Your family's safety is our highest priority. Every residential elevator installation in Hyderabad is equipped with advanced safety features, including Automatic Rescue Device (ARD), emergency battery backup, door interlock systems, overload protection, emergency alarm systems, and smooth start-stop technology. We follow strict quality standards to ensure safe and dependable operation every day.",
-  },
-  {
-    title: "Premium Quality Products",
-    content:
-      "We use high-quality components, modern engineering techniques, and premium materials to manufacture durable residential elevators that deliver long-lasting performance. Our elevators are designed to provide smooth operation, low maintenance, and excellent reliability for years.",
-  },
-  {
-    title: "Professional Installation by Experienced Engineers",
-    content:
-      "Our certified technicians manage every stage of the installation process with precision and attention to detail. From site inspection and planning to testing and commissioning, we ensure every residential elevator in Hyderabad is installed according to industry standards for maximum safety and efficiency.",
-  },
-  {
-    title: "Elegant Designs with Modern Technology",
-    content:
-      "A residential elevator should enhance both functionality and aesthetics. Our elevators feature premium cabin finishes, stylish interiors, smart control systems, LED lighting, and customizable designs that blend beautifully with modern and traditional homes.",
-  },
-  {
-    title: "Energy-Efficient and Cost-Effective Solutions",
-    content:
-      "Our elevators are designed using advanced energy-efficient technology that reduces electricity consumption without compromising performance. Homeowners benefit from lower operating costs while enjoying a reliable and environmentally responsible mobility solution.",
-  },
-  {
-    title: "Reliable After-Sales Service and Maintenance",
-    content:
-      "Our relationship with customers continues long after installation. We provide preventive maintenance, regular inspections, prompt technical support, and quick service assistance to ensure your residential elevator continues to operate safely and efficiently throughout its lifespan.",
-  },
-  {
-    title: "Transparent Pricing with No Hidden Costs",
-    content:
-      "We believe in honest business practices and complete transparency. Our team provides clear quotations, detailed project planning, and cost-effective solutions without hidden charges, helping homeowners make confident investment decisions.",
-  },
-];
-
-const whyKashomeClosing =
-  "Choosing Kashome Elevators means choosing a trusted partner for residential elevator installation in Hyderabad. Our commitment to quality, safety, innovation, and customer satisfaction has made us a preferred choice for homeowners looking for reliable residential elevator solutions. Whether you're planning a new home or upgrading an existing property, we are dedicated to delivering elevators that provide superior comfort, enhanced accessibility, and long-term value for your investment.";
-
 const faqs = [
   {
     question: "What is the cost of a residential elevator in Hyderabad?",
     answer:
-      "A residential elevator in Hyderabad typically costs between ₹5 lakh and ₹8 lakh for a compact 2-floor hydraulic or MRL elevator, going up to ₹16 lakh+ for premium gearless or fully customized configurations. The final cost also depends on floors, cabin size, design preferences, features, and installation requirements. Book a free site inspection with Kashome Elevators for an exact quote.",
-  },
-  {
-    question: "Which type of residential elevator is best for a home?",
-    answer:
-      "The ideal residential elevator depends on your home's structure, available space, and daily usage. Hydraulic, Machine Room-Less (MRL), gearless, and customized home elevators are among the most popular options. Our experts will recommend the best residential elevator solution in Hyderabad based on your specific requirements.",
+      "A residential elevator in Hyderabad typically costs between ₹5 lakh and ₹8 lakh for a compact 2-floor hydraulic or MRL elevator, going up to ₹16 lakh+ for premium gearless or fully customized configurations. Book a free site inspection for an exact quote.",
   },
   {
     question: "Which type of residential elevator is best for a villa?",
@@ -686,27 +561,27 @@ const faqs = [
   {
     question: "How long does residential elevator installation take?",
     answer:
-      "Most installations take 4-7 weeks from design approval to handover, depending on elevator type and civil work required. In most cases, residential elevator installation in Hyderabad is completed after design approval and site readiness. Our team follows a structured installation process to ensure quality, safety, and timely project completion.",
+      "Most installations take 4-7 weeks from design approval to handover, depending on elevator type and civil work required.",
   },
   {
     question: "Are residential elevators safe for children and senior citizens?",
     answer:
-      "Yes. Every residential elevator in Hyderabad installed by Kashome Elevators is equipped with advanced safety features such as Automatic Rescue Device (ARD), emergency battery backup, overload protection, door interlock systems, emergency alarms, and smooth start-stop technology. These features provide a safe and comfortable riding experience for every family member.",
+      "Yes. Every KAS residential elevator includes an Automatic Rescue Device, battery backup, door interlocks, overload protection, and emergency alarms.",
   },
   {
     question: "Can a residential elevator be installed in an existing home?",
     answer:
-      "Absolutely. Our residential elevators are designed for both new construction projects and existing homes. After a detailed site inspection, our engineers recommend the most suitable elevator solution that requires minimal structural modifications while maintaining excellent performance and safety.",
+      "Yes. After a detailed site inspection, our engineers recommend a solution requiring minimal structural modification for existing homes.",
   },
   {
     question: "Do residential elevators require regular maintenance?",
     answer:
-      "Yes. Like any mechanical system, residential elevators require periodic maintenance to ensure smooth operation, safety, and long-term reliability. Kashome Elevators offers preventive maintenance services, routine inspections, AMC plans, and prompt technical support to keep your elevator performing at its best.",
+      "Yes, periodic maintenance ensures safety and reliability. KAS offers preventive maintenance and AMC plans.",
   },
   {
-    question: "Are your residential elevators energy efficient?",
+    question: "Are KAS residential elevators energy efficient?",
     answer:
-      "Yes. Our residential elevators use advanced energy-efficient technology that helps reduce electricity consumption while delivering smooth, quiet, and reliable performance. This allows homeowners to enjoy modern convenience with lower operating costs.",
+      "Yes, our elevators use energy-efficient technology that reduces electricity consumption without compromising performance.",
   },
   {
     question: "Which areas in Hyderabad does KAS serve?",
@@ -719,21 +594,10 @@ const faqs = [
       "KAS is a Hyderabad-based team offering local response times, transparent pricing, and dependable AMC support, without the delays and costs associated with imported elevator systems.",
   },
   {
-    question: "Why should I choose Kashome Elevators for a residential elevator in Hyderabad?",
-    answer:
-      "KAS combines 10+ years of experience, 500+ completed installations, in-house engineers, transparent pricing, and dedicated after-sales AMC support. Kashome Elevators is a trusted provider of residential elevator solutions in Hyderabad, offering customized designs, premium-quality products, professional installation, advanced safety features, and dependable after-sales support.",
-  },
-  {
     question: "Why choose KAS Home Elevators for a residential elevator in Hyderabad?",
     answer:
       "KAS combines 10+ years of experience, 500+ completed installations, in-house engineers, transparent pricing, and dedicated after-sales AMC support.",
   },
-];
-
-const contactParagraphs = [
-  "Looking for a trusted residential elevator in Hyderabad? Kashome Elevators is here to help you choose the perfect elevator solution for your home. Whether you're planning a new residential project, renovating an existing property, or upgrading your villa with a modern elevator, our experienced team is ready to provide expert guidance, customized solutions, and professional installation services.",
-  "From the initial consultation and free site inspection to residential elevator installation in Hyderabad and reliable after-sales support, we are committed to delivering a seamless experience at every stage. Our experts carefully understand your requirements and recommend the most suitable residential elevator based on your home's layout, available space, budget, and design preferences.",
-  "If you have any questions about our residential elevator solutions in Hyderabad, pricing, installation process, maintenance services, or customization options, feel free to get in touch with us. We believe in transparent communication, timely project execution, and complete customer satisfaction.",
 ];
 
 const contactPoints = [
@@ -875,9 +739,9 @@ const howToSchema = {
   "@context": "https://schema.org",
   "@type": "HowTo",
   name: "Residential Elevator Installation Process in Hyderabad",
-  description: installationIntro,
+  description: addedInstallationIntro,
   totalTime: "P5W",
-  step: installationSteps.map((step, index) => ({
+  step: installationProcessSteps.map((step, index) => ({
     "@type": "HowToStep",
     position: index + 1,
     name: step.title,
@@ -1126,7 +990,7 @@ export default function ResidentialElevatorHyderabadPage() {
 
         <ListSection
           id="types"
-          title="Types of Residential Elevators"
+          title="Types of Residential Elevators We Offer"
           intro={`${addedTypesIntro} ${elevatorTypesIntro}`}
           items={elevatorTypes}
           closing={elevatorTypesClosing}
@@ -1202,7 +1066,32 @@ export default function ResidentialElevatorHyderabadPage() {
                 </tbody>
               </table>
             </div>
-            <p className="text-gray-700 leading-relaxed">{linkSeoKeywords(costNote)}</p>
+          </div>
+        </section>
+
+        <ListSection
+          id="installation"
+          title="Installation Process & Timeline"
+          intro={addedInstallationIntro}
+          items={installationProcessSteps}
+          closing={installationTimeline}
+          bgWhite
+          linkSeoKeywords={linkSeoKeywords}
+        />
+
+        <section id="safety" className="py-16 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Safety Features
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {linkSeoKeywords(addedSafetyIntro)}
+            </p>
+            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed">
+              {addedSafetyList.map((item) => (
+                <li key={item}>{linkSeoKeywords(item)}</li>
+              ))}
+            </ul>
           </div>
         </section>
 
@@ -1212,29 +1101,11 @@ export default function ResidentialElevatorHyderabadPage() {
           intro={solutionsIntro}
           items={solutions}
           closing={solutionsClosing}
-          linkSeoKeywords={linkSeoKeywords}
-        />
-
-        <ListSection
-          id="installation"
-          title="Residential Elevator Installation Process"
-          intro={`${addedInstallationIntro} ${installationIntro}`}
-          items={installationSteps}
-          closing={`${installationClosing} ${installationTimeline}`}
           bgWhite
           linkSeoKeywords={linkSeoKeywords}
         />
 
-        <ListSection
-          id="safety"
-          title="Safety Features of Our Residential Elevators"
-          intro={`${addedSafetyIntro} ${safetyIntro}`}
-          items={safetyFeatures}
-          closing={safetyClosing}
-          linkSeoKeywords={linkSeoKeywords}
-        />
-
-        <section id="areas" className="py-16 bg-white scroll-mt-24">
+        <section id="areas" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-white p-8 sm:p-10 shadow-sm">
               <div className="max-w-3xl mb-8">
@@ -1283,39 +1154,6 @@ export default function ResidentialElevatorHyderabadPage() {
           </div>
         </section>
 
-        <section id="why-kashome" className="py-16 scroll-mt-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Why Choose KAS Home Elevators
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              {linkSeoKeywords(addedWhyKasIntro)}
-            </p>
-            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed mb-10">
-              {addedWhyKasPoints.map((item) => (
-                <li key={item}>{linkSeoKeywords(item)}</li>
-              ))}
-            </ul>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Why Choose Kashome Elevators?
-            </h3>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(whyKashomeIntro)}
-            </p>
-            <ul className="space-y-6 list-disc pl-6">
-              {whyKashome.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold">{item.title}</h3>
-                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(whyKashomeClosing)}
-            </p>
-          </div>
-        </section>
-
         <section id="faqs" className="py-16 bg-white scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
@@ -1340,13 +1178,6 @@ export default function ResidentialElevatorHyderabadPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 shadow-sm">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">Contact Us</h2>
-              <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
-                {contactParagraphs.map((paragraph) => (
-                  <p key={paragraph}>
-                    {linkSeoKeywords(paragraph)}
-                  </p>
-                ))}
-              </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 Get in Touch with Kashome Elevators
               </h3>
