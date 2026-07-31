@@ -104,16 +104,17 @@ const ctaButtons = [
 ];
 
 const seoTitle =
-  "Home Lift Installation Hyderabad | #1 Trusted & Certified Experts";
+  "Lift Installation in Hyderabad | Certified Engineers & Free Site Visit – KAS";
 const seoDescription =
-  "Top-rated home lift installation in Hyderabad. Certified engineers, safety-tested lifts & transparent pricing. Get a FREE site inspection — book now!";
-const lastUpdatedIso = "2026-07-18";
-const lastUpdatedDisplay = "18 July 2026";
+  "Lift installation in Hyderabad starting ₹5 lakh. Certified engineers, safety-tested lifts, transparent pricing. Free site inspection — book now.";
+const lastUpdatedIso = "2026-07-31";
+const lastUpdatedDisplay = "31 July 2026";
 
 export const metadata: Metadata = {
   title: seoTitle,
   description: seoDescription,
   keywords: [
+    "lift installation Hyderabad",
     "home lift installation Hyderabad",
     "home lift installation cost Hyderabad",
     "residential elevator installation Hyderabad",
@@ -163,17 +164,138 @@ export const metadata: Metadata = {
 };
 
 const quickAnswer =
-  "Quick Answer: Kashome Elevators provides certified home elevator installation in Hyderabad for villas, duplexes, and independent homes — covering free site inspection, MRL/hydraulic/gearless lift options, safety-tested installation, and after-sales AMC support, typically completed within a few weeks of confirmation.";
+  "KAS Home Elevators provides certified lift installation in Hyderabad for villas, duplexes, and independent homes — covering free site inspection, MRL/hydraulic/gearless lift options, safety-tested installation, transparent pricing, and after-sales AMC support, typically completed within 4-7 weeks of confirmation.";
+
+const trustStats = [
+  { value: "10+", label: "Years of Expertise" },
+  { value: "500+", label: "Installations Completed" },
+  { value: "4", label: "Countries Served" },
+];
+
+const addedHeroParagraphs = [
+  "Looking for reliable lift installation in Hyderabad that combines safety, precision, and long-term performance? KAS Home Elevators offers professional home lift installation services designed for villas, duplex homes, independent houses, and luxury residences across Hyderabad. Whether you're constructing a new home or upgrading an existing property, our experienced team delivers customized lift installation solutions that integrate seamlessly with your home's architecture.",
+  "Every project begins with a detailed site inspection to understand your space, structural requirements, and personal preferences, followed by certified installation, safety testing, and dependable after-sales support — backed by 10+ years of experience and 500+ completed installations across India and abroad.",
+];
+
+const whatInstallationInvolveIntro =
+  "Home lift installation is the professional process of fitting a residential elevator into a villa, duplex, or independent home. It includes site inspection, lift selection, structural planning, installation, safety testing, and final commissioning to ensure safe, reliable, long-lasting performance.";
+
+const whatInstallationInvolveDetails =
+  "Choosing a professional company for lift installation in Hyderabad is one of the most important decisions when adding a lift to your home. While selecting the right lift model matters, proper installation is what ensures long-term safety, smooth operation, and reliable performance. At KAS Home Elevators, every installation begins with a comprehensive site inspection and detailed project planning, followed by certified engineering, strict quality control, and complete testing before handover.";
+
+const addedBenefitsIntro =
+  "Professional installation improves accessibility for elderly and mobility-challenged family members, increases property value, adds everyday convenience, and — most importantly — ensures the lift is fitted to industry safety standards with features like Automatic Rescue Device (ARD) and battery backup.";
+
+const addedBenefitsList = [
+  "Enhanced accessibility for senior citizens, children, and mobility-challenged family members",
+  "Increased property value and future resale readiness",
+  "Everyday convenience — effortless movement of groceries, luggage, and furniture between floors",
+  "Maximum safety — ARD, battery backup, overload protection, door interlocks, emergency alarms",
+  "Energy-efficient, low-maintenance operation with optimized long-term running costs",
+  "Tailored cabin design — interior finish, door style, capacity, and control panel matched to your home",
+];
+
+const addedTypesIntro =
+  "KAS installs Machine Room-Less (MRL), Hydraulic, Gearless, Glass, and Compact home lifts. MRL and Compact suit space-constrained homes, Hydraulic and Gearless suit low-rise and luxury villas, and Glass lifts suit premium designer homes.";
+
+const costIntro =
+  "Lift installation in Hyderabad typically costs ₹5 lakh to ₹7.5 lakh for a compact 2-floor MRL or hydraulic lift, ₹7.5-10.5 lakh for a 3-floor villa installation, and ₹11 lakh+ for premium gearless or glass lift installations. Final pricing depends on floors, capacity, and finish.";
+
+const costTable = [
+  {
+    configuration: "2-floor compact MRL/hydraulic installation",
+    price: "₹5 lakh – ₹7.5 lakh",
+  },
+  {
+    configuration: "3-floor villa installation",
+    price: "₹7.5 lakh – ₹10.5 lakh",
+  },
+  {
+    configuration: "Gearless installation (premium villa)",
+    price: "₹10.5 lakh – ₹14 lakh",
+  },
+  {
+    configuration: "Glass lift / fully customized installation",
+    price: "₹12 lakh – ₹16 lakh+",
+  },
+];
+
+const costNote =
+  "These are indicative ranges — final installation cost is confirmed after a free site inspection, since structural conditions vary from home to home.";
+
+const processIntro =
+  "KAS follows a structured 6-stage lift installation process — site inspection, customized design, certified engineering, professional installation, safety testing, and handover with after-sales support. Most residential installations are completed within 4-7 weeks after design approval.";
+
+const processSteps = [
+  "Detailed Site Inspection — assessing structure, shaft requirements, available space, and electrical provisions.",
+  "Customized Design & Planning — lift type, cabin finish, door configuration, and control panel selected to match your home.",
+  "Certified Engineering & Manufacturing — premium components sourced from trusted manufacturers.",
+  "Professional Installation — certified engineers install with precise alignment and structural stability.",
+  "Safety Testing & Quality Checks — operational testing, emergency function verification, overload testing, door alignment checks.",
+  "Handover & After-Sales Support — final walkthrough, documentation, warranty, and AMC options.",
+];
+
+const processTimeline =
+  "Typical timeline: 4-5 weeks for compact MRL installations in existing homes; 6-7 weeks for villa, gearless, or glass lift installations requiring civil work.";
+
+const addedSafetyIntro =
+  "Every KAS lift installation follows industry-standard safety protocols, including Automatic Rescue Device (ARD), emergency battery backup, overload protection, door interlock systems, emergency alarms, and comprehensive pre-handover quality inspection.";
+
+const addedMaintenanceIntro =
+  "KAS provides preventive maintenance, Annual Maintenance Contracts (AMC), fast technical assistance, and genuine spare parts to keep every installed lift operating safely and efficiently throughout its lifespan.";
+
+const serviceAreas = [
+  "Banjara Hills",
+  "Jubilee Hills",
+  "Gachibowli",
+  "Madhapur",
+  "Kondapur",
+  "Kukatpally",
+  "Miyapur",
+  "HITEC City",
+  "Kompally",
+  "Manikonda",
+  "Tellapur",
+  "Shamshabad",
+  "Secunderabad",
+  "Uppal",
+  "LB Nagar",
+];
+
+const serviceAreasIntro =
+  "KAS Home Elevators provides lift installation services across Hyderabad, including Banjara Hills, Jubilee Hills, Gachibowli, Madhapur, Kondapur, Kukatpally, Miyapur, HITEC City, Kompally, Manikonda, Tellapur, Shamshabad, Secunderabad, Uppal, and LB Nagar.";
+
+const serviceAreasDetails =
+  "We install and service home lifts for villa communities and independent homeowners across all major residential zones of Hyderabad — from Banjara Hills and Jubilee Hills to the fast-growing western corridor of Gachibowli, Kondapur, Kokapet, and Tellapur, as well as Kompally and Secunderabad. Our site-inspection team can visit anywhere in Hyderabad within a few days of enquiry.";
+
+const addedWhyKasIntro =
+  "KAS Home Elevators brings 10+ years of experience, 500+ completed lift installations, and multi-country operations (India, UAE, Malaysia), with certified engineers, transparent pricing, and dependable after-sales AMC support.";
+
+const addedWhyKasPoints = [
+  "10+ years of dedicated lift installation experience",
+  "500+ installations completed across villas, duplexes, and independent houses",
+  "Multi-country presence — offices in Hyderabad, Abu Dhabi, Kuala Lumpur, and Lucknow",
+  "Certified installation engineers — in-house team, no outsourced sub-contracting",
+  "Transparent pricing with no hidden costs",
+  "Comprehensive maintenance and AMC support after installation",
+];
+
+const ctaQuoteIntro =
+  "Planning lift installation for your villa, duplex, or independent house in Hyderabad? Book a free site inspection with KAS Home Elevators and get a personalized quotation based on your home's exact layout and budget.";
 
 const tocLinks = [
+  { href: "#what-involve", label: "What Installation Involves" },
   { href: "#introduction", label: "Introduction" },
   { href: "#why-choose", label: "Why Choose Professional Installation" },
   { href: "#benefits", label: "Benefits" },
   { href: "#features", label: "Features" },
   { href: "#lift-types", label: "Types of Home Lifts" },
+  { href: "#cost", label: "Cost" },
+  { href: "#process", label: "Process & Timeline" },
   { href: "#solutions", label: "Installation Process" },
   { href: "#safety", label: "Safety Standards" },
   { href: "#maintenance", label: "Maintenance & AMC" },
+  { href: "#areas", label: "Areas We Serve" },
   { href: "#why-kashome", label: "Why Kashome Elevators" },
   { href: "#faqs", label: "FAQs" },
   { href: "#contact", label: "Contact Us" },
@@ -549,70 +671,70 @@ const whyKashomeClosing =
 
 const faqs = [
   {
-    question: "How much does home lift installation cost in Hyderabad?",
+    question: "How much does lift installation cost in Hyderabad?",
     answer:
-      "The cost of home lift installation in Hyderabad depends on several factors, including the type of lift, number of floors, lift capacity, cabin customization, shaft requirements, and installation complexity. Contact Kashome Elevators for a free site inspection and a customized quotation based on your property.",
+      "Lift installation in Hyderabad typically costs between ₹5 lakh and ₹7.5 lakh for a compact 2-floor MRL or hydraulic lift, going up to ₹16 lakh+ for premium gearless or glass lift installations. Book a free site inspection for an exact quote.",
   },
   {
-    question: "How long does a home lift installation take?",
+    question: "How long does home lift installation take?",
     answer:
-      "The installation timeline varies depending on the lift model and project requirements. In most residential projects, professional home lift installation can be completed within a few weeks after site preparation and product availability.",
+      "Most installations take 4-7 weeks from design approval to handover, depending on lift type and civil work required.",
   },
   {
     question: "Which type of home lift is best for residential properties?",
     answer:
-      "The ideal home lift depends on your available space, travel height, budget, and usage requirements. Machine Room-Less (MRL), hydraulic, gearless, and compact home lifts are among the most popular options for villas, duplex homes, and independent houses.",
+      "MRL, hydraulic, gearless, and compact home lifts are the most popular options for villas, duplex homes, and independent houses in Hyderabad.",
   },
   {
     question: "Can a home lift be installed in an existing house?",
     answer:
-      "Yes. Modern home lifts can be installed in many existing homes with minimal structural modifications. Our experts conduct a detailed site inspection to recommend the most suitable installation solution for your property.",
+      "Yes. Modern home lifts can be installed in many existing homes with minimal structural modifications, following a detailed site inspection.",
   },
   {
     question: "Are home lifts safe for children and senior citizens?",
     answer:
-      "Yes. Professionally installed home lifts include advanced safety features such as Automatic Rescue Device (ARD), emergency battery backup, door interlocks, overload protection, emergency alarms, and smooth start-and-stop technology, making them safe for users of all ages.",
+      "Yes. Every KAS installation includes Automatic Rescue Device, battery backup, door interlocks, overload protection, and emergency alarms.",
   },
   {
     question: "Do home lifts require regular maintenance?",
     answer:
-      "Yes. Routine maintenance is essential for ensuring smooth performance, passenger safety, and long-term reliability. Regular servicing also helps reduce unexpected breakdowns and extends the lifespan of your home lift.",
+      "Yes, routine servicing ensures smooth performance and long-term reliability. KAS offers AMC plans for ongoing support.",
   },
   {
-    question: "Do you provide customized residential lift installation in Hyderabad?",
+    question: "Do you provide customized lift installation in Hyderabad?",
     answer:
-      "Absolutely. Kashome Elevators offers fully customized home lift setup in Hyderabad based on your home's architecture, available space, design preferences, lift capacity, and mobility requirements.",
+      "Yes. Every installation is customized to your home's architecture, available space, design preferences, and mobility requirements.",
   },
   {
     question: "What safety checks are performed before handover?",
     answer:
-      "Before commissioning, every home lift undergoes comprehensive quality inspections, operational testing, emergency function verification, door alignment checks, overload testing, and safety validation to ensure reliable performance.",
+      "Every lift undergoes operational testing, emergency function verification, door alignment checks, overload testing, and safety validation.",
   },
   {
     question: "Do you provide maintenance and after-sales support?",
     answer:
-      "Yes. We offer preventive maintenance services, Annual Maintenance Contracts (AMC), technical support, inspections, repairs, and genuine spare parts to keep your residential elevator operating efficiently for years.",
+      "Yes. We offer preventive maintenance, Annual Maintenance Contracts, technical support, inspections, repairs, and genuine spare parts.",
   },
   {
     question:
-      "Why should I choose Kashome Elevators for home lift installation in Hyderabad?",
+      "Why should I choose KAS Home Elevators for lift installation in Hyderabad?",
     answer:
-      "Kashome Elevators provides professional home lift installation services backed by experienced engineers, customized solutions, premium-quality lift systems, advanced safety standards, timely project completion, and dependable after-sales support, making us a trusted choice for homeowners across Hyderabad.",
+      "KAS combines 10+ years of experience, 500+ completed installations, certified engineers, transparent pricing, and dependable after-sales AMC support.",
   },
   {
     question: "Is government or society approval required for a home lift in Hyderabad?",
     answer:
-      "Requirements vary by property type and location. Independent villas generally need standard structural and electrical compliance, while apartment or gated-community installations may require society or association approval. Our team can guide you through the applicable local approvals before installation begins.",
+      "Requirements vary — independent villas generally need standard structural and electrical compliance, while gated-community installations may require society approval. Our team guides you through applicable local approvals.",
   },
   {
-    question: "What warranty do you provide on home lift installation?",
+    question: "What warranty do you provide on lift installation?",
     answer:
-      "Kashome Elevators provides a standard manufacturer warranty on lift components, with the exact coverage period depending on the lift model and manufacturer. We also offer optional extended warranty and Annual Maintenance Contract (AMC) plans for continued protection after installation.",
+      "KAS provides a standard manufacturer warranty on lift components, with coverage depending on the lift model. Optional extended warranty and AMC plans are also available.",
   },
   {
     question: "How much space is required to install a home lift?",
     answer:
-      "A compact Machine Room-Less (MRL) home lift can fit into as little as 4 to 5 square feet of shaft space, making it suitable for most villas and duplex homes. Our engineers assess your exact space during the free site inspection and recommend the best-fit lift model.",
+      "A compact MRL home lift can fit into as little as 4-5 sq. ft. of shaft space. Our engineers confirm the exact requirement during the free site inspection.",
   },
 ];
 
@@ -712,7 +834,7 @@ const webPageSchema = {
   "@type": "WebPage",
   "@id": `${pageUrl}#webpage`,
   url: pageUrl,
-  name: "Home Lift Installation Hyderabad",
+  name: "Home Lift Installation in Hyderabad – Certified Engineers, Transparent Process, Trusted Results",
   description: seoDescription,
   dateModified: lastUpdatedIso,
   isPartOf: {
@@ -744,7 +866,7 @@ const breadcrumbSchema = {
     {
       "@type": "ListItem",
       position: 2,
-      name: "Home Lift Installation Hyderabad",
+      name: "Home Lift Installation in Hyderabad – Certified Engineers, Transparent Process, Trusted Results",
       item: pageUrl,
     },
   ],
@@ -769,13 +891,15 @@ const howToSchema = {
   name: "How Home Lift Installation Works in Hyderabad",
   description:
     "The step-by-step process Kashome Elevators follows for professional home lift installation in Hyderabad, from consultation to after-sales support.",
-  totalTime: "P2W",
-  step: solutions.map((item, index) => ({
-    "@type": "HowToStep",
-    position: index + 1,
-    name: item.title,
-    text: item.content,
-  })),
+  totalTime: "P7W",
+  step: [
+    ...processSteps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.split(" — ")[0],
+      text: step,
+    })),
+  ],
 };
 
 function ListSection({
@@ -848,10 +972,13 @@ export default function HomeLiftInstallationHyderabadPage() {
       <Navigation />
 
       <main>
-        <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+        <section className="relative pt-6 pb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.12),_transparent_45%)]" />
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <nav aria-label="Breadcrumb" className="mb-6 text-sm text-slate-300">
+            <nav
+              aria-label="Breadcrumb"
+              className="mb-6 pt-2 text-sm text-slate-300"
+            >
               <ol className="flex flex-wrap items-center gap-2">
                 <li>
                   <Link href="/" className="hover:text-white">
@@ -865,8 +992,9 @@ export default function HomeLiftInstallationHyderabadPage() {
               </ol>
             </nav>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 max-w-4xl">
-              Home Lift Installation Hyderabad
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 max-w-5xl">
+              Home Lift Installation in Hyderabad – Certified Engineers,
+              Transparent Process, Trusted Results
             </h1>
             <p className="text-slate-300 text-sm mb-8 lg:mb-10">
               Trusted by Hyderabad homeowners · Certified engineers · Last
@@ -875,8 +1003,26 @@ export default function HomeLiftInstallationHyderabadPage() {
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
+                {addedHeroParagraphs.map((paragraph) => (
+                  <p key={paragraph}>
+                    {linkSeoKeywords(paragraph, seoLinkClassHero)}
+                  </p>
+                ))}
                 <p>{linkSeoKeywords(heroParagraphs[0], seoLinkClassHero)}</p>
                 <p>{linkSeoKeywords(heroParagraphs[1], seoLinkClassHero)}</p>
+
+                <div className="!mt-8 grid grid-cols-3 gap-4 max-w-md">
+                  {trustStats.map((stat) => (
+                    <div key={stat.label} className="text-center">
+                      <div className="text-2xl sm:text-3xl font-bold text-green-400">
+                        {stat.value}
+                      </div>
+                      <div className="text-xs sm:text-sm text-slate-300 mt-1">
+                        {stat.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="lg:col-span-5 lg:sticky lg:top-32">
@@ -928,6 +1074,18 @@ export default function HomeLiftInstallationHyderabadPage() {
                 ))}
               </ul>
             </nav>
+          </div>
+        </section>
+
+        <section id="what-involve" className="py-16 bg-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              What Does Home Lift Installation Involve?
+            </h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>{linkSeoKeywords(whatInstallationInvolveIntro)}</p>
+              <p>{linkSeoKeywords(whatInstallationInvolveDetails)}</p>
+            </div>
           </div>
         </section>
 
@@ -1008,16 +1166,49 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <ListSection
-          id="benefits"
-          title="Benefits of Professional Home Lift Installation"
-          intro={benefitsIntro}
-          subIntro={benefitsSubIntro}
-          items={benefits}
-          aeo={benefitsAeo}
-          closing={benefitsClosing}
-          linkSeoKeywords={linkSeoKeywords}
-        />
+        <section id="benefits" className="py-16 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Benefits of Professional Home Lift Installation
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {linkSeoKeywords(addedBenefitsIntro)}
+            </p>
+            <ul className="space-y-3 list-disc pl-6 mb-8 text-gray-700 leading-relaxed">
+              {addedBenefitsList.map((item) => (
+                <li key={item}>{linkSeoKeywords(item)}</li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {linkSeoKeywords(benefitsIntro)}
+            </p>
+            {benefitsSubIntro ? (
+              <p className="text-gray-700 leading-relaxed mb-8">
+                {linkSeoKeywords(benefitsSubIntro)}
+              </p>
+            ) : null}
+            <ul className="space-y-6 list-disc pl-6">
+              {benefits.map((item) => (
+                <li key={item.title} className="text-gray-700 leading-relaxed">
+                  <h3 className="text-gray-900 font-bold">
+                    {linkSeoKeywords(item.title)}
+                  </h3>
+                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
+                </li>
+              ))}
+            </ul>
+            {benefitsAeo ? (
+              <p className="text-gray-700 leading-relaxed mt-8 rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
+                {linkSeoKeywords(benefitsAeo)}
+              </p>
+            ) : null}
+            {benefitsClosing ? (
+              <p className="text-gray-700 leading-relaxed mt-8">
+                {linkSeoKeywords(benefitsClosing)}
+              </p>
+            ) : null}
+          </div>
+        </section>
 
         <ListSection
           id="features"
@@ -1034,8 +1225,8 @@ export default function HomeLiftInstallationHyderabadPage() {
         <ListSection
           id="lift-types"
           title="Types of Home Lifts We Install"
-          intro={liftTypesIntro}
-          subIntro={liftTypesSubIntro}
+          intro={addedTypesIntro}
+          subIntro={`${liftTypesIntro} ${liftTypesSubIntro ?? ""}`.trim()}
           items={liftTypes}
           aeo={liftTypesAeo}
           closing={liftTypesClosing}
@@ -1081,6 +1272,68 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
+        <section id="cost" className="py-16 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Lift Installation Cost in Hyderabad
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(costIntro)}
+            </p>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 mb-6">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Configuration
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Approx. Price Range (₹)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {costTable.map((row, index) => (
+                    <tr
+                      key={row.configuration}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.configuration}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.price}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-gray-700 leading-relaxed">
+              {linkSeoKeywords(costNote)}
+            </p>
+          </div>
+        </section>
+
+        <section id="process" className="py-16 bg-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Our Installation Process & Timeline
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(processIntro)}
+            </p>
+            <ol className="space-y-4 list-decimal pl-6 text-gray-700 leading-relaxed mb-8">
+              {processSteps.map((step) => (
+                <li key={step}>{linkSeoKeywords(step)}</li>
+              ))}
+            </ol>
+            <p className="text-gray-700 leading-relaxed rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
+              {linkSeoKeywords(processTimeline)}
+            </p>
+          </div>
+        </section>
+
         <ListSection
           id="solutions"
           title="Our Home Lift Installation Solutions"
@@ -1096,8 +1349,8 @@ export default function HomeLiftInstallationHyderabadPage() {
         <ListSection
           id="safety"
           title="Safety Standards We Follow During Home Lift Installation"
-          intro={safetyIntro}
-          subIntro={safetySubIntro}
+          intro={addedSafetyIntro}
+          subIntro={`${safetyIntro} ${safetySubIntro ?? ""}`.trim()}
           items={safetyItems}
           aeo={safetyAeo}
           closing={safetyClosing}
@@ -1107,8 +1360,8 @@ export default function HomeLiftInstallationHyderabadPage() {
         <ListSection
           id="maintenance"
           title="Maintenance & After-Sales Support"
-          intro={maintenanceIntro}
-          subIntro={maintenanceSubIntro}
+          intro={addedMaintenanceIntro}
+          subIntro={`${maintenanceIntro} ${maintenanceSubIntro ?? ""}`.trim()}
           items={maintenanceItems}
           aeo={maintenanceAeo}
           closing={maintenanceClosing}
@@ -1116,12 +1369,72 @@ export default function HomeLiftInstallationHyderabadPage() {
           linkSeoKeywords={linkSeoKeywords}
         />
 
+        <section id="areas" className="py-16 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-white p-8 sm:p-10 shadow-sm">
+              <div className="max-w-3xl mb-8">
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                  Areas We Serve in Hyderabad
+                </h2>
+                <div className="space-y-4 text-gray-700 leading-relaxed">
+                  <p>{linkSeoKeywords(serviceAreasIntro)}</p>
+                  <p>{linkSeoKeywords(serviceAreasDetails)}</p>
+                </div>
+              </div>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 list-none">
+                {serviceAreas.map((area) => (
+                  <li
+                    key={area}
+                    className="flex items-center gap-3 rounded-xl border border-green-200 bg-white px-4 py-3.5 text-gray-800 shadow-sm transition-colors hover:border-green-300 hover:bg-green-50"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </span>
+                    <span className="font-medium">{area}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
         <section id="why-kashome" className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Why Choose KAS Home Elevators
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              {linkSeoKeywords(addedWhyKasIntro)}
+            </p>
+            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed mb-10">
+              {addedWhyKasPoints.map((item) => (
+                <li key={item}>{linkSeoKeywords(item)}</li>
+              ))}
+            </ul>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Why Choose Kashome Elevators for Home Lift Installation in
               Hyderabad?
-            </h2>
+            </h3>
             <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
               {whyKashomeIntro.map((paragraph) => (
                 <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
@@ -1168,8 +1481,11 @@ export default function HomeLiftInstallationHyderabadPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="rounded-2xl border border-gray-200 bg-white p-8 sm:p-10 shadow-sm">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                Contact Us
+                Contact Us / Get a Free Quote
               </h2>
+              <p className="text-gray-700 leading-relaxed mb-6">
+                {linkSeoKeywords(ctaQuoteIntro)}
+              </p>
               <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
                 {contactParagraphs.map((paragraph) => (
                   <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
@@ -1213,6 +1529,12 @@ export default function HomeLiftInstallationHyderabadPage() {
 
         <section className="py-16 bg-gradient-to-r from-green-600 to-green-500 text-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              Get a Free Quote
+            </h2>
+            <p className="text-green-50 text-lg leading-relaxed mb-8 max-w-3xl mx-auto">
+              {ctaQuoteIntro}
+            </p>
             <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center">
               {ctaButtons.map((cta) => (
                 <Link

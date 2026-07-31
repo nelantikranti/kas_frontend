@@ -304,6 +304,60 @@ const whyChooseKasPoints = [
   "Trained technical team handling every stage in-house, not outsourced sub-contracting",
 ];
 
+const homeLiftVsAlternativesIntro =
+  "Homeowners comparing a home lift for a 2-floor house often weigh it against a traditional residential elevator or a stairlift. Each option solves a different problem — the right choice depends on space, budget, cabin privacy, and how many floors you need to serve.";
+
+const homeLiftVsAlternatives = [
+  {
+    title: "Home Lift vs Traditional Elevator",
+    content:
+      "A traditional elevator usually needs a larger shaft, higher load capacity, and more civil work — better suited to multi-unit buildings. A home lift in Hyderabad is purpose-built for villas and duplexes: smaller shaft (often from 4x4 ft), lower power draw, faster small-home lift installation, and cabin finishes designed for residential interiors.",
+  },
+  {
+    title: "Home Lift vs Stairlift",
+    content:
+      "A stairlift rides along the staircase and is typically cheaper, but it occupies stair space, has lower capacity, and offers less privacy. A home lift carries 2–4 people (or more, depending on model), keeps stairs clear, and adds stronger resale appeal — especially for multi-storey independent houses in Hyderabad.",
+  },
+  {
+    title: "Vacuum Elevator vs Hydraulic Home Lift",
+    content:
+      "Vacuum/pneumatic lifts need no pit and suit tight retrofit spaces. Hydraulic home lifts remain the most requested option for villas and low-rise homes when a shallow pit/shaft is available — they handle higher loads comfortably and are cost-efficient for 2–3 floor installations. Your free site inspection confirms which option fits the structure.",
+  },
+];
+
+const homeLiftVsTable = [
+  {
+    feature: "Best for",
+    homeLift: "Villas, duplexes, G+2/G+3 homes",
+    elevator: "Multi-unit / larger buildings",
+    stairlift: "Single-user stair access",
+  },
+  {
+    feature: "Space needed",
+    homeLift: "Compact shaft (from ~4x4 ft)",
+    elevator: "Larger shaft + machine space",
+    stairlift: "Uses staircase rail space",
+  },
+  {
+    feature: "Capacity",
+    homeLift: "Typically 2–4 persons",
+    elevator: "Higher commercial loads",
+    stairlift: "Usually one seated user",
+  },
+  {
+    feature: "Home lift price range",
+    homeLift: "From ~₹4.5 lakh (indicative)",
+    elevator: "Usually higher for residential retrofit",
+    stairlift: "Often lower upfront cost",
+  },
+];
+
+const localCaseIntro =
+  "Across Hyderabad, homeowners choose home lifts when stair strain becomes a daily issue — especially in multi-storey villas and independent houses.";
+
+const localCaseDetails =
+  "Recent enquiries and installations commonly come from villa communities and G+2/G+3 homes in Kondapur, Manikonda, Jubilee Hills, Kompally, and Gachibowli, where families want safer access for elders and children without major lifestyle disruption. During consultation we can share locality-relevant project examples and arrange a site visit so you can see how a compact home lift fits a similar floor plan.";
+
 const whyChooseParagraphs = [
   "A home lift in Hyderabad is becoming an essential feature for modern homes, offering the perfect combination of convenience, accessibility, and contemporary living. As more homeowners invest in multi-storey houses, villas, and duplex residences, installing a home lift has become a practical solution that makes everyday life easier while enhancing the overall value of the property.",
   "One of the biggest advantages of a home lift is effortless mobility. It allows family members to move comfortably between floors without the physical strain of climbing stairs. This is especially beneficial for senior citizens, children, pregnant women, and individuals with mobility challenges, ensuring everyone can access every part of the home safely and independently.",
@@ -585,6 +639,21 @@ const faqs = [
     question: "Why choose Kashome Elevators for a home lift in Hyderabad?",
     answer:
       "KAS combines 10+ years of experience, 500+ completed installations, in-house technical teams, and multi-country operations, with transparent pricing and dedicated after-sales AMC support. Our commitment to quality and customer satisfaction makes us a trusted choice for homeowners across Hyderabad.",
+  },
+  {
+    question: "Can a home lift be installed in an existing house without major construction?",
+    answer:
+      "Yes. MRL and vacuum lifts are designed for retrofitting into existing homes with minimal structural changes — often no separate machine room or deep pit is needed.",
+  },
+  {
+    question: "How long does home lift installation take in Hyderabad?",
+    answer:
+      "Most installations take 3-6 weeks from design approval to handover, depending on lift type and whether civil/shaft work is required.",
+  },
+  {
+    question: "Why choose KAS Home Elevators over other Hyderabad providers?",
+    answer:
+      "KAS combines 10+ years of experience, 500+ completed installations, in-house technical teams, and multi-country operations, with transparent pricing and dedicated after-sales AMC support.",
   },
 ];
 
@@ -1148,6 +1217,78 @@ export default function HomeLiftHyderabadPage() {
                 <li key={item}>{linkSeoKeywords(item)}</li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Home Lift vs Traditional Elevator / Stairlift
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(homeLiftVsAlternativesIntro)}
+            </p>
+            <ul className="space-y-6 list-disc pl-6 mb-10">
+              {homeLiftVsAlternatives.map((item) => (
+                <li key={item.title} className="text-gray-700 leading-relaxed">
+                  <strong className="text-gray-900">{item.title}</strong>
+                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
+                </li>
+              ))}
+            </ul>
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Feature
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Home Lift
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Traditional Elevator
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Stairlift
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {homeLiftVsTable.map((row, index) => (
+                    <tr
+                      key={row.feature}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.feature}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.homeLift}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.elevator}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.stairlift}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Home Lift Installations Across Hyderabad
+            </h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>{linkSeoKeywords(localCaseIntro)}</p>
+              <p>{linkSeoKeywords(localCaseDetails)}</p>
+            </div>
           </div>
         </section>
 
