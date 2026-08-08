@@ -89,7 +89,7 @@ function createSeoLinker(excludeHref?: string) {
   };
 }
 
-const pageUrl = "https://www.kashomeelevators.com/residential-elevator-hyderabad/";
+const pageUrl = "https://www.kashomeelevators.com/residential-elevator-in-hyderabad";
 const siteUrl = "https://www.kashomeelevators.com/";
 const imageFileName = "residential-lift-hyderabad.webp";
 const imagePath = residentialLiftImage;
@@ -132,27 +132,15 @@ const tocSections = [
 ];
 
 const pageTitle =
-  "Residential Elevator in Hyderabad | Cost, Types & Free Site Visit – KAS";
+  "Residential Elevator in Hyderabad – Premium & Safe | KAS";
 const pageDescription =
-  "Residential elevator in Hyderabad starting ₹5 lakh. Hydraulic, MRL, gearless & villa elevators. 500+ installations, free site inspection. Book now.";
+  "Residential elevator in Hyderabad starting ₹5 lakh. Hydraulic, MRL & gearless lifts for villas & duplexes. IS 14665 compliant. Get a free quote.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: pageTitle,
   description: pageDescription,
-  keywords: [
-    "residential elevator Hyderabad",
-    "residential elevator in Hyderabad",
-    "residential elevator cost Hyderabad",
-    "elevator for duplex price",
-    "residential lift Hyderabad near me",
-    "best residential elevator company Hyderabad",
-    "home elevator Hyderabad",
-    "home lift Hyderabad",
-    "villa elevator Hyderabad",
-    "residential elevator installation Hyderabad",
-    "residential elevator company Hyderabad",
-  ],
+
   alternates: {
     canonical: pageUrl,
   },
@@ -351,44 +339,36 @@ const benefitsIntro =
 
 const benefits = [
   {
-    title: "Enhanced Accessibility for Every Family Member",
-    content:
-      "One of the biggest advantages of a residential elevator in Hyderabad is improved accessibility. It allows senior citizens, children, pregnant women, and individuals with mobility challenges to move safely between floors without depending on stairs. A residential elevator creates a barrier-free environment where every family member can enjoy complete freedom and comfort.",
+    title: "Enhanced Accessibility",
+    content: "Provides safe, barrier-free, independent floor-to-floor movement for seniors, children, and individuals with limited mobility.",
   },
   {
     title: "Increased Property Value",
-    content:
-      "A premium residential elevator installation in Hyderabad significantly enhances the market value of your property. Modern homebuyers prefer homes that offer advanced amenities and future-ready features. Adding a residential elevator not only improves daily convenience but also makes your property more attractive for future resale.",
+    content: "Makes your duplex or villa highly attractive to premium homebuyers, boosting long-term resale value in Hyderabad.",
   },
   {
-    title: "Superior Comfort and Everyday Convenience",
-    content:
-      "Carrying groceries, luggage, furniture, or household items between floors can be difficult and time-consuming. A residential elevator makes these everyday tasks simple and effortless, saving time while improving your overall living experience. With smooth and quiet operation, it offers unmatched convenience for busy families.",
+    title: "Superior Comfort and Convenience",
+    content: "Allows effortless transportation of heavy household items, luggage, laundry, and daily groceries between floors.",
   },
   {
-    title: "Advanced Safety and Reliable Performance",
-    content:
-      "Safety is one of the primary reasons homeowners choose Kashome Elevators. Every residential elevator in Hyderabad is equipped with advanced safety features, including emergency battery backup, automatic rescue devices, overload protection, door interlock systems, emergency alarms, and smooth start-and-stop technology. These features ensure dependable performance and provide peace of mind every day.",
+    title: "Advanced Safety Features",
+    content: "Includes Automatic Rescue Device (ARD), emergency backup power, overload sensors, and door safety interlocks.",
   },
   {
-    title: "Elegant Design That Complements Your Home",
-    content:
-      "A residential elevator is more than a mobility solution—it's an architectural enhancement. Our elevators are available in a variety of cabin finishes, premium materials, modern lighting, and stylish control panels that blend seamlessly with your home's interior while adding a luxurious touch.",
+    title: "Elegant Aesthetics",
+    content: "Enhances your home's interior with custom cabin styles, premium glass designs, and modern lighting finishes.",
   },
   {
-    title: "Energy-Efficient and Low-Maintenance Solution",
-    content:
-      "Our residential elevators are designed using energy-efficient technology that minimizes electricity consumption without compromising performance. Built with high-quality components, they require minimal maintenance, helping homeowners reduce long-term operating costs while enjoying reliable service for years.",
+    title: "Energy-Efficient Performance",
+    content: "Engineered to consume minimal electricity, reducing long-term operating costs and supporting sustainable living.",
   },
   {
-    title: "Customized to Match Your Home",
-    content:
-      "Every property has different design and space requirements. That's why Kashome Elevators offers fully customized residential elevator solutions in Hyderabad. From compact elevators for limited spaces to premium models for luxury villas, every system is tailored to match your home's architecture, available space, and lifestyle.",
+    title: "Customized Integration",
+    content: "Tailored layout sizing designed specifically to match your property's civil dimensions, pit depth, and headroom.",
   },
   {
-    title: "Professional Installation and Dedicated Support",
-    content:
-      "Choosing Kashome Elevators means receiving complete support throughout your journey. From site inspection and planning to residential elevator installation in Hyderabad, testing, and after-sales maintenance, our experienced team ensures every elevator meets the highest standards of safety, quality, and performance.",
+    title: "Professional Support",
+    content: "Backed by expert site inspection, professional installation, testing, and dedicated AMC maintenance services.",
   },
 ];
 
@@ -400,49 +380,24 @@ const featuresIntro =
 
 const features = [
   {
-    title: "Advanced Safety Features",
+    title: "Advanced Safety",
     content:
-      "Safety is the most important feature of every residential elevator we install. Our elevators are equipped with emergency battery backup, automatic rescue devices, overload protection, door interlock systems, emergency alarm buttons, and smooth start-stop technology. These advanced safety systems ensure secure and reliable operation, giving complete peace of mind to homeowners and their families.",
-  },
-  {
-    title: "Smooth and Silent Operation",
-    content:
-      "Our residential elevators are designed to provide a quiet, vibration-free, and comfortable riding experience. Advanced drive technology delivers smooth acceleration and gentle stopping, ensuring effortless movement between floors without disturbing the peaceful environment of your home.",
-  },
-  {
-    title: "Elegant and Modern Designs",
-    content:
-      "Every home has a unique style, and your elevator should complement it perfectly. We offer elegant cabin interiors, premium finishes, modern lighting, stylish control panels, and customizable design options that blend seamlessly with both contemporary and traditional home interiors.",
-  },
-  {
-    title: "Space-Saving Installation",
-    content:
-      "Our compact residential elevators are designed for homes with both large and limited spaces. Whether you're constructing a new house or upgrading an existing property, our experts provide customized installation solutions that require minimal structural modifications while maximizing available space.",
-  },
-  {
-    title: "Energy-Efficient Performance",
-    content:
-      "Every residential elevator in Hyderabad from Kashome Elevators is built using energy-efficient technology that delivers outstanding performance while consuming less electricity. This helps homeowners reduce operating costs and enjoy environmentally friendly mobility solutions without compromising comfort or reliability.",
+      "Equipped with emergency battery backup, automatic rescue devices (ARD), door safety interlocks, and overload sensors to ensure passenger safety.",
   },
   {
     title: "Smart Control System",
     content:
-      "Our elevators feature intuitive control panels, digital floor indicators, automatic door systems, and user-friendly operating controls. These smart features make daily operation simple, safe, and convenient for people of all age groups.",
+      "Features intuitive touch panels, digital floor indicators, automatic door controls, and smart home automation compatibility.",
   },
   {
-    title: "Durable Construction and Low Maintenance",
+    title: "Durable/Low Maintenance",
     content:
-      "Manufactured with premium-quality materials and precision engineering, our residential elevators are built for years of dependable service. Their durable construction minimizes maintenance requirements while ensuring smooth and reliable performance throughout their lifespan.",
+      "Manufactured with premium engineering materials and robust components to ensure long-term durability with minimal servicing.",
   },
   {
-    title: "Customized Residential Elevator Solutions",
+    title: "Elegant Designs",
     content:
-      "Every home is different, which is why we offer fully customized residential elevator solutions in Hyderabad. From cabin dimensions and interior finishes to advanced features and installation planning, every elevator is designed according to your home's layout, available space, and lifestyle requirements.",
-  },
-  {
-    title: "Professional Installation and Reliable After-Sales Support",
-    content:
-      "Our experienced engineers handle every stage of residential elevator installation in Hyderabad, including site inspection, planning, installation, testing, and maintenance. We remain committed to providing prompt after-sales support and regular servicing to ensure your elevator continues to operate safely and efficiently for years.",
+      "Offers customizable interior finishes, glass panels, modern LED lighting, and premium fixtures that complement your home's design.",
   },
 ];
 
@@ -456,37 +411,22 @@ const elevatorTypes = [
   {
     title: "Hydraulic Residential Elevators",
     content:
-      "Hydraulic residential elevators are one of the most reliable choices for low-rise homes and villas. They offer smooth operation, excellent lifting capacity, and consistent performance. Their robust design makes them ideal for homeowners looking for durability, comfort, and dependable vertical mobility with minimal maintenance.",
+      "Reliable for low-rise homes and villas — smooth operation, strong lifting capacity, and low maintenance.",
   },
   {
     title: "Machine Room-Less (MRL) Residential Elevators",
     content:
-      "Machine Room-Less (MRL) elevators are designed for homes where space optimization is important. Since these elevators do not require a separate machine room, they help maximize usable space while delivering energy-efficient performance, advanced safety, and a smooth riding experience. They are an excellent choice for modern residential buildings and duplex homes.",
+      "No separate machine room needed — ideal for space-constrained duplex homes with energy-efficient, smooth performance.",
   },
   {
     title: "Gearless Residential Elevators",
     content:
-      "Gearless residential elevators utilize advanced traction technology to provide an exceptionally quiet, smooth, and energy-efficient ride. Their modern engineering reduces maintenance requirements and improves operational efficiency, making them a preferred option for luxury homes and premium residential projects in Hyderabad.",
+      "Advanced traction technology for the quietest, most energy-efficient ride — preferred for luxury and premium residential projects.",
   },
   {
-    title: "Villa Residential Elevators",
+    title: "Villa, Compact, Customized & Smart Elevators",
     content:
-      "Luxury villas deserve elevators that combine elegance with performance. Our villa elevators feature premium cabin interiors, stylish finishes, intelligent control systems, and advanced safety features. They are designed to complement high-end residential architecture while delivering superior comfort and convenience.",
-  },
-  {
-    title: "Compact Residential Elevators",
-    content:
-      "For homes with limited installation space, compact residential elevators provide a practical and efficient solution. These elevators require minimal structural modifications and can be installed in both new and existing homes, making them ideal for homeowners seeking maximum functionality without compromising available space.",
-  },
-  {
-    title: "Customized Residential Elevators",
-    content:
-      "Every family has different requirements, and every home has a unique design. That's why Kashome Elevators offers fully customized residential elevator solutions in Hyderabad. From cabin dimensions and door configurations to interior finishes, control panels, and advanced features, every elevator is tailored to match your home's architecture and your lifestyle.",
-  },
-  {
-    title: "Smart Residential Elevators",
-    content:
-      "Smart residential elevators integrate modern technology with user convenience. Features such as automatic rescue operation, digital displays, touch controls, energy-saving systems, and intelligent safety mechanisms provide a seamless and secure experience while supporting the needs of today's smart homes.",
+      "Villa elevators bring premium cabin finishes for high-end architecture; Compact elevators fit limited spaces with minimal structural change; Customized solutions tailor every dimension and finish to your home; Smart elevators add digital displays, touch controls, and automatic rescue operation.",
   },
 ];
 
@@ -501,6 +441,51 @@ const elevatorTypesComparison = [
   { type: "Compact", bestFor: "Limited installation space", highlight: "Minimal structural changes" },
   { type: "Customized", bestFor: "Unique home layouts", highlight: "Fully tailored to your home" },
   { type: "Smart Elevator", bestFor: "Tech-forward homes", highlight: "Automatic rescue, digital controls" },
+];
+
+const techSpecsTable = [
+  {
+    feature: "Drive Technology",
+    hydraulic: "Hydraulic Pump & Cylinder",
+    mrl: "MRL Traction (Gearless/Geared)",
+    gearless: "Gearless Traction",
+  },
+  {
+    feature: "Machine Room",
+    hydraulic: "No separate room (small control cabinet)",
+    mrl: "No machine room needed (motor in shaft)",
+    gearless: "No machine room needed (motor in shaft)",
+  },
+  {
+    feature: "Speed Range",
+    hydraulic: "0.15 – 0.3 m/s",
+    mrl: "0.30 – 0.40 m/s",
+    gearless: "0.40 – 0.60 m/s",
+  },
+  {
+    feature: "Max Travel Height",
+    hydraulic: "Up to 3-4 Floors (G+3)",
+    mrl: "Up to 5-6 Floors (G+5)",
+    gearless: "Up to 8+ Floors (G+7)",
+  },
+  {
+    feature: "Power Efficiency",
+    hydraulic: "Moderate (active mostly on ascent)",
+    mrl: "High (energy-efficient counterweights)",
+    gearless: "Extremely High (energy-saving gearless motor)",
+  },
+  {
+    feature: "Pit Depth Required",
+    hydraulic: "75 – 150 mm (Low Pit)",
+    mrl: "200 – 300 mm",
+    gearless: "300 – 450 mm",
+  },
+  {
+    feature: "Headroom Required",
+    hydraulic: "2400 – 2600 mm",
+    mrl: "2700 – 2800 mm",
+    gearless: "2800 – 3000 mm",
+  },
 ];
 
 const solutionsIntro =
@@ -823,57 +808,32 @@ export default function ResidentialElevatorHyderabadPage() {
               </ol>
             </nav>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-5 max-w-5xl leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 lg:mb-10 max-w-5xl leading-tight">
               Residential Elevator in Hyderabad – Premium, Safe &amp; Custom-Built for Villas, Duplexes &amp; Independent Homes
             </h1>
 
-            <div
-              id="quick-answer"
-              className="mb-8 lg:mb-10 max-w-4xl rounded-xl border border-slate-600/50 bg-slate-800/60 p-5 sm:p-6"
-            >
-              <p className="text-base sm:text-lg leading-relaxed">
-                A <strong>residential elevator in Hyderabad</strong> is a home lift installed in villas, duplex homes, and independent houses for safe, effortless floor-to-floor movement. Kashome Elevators designs, installs, and maintains custom home elevators across Hyderabad with advanced safety systems like Automatic Rescue Device (ARD) and battery backup, serving villas, duplexes, and independent homes with hydraulic, MRL, and gearless options.
-              </p>
-              <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                {quickFacts.map((fact) => (
-                  <div key={fact.label} className="flex gap-2">
-                    <dt className="font-semibold text-slate-300 shrink-0">{fact.label}:</dt>
-                    <dd className="text-slate-100">{fact.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <nav aria-label="Table of contents" className="mb-10 lg:mb-12 max-w-4xl">
-              <ul className="flex flex-wrap gap-2 text-sm">
-                {tocSections.map((item) => (
-                  <li key={item.id}>
-                    <a
-                      href={`#${item.id}`}
-                      className="inline-block rounded-full border border-slate-600/60 px-3 py-1.5 text-slate-200 hover:bg-slate-700/60 hover:text-white transition-colors"
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-              <div className="lg:col-span-7 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
-                {addedHeroParagraphs.map((paragraph) => (
-                  <p key={paragraph}>
-                    {linkSeoKeywords(paragraph, seoLinkClassHero)}
-                  </p>
-                ))}
-                <p>
-                  {linkSeoKeywords(heroParagraphs[0], seoLinkClassHero)}
-                </p>
-                <p>
-                  {linkSeoKeywords(heroParagraphs[1], seoLinkClassHero)}
+              <div className="lg:col-span-7 space-y-6 text-base sm:text-lg text-slate-100 leading-relaxed">
+                <p className="text-slate-200">
+                  {linkSeoKeywords(addedHeroParagraphs[0], seoLinkClassHero)}
                 </p>
 
-                <div className="!mt-8 grid grid-cols-3 gap-4 max-w-md">
+                <nav aria-label="Table of contents" className="max-w-4xl">
+                  <ul className="flex flex-wrap gap-2 text-sm">
+                    {tocSections.map((item) => (
+                      <li key={item.id}>
+                        <a
+                          href={`#${item.id}`}
+                          className="inline-block rounded-full border border-slate-600/60 px-3 py-1.5 text-slate-200 hover:bg-slate-700/60 hover:text-white transition-colors"
+                        >
+                          {item.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+
+                <div className="!mt-10 grid grid-cols-3 gap-4 max-w-md">
                   {trustStats.map((stat) => (
                     <div key={stat.label} className="text-center">
                       <div className="text-2xl sm:text-3xl font-bold text-green-400">
@@ -899,14 +859,6 @@ export default function ResidentialElevatorHyderabadPage() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
-              {heroParagraphs.slice(2).map((paragraph) => (
-                <p key={paragraph}>
-                  {linkSeoKeywords(paragraph, seoLinkClassHero)}
-                </p>
-              ))}
             </div>
           </div>
         </section>
@@ -934,48 +886,21 @@ export default function ResidentialElevatorHyderabadPage() {
           </div>
         </section>
 
-        <section id="why-choose" className="py-16 scroll-mt-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Why Choose a Residential Elevator in Hyderabad?
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              {whyChooseParagraphs.map((paragraph) => (
-                <p key={paragraph}>
-                  {linkSeoKeywords(paragraph)}
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section id="benefits" className="py-16 bg-white scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Benefits of Installing a Residential Elevator
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
+            <p className="text-gray-700 leading-relaxed mb-6">
               {linkSeoKeywords(addedBenefitsIntro)}
             </p>
-            <ul className="space-y-3 list-disc pl-6 mb-8 text-gray-700 leading-relaxed">
-              {addedBenefitsList.map((item) => (
-                <li key={item}>{linkSeoKeywords(item)}</li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(benefitsIntro)}
-            </p>
-            <ul className="space-y-6 list-disc pl-6">
+            <ul className="space-y-4 list-disc pl-6 text-gray-700 leading-relaxed">
               {benefits.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold">{item.title}</h3>
-                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
+                <li key={item.title}>
+                  <strong className="text-gray-900">{item.title}</strong> &mdash; {linkSeoKeywords(item.content)}
                 </li>
               ))}
             </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(benefitsClosing)}
-            </p>
           </div>
         </section>
 
@@ -984,19 +909,32 @@ export default function ResidentialElevatorHyderabadPage() {
           title="Features of Our Residential Elevators"
           intro={featuresIntro}
           items={features}
-          closing={featuresClosing}
           linkSeoKeywords={linkSeoKeywords}
         />
 
-        <ListSection
-          id="types"
-          title="Types of Residential Elevators We Offer"
-          intro={`${addedTypesIntro} ${elevatorTypesIntro}`}
-          items={elevatorTypes}
-          closing={elevatorTypesClosing}
-          bgWhite
-          linkSeoKeywords={linkSeoKeywords}
-        />
+        <section id="types" className="py-16 bg-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Types of Residential Elevators We Offer
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-10">
+              {linkSeoKeywords(`${addedTypesIntro} ${elevatorTypesIntro}`)}
+            </p>
+            
+            <ul className="space-y-8 list-disc pl-6 text-gray-700 leading-relaxed">
+              {elevatorTypes.map((type) => (
+                <li key={type.title} className="marker:text-gray-400">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 inline-block">
+                    {linkSeoKeywords(type.title)}
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {linkSeoKeywords(type.content)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
 
         <section className="pb-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
@@ -1021,6 +959,74 @@ export default function ResidentialElevatorHyderabadPage() {
                       <td className="px-4 py-3 font-medium text-gray-900">{row.type}</td>
                       <td className="px-4 py-3 text-gray-700">{row.bestFor}</td>
                       <td className="px-4 py-3 text-gray-700">{row.highlight}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="compliance" className="py-16 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Telangana Lift Act &amp; IS 14665 Compliance
+            </h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>
+                Every residential elevator installed by KAS in Hyderabad strictly complies with the <strong>Telangana Lift Act</strong> and follows the design, safety, and maintenance guidelines of <strong>IS 14665</strong> (the Indian Standard for lift installation and safety).
+              </p>
+              <p>
+                To ensure complete peace of mind, our team manages the entire regulatory documentation process on your behalf, including obtaining the <strong>Permit to Erect</strong> and the final <strong>License to Work</strong> from the Telangana State Electrical Inspectorate. We provide full compliance certificates and documentation details during your free site inspection.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="specs-table" className="py-16 bg-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Technical Specifications (Hydraulic vs MRL vs Gearless)
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              Compare the key technical specifications of our hydraulic, machine room-less (MRL), and gearless residential elevator models to find the right drive system for your house.
+            </p>
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-green-50">
+                  <tr>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Technical Spec
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Hydraulic Elevators
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      MRL Elevators
+                    </th>
+                    <th className="px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-200">
+                      Gearless Elevators
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {techSpecsTable.map((row, index) => (
+                    <tr
+                      key={row.feature}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-100">
+                        {row.feature}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.hydraulic}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.mrl}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                        {row.gearless}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1069,15 +1075,26 @@ export default function ResidentialElevatorHyderabadPage() {
           </div>
         </section>
 
-        <ListSection
-          id="installation"
-          title="Installation Process & Timeline"
-          intro={addedInstallationIntro}
-          items={installationProcessSteps}
-          closing={installationTimeline}
-          bgWhite
-          linkSeoKeywords={linkSeoKeywords}
-        />
+        <section id="installation" className="py-16 bg-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Installation Process &amp; Timeline
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8">
+              {linkSeoKeywords(addedInstallationIntro)}
+            </p>
+            <ol className="list-decimal pl-6 space-y-6 text-gray-700 leading-relaxed">
+              {installationProcessSteps.map((step) => (
+                <li key={step.title}>
+                  <strong className="text-gray-900">{step.title}</strong> &mdash; {linkSeoKeywords(step.content)}
+                </li>
+              ))}
+            </ol>
+            <p className="text-gray-700 leading-relaxed mt-8">
+              {linkSeoKeywords(installationTimeline)}
+            </p>
+          </div>
+        </section>
 
         <section id="safety" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
@@ -1094,16 +1111,6 @@ export default function ResidentialElevatorHyderabadPage() {
             </ul>
           </div>
         </section>
-
-        <ListSection
-          id="solutions"
-          title="Our Residential Elevator Solutions"
-          intro={solutionsIntro}
-          items={solutions}
-          closing={solutionsClosing}
-          bgWhite
-          linkSeoKeywords={linkSeoKeywords}
-        />
 
         <section id="areas" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
@@ -1213,9 +1220,7 @@ export default function ResidentialElevatorHyderabadPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-gray-700 leading-relaxed mb-8">
-                {linkSeoKeywords(contactClosing)}
-              </p>
+
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/contact"

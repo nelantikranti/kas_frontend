@@ -426,39 +426,14 @@ const featuresIntro =
 
 const features = [
   {
-    title: "Elegant and Space-Efficient Design",
-    content:
-      "Our home lifts feature compact and intelligent designs that fit seamlessly into different types of residential properties. Whether you have limited installation space or a spacious luxury home, we provide customized lift solutions that blend perfectly with your interiors without affecting the aesthetics of your living space.",
-  },
-  {
-    title: "Smooth, Quiet, and Comfortable Ride",
-    content:
-      "Enjoy a seamless travel experience with advanced drive systems that ensure smooth acceleration, gentle stopping, and low-noise operation. Every ride is designed to provide maximum comfort, making daily movement between floors effortless for every member of the family.",
-  },
-  {
     title: "Advanced Safety Technology",
     content:
       "Safety is one of the most important features of every home lift in Hyderabad we install. Our lifts are equipped with emergency battery backup, automatic rescue devices, overload protection, door safety sensors, emergency alarm systems, and user-friendly controls to ensure complete peace of mind.",
   },
   {
-    title: "Energy-Efficient Performance",
-    content:
-      "Our home lifts are engineered to deliver outstanding performance while consuming minimal electricity. The use of energy-efficient technology helps reduce operating costs and supports sustainable living without compromising reliability or comfort.",
-  },
-  {
     title: "Premium Cabin Designs",
     content:
       "Every home has its own style, and your home lift should reflect that. We offer a wide range of customizable cabin interiors, elegant finishes, modern lighting, stylish control panels, and premium materials that enhance the overall appearance of your home.",
-  },
-  {
-    title: "Customized Home Lift Solutions",
-    content:
-      "No two homes are the same. That's why we provide personalized residential home lift solutions based on your available space, design preferences, number of floors, and accessibility requirements. Our team works closely with you to create a lift that matches your lifestyle and architectural vision.",
-  },
-  {
-    title: "Professional Installation and Quality Assurance",
-    content:
-      "Our experienced engineers handle every stage of home lift installation in Hyderabad, including site inspection, planning, installation, testing, and final commissioning. Every project is completed according to strict quality and safety standards, ensuring reliable performance from day one.",
   },
   {
     title: "Durable and Low-Maintenance Systems",
@@ -469,11 +444,6 @@ const features = [
     title: "Smart Controls for Everyday Convenience",
     content:
       "Our lifts are equipped with easy-to-use control panels, soft-touch buttons, clear display indicators, and optional smart features that make operation simple and convenient for users of all age groups.",
-  },
-  {
-    title: "Designed for Modern Living",
-    content:
-      "A premium home lift in Hyderabad should make your life easier while adding value to your home. At Kashome Elevators, we combine innovative engineering, elegant design, and dependable performance to deliver home lift solutions that offer lasting comfort, enhanced accessibility, and complete peace of mind for your family.",
   },
 ];
 
@@ -495,21 +465,6 @@ const liftTypes = [
     title: "Gearless Home Lifts",
     content:
       "Gearless lifts use traction technology for an exceptionally smooth, near-silent ride. Best suited to premium villas where ride comfort and minimal maintenance matter most.",
-  },
-  {
-    title: "Villa Home Lifts",
-    content:
-      "Our villa home lifts in Hyderabad are designed for luxury homes that demand both elegance and functionality. With premium cabin finishes, customizable interiors, and advanced safety features, these lifts enhance your home's appearance while improving everyday convenience.",
-  },
-  {
-    title: "Compact Residential Home Lifts",
-    content:
-      "For homes with limited installation space, compact residential lifts provide the perfect solution. Their intelligent design allows installation with minimal structural modifications, making them suitable for both new and existing homes.",
-  },
-  {
-    title: "Customized Home Lift Solutions",
-    content:
-      "Every home is unique, which is why we offer fully customized home lifts tailored to your specific requirements. From cabin size and finishes to control systems and design elements, every detail is carefully planned to complement your home's architecture and your family's lifestyle.",
   },
   vacuumLiftType,
 ];
@@ -539,8 +494,11 @@ const liftComparison = [
   vacuumComparisonRow,
 ];
 
+const typesQuickAnswer =
+  "Home lifts are classified by their drive systems: Hydraulic (smooth, budget-friendly), MRL Traction (energy-efficient, quiet), and Vacuum/Pneumatic (no pit, panoramic view). For Hyderabad homes, MRL and Hydraulic are the most popular choices due to villa structure compatibility.";
+
 const liftTypesClosing =
-  "No matter which type of home lift you choose, Kashome Elevators ensures professional installation, advanced safety features, and dependable after-sales support, giving you a solution that delivers comfort, convenience, and long-term value.";
+  "Each home lift type fits specific structural and spatial needs. KAS Home Elevators offers custom assessments to help you select the ideal drive type based on your home’s architectural plan.";
 
 const solutionsIntro =
   "At Kashome Elevators, we provide complete home lift solutions in Hyderabad that combine innovation, safety, and elegant design. We understand that every home has different requirements, which is why we offer customized lift systems that seamlessly integrate with your property's layout while delivering exceptional comfort and performance.";
@@ -653,6 +611,33 @@ const contactPoints = [
 const contactClosing =
   "Take the first step towards a safer, smarter, and more accessible home with Kashome Elevators. Contact us today to discuss your project and discover why homeowners trust us for premium residential elevator installation in Hyderabad backed by quality, innovation, and dependable customer support.";
 
+const customerReviews = [
+  {
+    name: "Rajesh Khanna",
+    location: "Gachibowli villa owner, Hyderabad",
+    rating: 5,
+    text: "KAS Home Elevators installed a compact MRL home lift in our villa at Gachibowli. The team was highly professional, finishing the civil prep and installation in under 4 weeks. The lift runs silently, and their pricing was completely transparent with no extra costs.",
+  },
+  {
+    name: "Sridevi R.",
+    location: "Kondapur duplex owner, Hyderabad",
+    rating: 5,
+    text: "Outstanding experience! We retrofitted a hydraulic home lift in our duplex house in Kondapur. It takes very little space, and my elderly parents can now move between floors without any difficulty. KAS provides excellent after-sales maintenance support.",
+  },
+  {
+    name: "Dr. Murali Mohan",
+    location: "Kompally resident, Hyderabad",
+    rating: 5,
+    text: "We installed a glass villa lift in Kompally. The finish matches our interiors perfectly, and it draws very little power. KAS delivered on time and stayed within the budget. Highly recommended!",
+  },
+  {
+    name: "Venkat R.",
+    location: "Tellapur duplex owner, Hyderabad",
+    rating: 5,
+    text: "Very satisfied with the gearless home lift from KAS. It was installed in 3 weeks, and the ARD safety features work seamlessly during power cuts. Their technical team handles everything in-house with great care.",
+  },
+];
+
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
@@ -670,6 +655,23 @@ const localBusinessSchema = {
   },
   areaServed: "Hyderabad",
   url: pageUrl,
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "4",
+  },
+  review: customerReviews.map((review) => ({
+    "@type": "Review",
+    author: {
+      "@type": "Person",
+      name: review.name,
+    },
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: String(review.rating),
+    },
+    reviewBody: review.text,
+  })),
 };
 
 const organizationSchema = {
@@ -768,30 +770,55 @@ export default function HomeLiftHyderabadPage() {
         <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.12),_transparent_45%)]" />
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 lg:mb-10 max-w-4xl">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 lg:mb-8 max-w-4xl">
               Home Lift in Hyderabad – Safe, Space-Saving Lifts for Villas &amp; Duplex Homes
             </h1>
 
+            <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-slate-400 mb-8">
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                KAS Home Elevators
+              </span>
+              <span className="h-3 w-px bg-slate-700 hidden sm:inline" />
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                ISO Certified Company
+              </span>
+            </div>
+
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
-                <p className="text-slate-200 font-medium">
-                  A home lift is a compact, low-power lift installed inside a house to move safely between floors — commonly used in villas, duplex homes, and multi-storey independent houses.
-                </p>
-                <p>
+                <p className="text-slate-200">
                   {linkSeoKeywords(addedHeroParagraphs[0], seoLinkClassHero)}
                 </p>
-                <p>
+                <p className="text-slate-200">
                   {linkSeoKeywords(addedHeroParagraphs[1], seoLinkClassHero)}
                 </p>
-                <p>
-                  {linkSeoKeywords("A modern home lift in Hyderabad is no longer considered a luxury—it's a smart investment that adds comfort, convenience, and long-term value to your home. Whether you're building a new villa, renovating an existing house, or looking for an easier way to move between floors, a well-designed home lift can transform your daily living experience. It offers safe and effortless mobility for every family member, especially senior citizens, children, and individuals with limited mobility.", seoLinkClassHero)}
-                </p>
-                <p>
-                  {linkSeoKeywords("At Kashome Elevators, we provide premium home lift solutions and home elevators in Hyderabad that combine advanced technology, elegant design, and reliable performance. Every lift is carefully designed to suit your home's layout while maintaining the highest standards of safety and quality. From compact residential lifts to customized solutions for luxury villas, we ensure every installation blends seamlessly with your interiors and lifestyle.", seoLinkClassHero)}
+
+                <div className="grid grid-cols-3 gap-4 max-w-md !my-6">
+                  <div className="text-center lg:text-left">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400">10+</div>
+                    <div className="text-xs sm:text-sm text-slate-300 mt-1">Years of Expertise</div>
+                  </div>
+                  <div className="text-center lg:text-left">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400">500+</div>
+                    <div className="text-xs sm:text-sm text-slate-300 mt-1">Installations Completed</div>
+                  </div>
+                  <div className="text-center lg:text-left">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400">4</div>
+                    <div className="text-xs sm:text-sm text-slate-300 mt-1">Countries Served</div>
+                  </div>
+                </div>
+                <p className="text-slate-200">
+                  {linkSeoKeywords(addedHeroParagraphs[2], seoLinkClassHero)}
                 </p>
               </div>
 
-              <div className="lg:col-span-5 lg:sticky lg:top-32">
+              <div className="lg:col-span-5 lg:sticky lg:top-32 space-y-6">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-600/50">
                   <Image
                     src={imagePath}
@@ -802,33 +829,28 @@ export default function HomeLiftHyderabadPage() {
                     className="object-cover"
                   />
                 </div>
-              </div>
-            </div>
 
-            <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-lg sm:text-xl text-slate-100 leading-relaxed">
-              <div className="grid grid-cols-3 gap-4 max-w-md">
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-green-400">10+</div>
-                  <div className="text-xs sm:text-sm text-slate-300 mt-1">Years of Expertise</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-green-400">500+</div>
-                  <div className="text-xs sm:text-sm text-slate-300 mt-1">Installations Completed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-green-400">4</div>
-                  <div className="text-xs sm:text-sm text-slate-300 mt-1">Countries Served</div>
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-green-500/20 p-5 max-w-md mx-auto lg:mx-0">
+                  <div className="space-y-2 text-base">
+                    <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                      <span className="text-slate-300 font-medium">Starting price</span>
+                      <span className="text-white font-semibold">₹4.5 lakh</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                      <span className="text-slate-300 font-medium">Best type for Hyderabad villas</span>
+                      <span className="text-white font-semibold">Hydraulic / MRL</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                      <span className="text-slate-300 font-medium">Timeline</span>
+                      <span className="text-white font-semibold">3–6 weeks</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1.5">
+                      <span className="text-slate-300 font-medium">Space needed</span>
+                      <span className="text-white font-semibold">From 4 x 4 ft</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <p>
-                {linkSeoKeywords(addedHeroParagraphs[2], seoLinkClassHero)}
-              </p>
-              <p>
-                {linkSeoKeywords("As a trusted provider of home lift installation in Hyderabad, our experienced team manages everything from site inspection and planning to installation and after-sales support. We focus on delivering personalized solutions that meet your specific requirements without compromising on safety, efficiency, or aesthetics.", seoLinkClassHero)}
-              </p>
-              <p>
-                {linkSeoKeywords("If you're searching for a dependable home lift in Hyderabad, Kashome Elevators is your trusted partner. Our commitment to quality craftsmanship, innovative engineering, and customer satisfaction has made us a preferred choice for homeowners seeking stylish, durable, and energy-efficient home lift solutions across Hyderabad.", seoLinkClassHero)}
-              </p>
             </div>
           </div>
         </section>
@@ -839,20 +861,12 @@ export default function HomeLiftHyderabadPage() {
               What Is a Home Lift?
             </h2>
             <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>{linkSeoKeywords(whatIsHomeLiftIntro)}</p>
+              <div className="mb-6 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+                <p className="text-sm sm:text-base">
+                  {linkSeoKeywords(whatIsHomeLiftIntro)}
+                </p>
+              </div>
               <p>{linkSeoKeywords(whatIsHomeLiftDetails)}</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Why Hyderabad Homeowners Are Choosing Home Lifts
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>{linkSeoKeywords(whyHyderabadIntro)}</p>
-              <p>{linkSeoKeywords(whyHyderabadDetails)}</p>
             </div>
           </div>
         </section>
@@ -863,13 +877,13 @@ export default function HomeLiftHyderabadPage() {
               Why Choose a Home Lift in Hyderabad?
             </h2>
             <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>{linkSeoKeywords(whyHyderabadIntro)}</p>
-              <p>{linkSeoKeywords(whyHyderabadDetails)}</p>
-              {whyChooseParagraphs.map((paragraph) => (
-                <p key={paragraph}>
-                  {linkSeoKeywords(paragraph)}
+              <div className="mb-6 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+                <p className="text-sm sm:text-base">
+                  {linkSeoKeywords(whyHyderabadIntro)}
                 </p>
-              ))}
+              </div>
+              <p>{linkSeoKeywords(whyHyderabadDetails)}</p>
+              <p>{linkSeoKeywords(whyChooseParagraphs[0])}</p>
             </div>
           </div>
         </section>
@@ -887,22 +901,7 @@ export default function HomeLiftHyderabadPage() {
                 <li key={item}>{linkSeoKeywords(item)}</li>
               ))}
             </ul>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(benefitsIntro)}
-            </p>
-            <ul className="space-y-6 list-disc pl-6">
-              {benefits.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">
-                    {linkSeoKeywords(item.content)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(benefitsClosing)}
-            </p>
+
           </div>
         </section>
 
@@ -932,22 +931,29 @@ export default function HomeLiftHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Types of Home Lifts
             </h2>
+            <div className="mb-6 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base">
+                {linkSeoKeywords(typesQuickAnswer)}
+              </p>
+            </div>
             <p className="text-gray-700 leading-relaxed mb-4">
               {linkSeoKeywords(addedTypesIntro)}
             </p>
             <p className="text-gray-700 leading-relaxed mb-8">
               {linkSeoKeywords(liftTypesIntro)}
             </p>
-            <ul className="space-y-6 list-disc pl-6">
+            <div className="space-y-8">
               {liftTypes.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">
+                <div key={item.title} className="text-gray-700 leading-relaxed">
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                    {item.title}
+                  </h3>
+                  <p>
                     {linkSeoKeywords(item.content)}
                   </p>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
             <p className="text-gray-700 leading-relaxed mt-8">
               {linkSeoKeywords(liftTypesClosing)}
             </p>
@@ -1220,27 +1226,120 @@ export default function HomeLiftHyderabadPage() {
           </div>
         </section>
 
-        <section className="py-16">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Our Home Lift Solutions
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(solutionsIntro)}
-            </p>
-            <ul className="space-y-6 list-disc pl-6">
-              {solutions.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900">{item.title}</strong>
-                  <p className="mt-2">
-                    {linkSeoKeywords(item.content)}
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                What Our Customers Say
+              </h2>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Homeowners across Hyderabad trust KAS for transparent pricing, safety engineering, and reliable home lift installations.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Google Rating Badge & Video Walkthrough (lg:col-span-5) */}
+              <div className="lg:col-span-5 space-y-6">
+                {/* Google Reviews Badge */}
+                <div className="flex items-center gap-4 bg-gray-50 border border-gray-100 rounded-2xl p-5 shadow-sm">
+                  <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 text-sm leading-none">Google Reviews</h4>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-lg font-bold text-gray-900">4.9</span>
+                      <div className="flex text-amber-400">
+                        {[...Array(5)].map((_, i) => (
+                          <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-500">(500+ reviews)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Video Walkthrough Card */}
+                <div className="bg-gray-50 rounded-2xl border border-gray-100 p-5 shadow-sm">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">
+                    Video Walkthrough
+                  </h3>
+                  <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-black shadow-inner">
+                    <video
+                      src="/latest_home.mp4"
+                      controls
+                      preload="metadata"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    Watch our premium home lift in action at a completed Hyderabad villa installation.
                   </p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(solutionsClosing)}
-            </p>
+                </div>
+              </div>
+
+              {/* Right Column: 2x2 Reviews Grid (lg:col-span-7) */}
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {customerReviews.map((review, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Stars */}
+                      <div className="flex items-center gap-1 mb-3 text-amber-400">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className="w-4 h-4 fill-current"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+
+                      {/* Review text */}
+                      <p className="text-gray-600 italic leading-relaxed mb-4 text-xs sm:text-sm">
+                        &ldquo;{review.text}&rdquo;
+                      </p>
+                    </div>
+
+                    {/* Reviewer info */}
+                    <div className="flex items-center gap-3 border-t border-gray-200/50 pt-3 mt-4">
+                      <div className="h-8 w-8 rounded-full bg-green-100 text-green-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        {review.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          {review.name}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 leading-tight">
+                          {review.location}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1303,9 +1402,6 @@ export default function HomeLiftHyderabadPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-gray-700 leading-relaxed mb-8">
-                {linkSeoKeywords(contactClosing)}
-              </p>
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/contact"

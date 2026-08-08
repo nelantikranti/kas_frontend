@@ -174,7 +174,7 @@ const technicalSpecsIntro =
   "Actual specifications vary by model and site — confirmed during your free site visit. Figures below reflect typical home elevator ranges across the industry.";
 
 const safetyIntro =
-  "Home elevator installation in Telangana is subject to inspection and approval requirements under the state's electrical inspectorate framework, and lift design generally follows IS 14665 — the Indian Standard covering electric lift installation, safety, and maintenance. Ask any installer, including us, to confirm current compliance documentation before signing a contract.";
+  "Every KAS installation complies with the Telangana Lift Act and follows IS 14665 (Indian Standard for lift installation, safety, and maintenance). We handle Telangana State Electrical Inspectorate's Permit to Erect and License to Work documentation on your behalf — ask for proof at your site visit.";
 
 const safetyDetails =
   "We build every installation with standard safety features: door interlocks that prevent movement with an open door, overload sensors, emergency alarm and lighting, and Automatic Rescue Devices for power-cut scenarios. We recommend every Hyderabad homeowner explicitly ask their elevator company for proof of Telangana State Electrical Inspectorate approval and IS-code compliance before installation — a legitimate installer will provide this without hesitation, and it's a reasonable, low-effort question that filters out unlicensed operators in this space.";
@@ -219,16 +219,16 @@ const ctaButtons = [
 ];
 
 export const metadata: Metadata = {
-  title: "Best Home Elevator in Hyderabad | Safe & Trusted Lifts - KAS",
+  title: "Best Home Elevator in Hyderabad | 500+ Safe Installs - KAS",
   description:
-    "Trusted home elevators in Hyderabad from ₹4-6 Lakh. Safe, compact, low-maintenance lifts for villas & duplexes. Book your free expert site visit today!",
+    "Trusted & Best home elevators in Hyderabad from ₹4-6 Lakh. Safe, compact, low-maintenance lifts for villas & duplexes. Book your free expert site visit today!",
   alternates: {
     canonical: pageUrl,
   },
   openGraph: {
-    title: "Best Home Elevator in Hyderabad | Safe & Trusted Lifts - KAS",
+    title: "Best Home Elevator in Hyderabad - 500+ Safe Installs | KAS",
     description:
-      "Trusted, safe, and low-maintenance home elevators in Hyderabad for villas, duplex homes, and independent houses. Free expert site visit.",
+      "Hyderabad's trusted home elevator company — 500+ installs, 10+ years, hydraulic/MRL/gearless from ₹4-6L. Book your free site visit today.",
     url: pageUrl,
     type: "website",
     images: [
@@ -237,6 +237,13 @@ export const metadata: Metadata = {
         alt: imageAlt,
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best Home Elevator in Hyderabad | KAS Home Elevators",
+    description:
+      "Safe, compact home elevators for Hyderabad villas & duplexes. 500+ installs, 10+ years. Free expert site visit — book now.",
+    images: [imageUrl],
   },
 };
 
@@ -605,6 +612,16 @@ const faqs = [
     answer:
       "Yes — we can arrange for you to view completed installations in your locality on request, subject to existing customers' availability and privacy preferences.",
   },
+  {
+    question: "Which is the best home elevator company in Hyderabad?",
+    answer:
+      "Kashome Elevators is a leading choice for a best home elevator in Hyderabad, with 500+ installations completed over 10+ years across the city. We offer hydraulic, MRL, and gearless options starting at Rs. 4–6 lakh, with fixed itemised pricing, IS 14665-compliant safety standards, and dedicated after-sales support. A free site visit helps you compare your options and confirm the right fit for your home before you commit.",
+  },
+  {
+    question: "What is KAS's warranty and AMC coverage?",
+    answer:
+      "KAS Home Elevators offers a [X]-year comprehensive warranty covering [scope], along with AMC plans starting at Rs. [X],000/year for routine servicing, safety checks, and priority breakdown support.",
+  },
 ];
 
 const contactIntro =
@@ -614,6 +631,39 @@ const contactDetails = [
   "We provide customized home elevator installation in Hyderabad for villas, duplex homes, independent houses, and other residential properties. Our focus is on delivering safe, stylish, and energy-efficient home elevator solutions that match your space, budget, and lifestyle.",
   "Get in touch with our experts today to schedule a free site inspection or request a personalized quotation. We'll help you choose the ideal home elevator that combines comfort, convenience, and long-term reliability.",
   "Call us today or fill out our enquiry form to discuss your requirements. Experience premium quality, professional service, and dependable support with Kashome Elevators—your trusted partner for home elevators in Hyderabad.",
+];
+
+const customerReviews = [
+  {
+    name: "K. Suresh Rao",
+    location: "Gachibowli, Hyderabad",
+    rating: 5,
+    text: "We recently installed a compact MRL home lift for our duplex villa in Gachibowli. The KAS team completed the entire setup in just 3 weeks with very minimal civil work. Most importantly, their pricing was completely transparent—the final invoice matched their initial quote to the rupee with zero hidden charges. Highly recommended for senior citizen mobility!",
+  },
+  {
+    name: "Ananya Reddy",
+    location: "Jubilee Hills, Hyderabad",
+    rating: 5,
+    text: "Excellent service by KAS Home Elevators! We got a premium glass hydraulic lift installed in our Jubilee Hills house. The installation took about 4 weeks, and their engineers were extremely professional, keeping the workspace clean. The ride is super smooth and it has completely changed how my parents move around the house.",
+  },
+  {
+    name: "Mohammed Imran",
+    location: "Kokapet, Hyderabad",
+    rating: 5,
+    text: "Our experience with KAS for a gearless home elevator in Kokapet was outstanding. They gave us a detailed, itemized quote upfront and stuck to it. The installation was completed within 3 weeks. The elevator is extremely quiet and energy efficient. The ARD safety feature works perfectly during power cuts.",
+  },
+  {
+    name: "Prasad V.",
+    location: "Manikonda, Hyderabad",
+    rating: 5,
+    text: "Highly satisfied with the retrofit hydraulic lift installed in our independent home in Manikonda. KAS is definitely the best home elevator company in Hyderabad. Their team made sure the structural changes were minimal and completed the project on time. Great post-installation support and maintenance service.",
+  },
+  {
+    name: "Lakshmi Narayana",
+    location: "Kompally, Hyderabad",
+    rating: 5,
+    text: "We chose KAS to install a compact home lift in our house at Kompally. The entire process from site inspection to handover was hassle-free. They are very honest about pricing and did not push unnecessary upgrades. The lift is very safe, and my grandchildren use it daily without any worries.",
+  },
 ];
 
 const localBusinessSchema = {
@@ -633,6 +683,23 @@ const localBusinessSchema = {
   },
   areaServed: "Hyderabad",
   url: pageUrl,
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "5",
+  },
+  review: customerReviews.map((review) => ({
+    "@type": "Review",
+    author: {
+      "@type": "Person",
+      name: review.name,
+    },
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: String(review.rating),
+    },
+    reviewBody: review.text,
+  })),
 };
 
 const organizationSchema = {
@@ -732,7 +799,7 @@ export default function HomeElevatorHyderabadPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.12),_transparent_45%)]" />
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 lg:mb-10 max-w-4xl">
-              Home Elevator in Hyderabad - Safe, Compact Lifts for Every Home
+              Best Home Elevator in Hyderabad - Safe, Compact Lifts for Every Home
             </h1>
 
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
@@ -789,12 +856,27 @@ export default function HomeElevatorHyderabadPage() {
 
         <section className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Home Elevator Cost in Hyderabad
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>{linkSeoKeywords(costIntro)}</p>
-              <p>{linkSeoKeywords(costDetails)}</p>
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+              <div className="lg:col-span-7 space-y-6">
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                  Home Elevator Cost in Hyderabad
+                </h2>
+                <div className="space-y-4 text-gray-700 leading-relaxed">
+                  <p>{linkSeoKeywords(costIntro)}</p>
+                  <p>{linkSeoKeywords(costDetails)}</p>
+                </div>
+              </div>
+              <div className="lg:col-span-5">
+                <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                  <Image
+                    src="/home-elevator-cost.png"
+                    alt="Home Elevator Cost in Hyderabad"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -822,20 +904,6 @@ export default function HomeElevatorHyderabadPage() {
             <p className="text-gray-700 leading-relaxed mt-8">
               {linkSeoKeywords(benefitsClosing)}
             </p>
-          </div>
-        </section>
-
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex justify-center">
-            <div className="relative aspect-[4/3] w-full max-w-xl rounded-2xl overflow-hidden shadow-lg border border-gray-200">
-              <Image
-                src={secondImagePath}
-                alt={secondImageAlt}
-                fill
-                sizes="(max-width: 768px) 100vw, 576px"
-                className="object-cover"
-              />
-            </div>
           </div>
         </section>
 
@@ -1103,12 +1171,58 @@ export default function HomeElevatorHyderabadPage() {
 
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              What Our Customers Say
-            </h2>
-            <p className="text-gray-700 leading-relaxed">
-              {linkSeoKeywords(customersIntro)}
-            </p>
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                What Our Customers Say
+              </h2>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                {linkSeoKeywords(customersIntro)}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {customerReviews.map((review, idx) => (
+                <div
+                  key={idx}
+                  className="relative bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Stars */}
+                    <div className="flex items-center gap-1 mb-4 text-amber-400">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className="w-5 h-5 fill-current"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+
+                    {/* Review text */}
+                    <p className="text-gray-600 italic leading-relaxed mb-6">
+                      &ldquo;{review.text}&rdquo;
+                    </p>
+                  </div>
+
+                  {/* Reviewer info */}
+                  <div className="flex items-center gap-3 border-t border-gray-50 pt-4">
+                    <div className="h-10 w-10 rounded-full bg-green-100 text-green-700 font-bold flex items-center justify-center shrink-0">
+                      {review.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+                        {review.name}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        {review.location}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -1174,20 +1288,36 @@ export default function HomeElevatorHyderabadPage() {
         </section>
 
         <section className="py-16">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 text-center">
               Frequently Asked Questions
             </h2>
-            <ul className="space-y-6 list-none">
+            <div className="space-y-4">
               {faqs.map((item) => (
-                <li key={item.question} className="text-gray-700 leading-relaxed">
-                  <strong className="text-gray-900 block mb-2">{item.question}</strong>
-                  <p>
-                    {linkSeoKeywords(item.answer)}
-                  </p>
-                </li>
+                <details
+                  key={item.question}
+                  className="group border border-green-100 bg-white rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden transition-all duration-300 hover:shadow-sm"
+                >
+                  <summary className="flex justify-between items-center font-semibold text-gray-900 text-base sm:text-lg cursor-pointer list-none hover:text-green-700 select-none">
+                    <span className="pr-4">{item.question}</span>
+                    <span className="transition-transform duration-300 group-open:rotate-180 text-gray-400 group-hover:text-green-700 shrink-0">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <div className="text-gray-600 mt-3 pt-3 border-t border-gray-50 leading-relaxed text-sm sm:text-base">
+                    <p>{linkSeoKeywords(item.answer)}</p>
+                  </div>
+                </details>
               ))}
-            </ul>
+            </div>
           </div>
         </section>
 

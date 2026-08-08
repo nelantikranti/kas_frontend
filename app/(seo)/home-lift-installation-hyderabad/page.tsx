@@ -84,7 +84,7 @@ function createSeoLinker(excludeHref?: string) {
 }
 
 const pageUrl =
-  "https://www.kashomeelevators.com/home-lift-installation-hyderabad/";
+  "https://www.kashomeelevators.com/home-lift-installation-hyderabad";
 const siteUrl = "https://www.kashomeelevators.com/";
 const imageFileName = "home-lift-installation-hyderabad.webp";
 const imagePath = installationImage;
@@ -113,15 +113,6 @@ const lastUpdatedDisplay = "31 July 2026";
 export const metadata: Metadata = {
   title: seoTitle,
   description: seoDescription,
-  keywords: [
-    "lift installation Hyderabad",
-    "home lift installation Hyderabad",
-    "home lift installation cost Hyderabad",
-    "residential elevator installation Hyderabad",
-    "home elevator company Hyderabad",
-    "villa lift installation Hyderabad",
-    "MRL home lift installation",
-  ],
   robots: {
     index: true,
     follow: true,
@@ -942,13 +933,19 @@ function ListSection({
             {linkSeoKeywords(subIntro)}
           </p>
         ) : null}
-        <ul className="space-y-6 list-disc pl-6">
+        <ul className="space-y-8 list-none">
           {items.map((item) => (
-            <li key={item.title} className="text-gray-700 leading-relaxed">
-              <h3 className="text-gray-900 font-bold">
+            <li key={item.title} className="relative pl-6 text-gray-700 leading-relaxed">
+              <span
+                className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-green-600"
+                aria-hidden="true"
+              />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
                 {linkSeoKeywords(item.title)}
               </h3>
-              <p className="mt-2">{linkSeoKeywords(item.content)}</p>
+              <p className="text-gray-700 leading-relaxed">
+                {linkSeoKeywords(item.content)}
+              </p>
             </li>
           ))}
         </ul>
@@ -1004,13 +1001,23 @@ export default function HomeLiftInstallationHyderabadPage() {
               updated {lastUpdatedDisplay}
             </p>
 
+            <div
+              id="quick-answer"
+              className="mb-8 p-5 rounded-xl border border-green-500/30 bg-green-500/10 text-slate-100 max-w-5xl"
+            >
+              <p className="text-sm sm:text-base leading-relaxed">
+                {linkSeoKeywords(quickAnswer, seoLinkClassHero)}
+              </p>
+            </div>
+
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="lg:col-span-7 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
                 <p>
                   {linkSeoKeywords(addedHeroParagraphs[0], seoLinkClassHero)}
                 </p>
-                <p>{linkSeoKeywords(heroParagraphs[0], seoLinkClassHero)}</p>
-                <p>{linkSeoKeywords(heroParagraphs[1], seoLinkClassHero)}</p>
+                <p>
+                  {linkSeoKeywords(addedHeroParagraphs[1], seoLinkClassHero)}
+                </p>
 
                 <div className="!mt-8 grid grid-cols-3 gap-4 max-w-md">
                   {trustStats.map((stat) => (
@@ -1039,28 +1046,11 @@ export default function HomeLiftInstallationHyderabadPage() {
                 </div>
               </div>
             </div>
-
-            <div className="mt-10 pt-10 border-t border-slate-700/60 space-y-5 text-base sm:text-lg text-slate-100 leading-relaxed">
-              <p>
-                {linkSeoKeywords(addedHeroParagraphs[1], seoLinkClassHero)}
-              </p>
-              {heroParagraphs.slice(2).map((paragraph) => (
-                <p key={paragraph}>
-                  {linkSeoKeywords(paragraph, seoLinkClassHero)}
-                </p>
-              ))}
-            </div>
           </div>
         </section>
 
         <section className="py-10 bg-white border-b border-gray-100">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <p
-              id="quick-answer"
-              className="text-gray-800 leading-relaxed rounded-xl border border-green-200 bg-green-50 px-5 py-4 font-medium"
-            >
-              {quickAnswer}
-            </p>
             <nav aria-label="Table of contents" className="mt-6">
               <p className="text-sm font-semibold text-gray-900 mb-2">
                 On this page:
@@ -1081,104 +1071,22 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section id="what-involve" className="py-16 bg-white scroll-mt-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              What Does Home Lift Installation Involve?
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>{linkSeoKeywords(whatInstallationInvolveIntro)}</p>
-              <p>{linkSeoKeywords(whatInstallationInvolveDetails)}</p>
-            </div>
-          </div>
-        </section>
-
-        <section id="why-choose" className="py-16 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Why Choose Professional Home Lift Installation in Hyderabad?
-            </h2>
-            <div className="space-y-4 text-gray-700 leading-relaxed mb-8">
-              {whyChooseIntro.map((paragraph) => (
-                <p key={paragraph}>{linkSeoKeywords(paragraph)}</p>
-              ))}
-            </div>
-            <figure className="mb-10">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-200 shadow-lg">
-                <Image
-                  src="/site-inspection-home-lift-hyderabad.webp"
-                  alt="Certified engineers inspecting site for home lift installation in Hyderabad"
-                  title="Site Inspection for Home Lift Installation in Hyderabad"
-                  fill
-                  sizes="(max-width: 1280px) 100vw, 1200px"
-                  className="object-cover"
-                />
-              </div>
-              <figcaption className="mt-3 text-center text-sm text-gray-600">
-                Kashome Elevators&apos; engineers conducting a detailed site
-                inspection before beginning a home lift installation project.
-              </figcaption>
-            </figure>
-            <ul className="space-y-6 list-disc pl-6">
-              {whyChooseItems.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold">
-                    {linkSeoKeywords(item.title)}
-                  </h3>
-                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="text-gray-700 leading-relaxed mt-8 rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
-              {linkSeoKeywords(whyChooseAeo)}
-            </p>
-            <p className="text-gray-700 leading-relaxed mt-8">
-              {linkSeoKeywords(whyChooseClosing)}
-            </p>
-          </div>
-        </section>
 
         <section id="benefits" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Benefits of Professional Home Lift Installation
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              {linkSeoKeywords(addedBenefitsIntro)}
-            </p>
-            <ul className="space-y-3 list-disc pl-6 mb-8 text-gray-700 leading-relaxed">
+            <div className="mb-6 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base">
+                {linkSeoKeywords(addedBenefitsIntro)}
+              </p>
+            </div>
+            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed">
               {addedBenefitsList.map((item) => (
                 <li key={item}>{linkSeoKeywords(item)}</li>
               ))}
             </ul>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              {linkSeoKeywords(benefitsIntro)}
-            </p>
-            {benefitsSubIntro ? (
-              <p className="text-gray-700 leading-relaxed mb-8">
-                {linkSeoKeywords(benefitsSubIntro)}
-              </p>
-            ) : null}
-            <ul className="space-y-6 list-disc pl-6">
-              {benefits.map((item) => (
-                <li key={item.title} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold">
-                    {linkSeoKeywords(item.title)}
-                  </h3>
-                  <p className="mt-2">{linkSeoKeywords(item.content)}</p>
-                </li>
-              ))}
-            </ul>
-            {benefitsAeo ? (
-              <p className="text-gray-700 leading-relaxed mt-8 rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
-                {linkSeoKeywords(benefitsAeo)}
-              </p>
-            ) : null}
-            {benefitsClosing ? (
-              <p className="text-gray-700 leading-relaxed mt-8">
-                {linkSeoKeywords(benefitsClosing)}
-              </p>
-            ) : null}
           </div>
         </section>
 
@@ -1186,26 +1094,22 @@ export default function HomeLiftInstallationHyderabadPage() {
           id="features"
           title="Features of Our Home Lift Installation Services"
           intro={featuresAeo}
-          subIntro={`${featuresIntro} ${featuresSubIntro ?? ""}`.trim()}
           items={features}
-          closing={featuresClosing}
           bgWhite
           linkSeoKeywords={linkSeoKeywords}
         />
 
-        <ListSection
-          id="lift-types"
-          title="Types of Home Lifts We Install"
-          intro={addedTypesIntro}
-          subIntro={`${liftTypesIntro} ${liftTypesSubIntro ?? ""}`.trim()}
-          items={liftTypes}
-          aeo={liftTypesAeo}
-          closing={liftTypesClosing}
-          linkSeoKeywords={linkSeoKeywords}
-        />
-
-        <section className="pb-16">
+        <section id="lift-types" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Types of Home Lifts We Install
+            </h2>
+            <div className="mb-8 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base">
+                {linkSeoKeywords(addedTypesIntro)}
+              </p>
+            </div>
+
             <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -1245,9 +1149,11 @@ export default function HomeLiftInstallationHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Lift Installation Cost in Hyderabad
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(costIntro)}
-            </p>
+            <div className="mb-8 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base">
+                {linkSeoKeywords(costIntro)}
+              </p>
+            </div>
             <div className="overflow-x-auto rounded-xl border border-gray-200 mb-6">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-green-50">
@@ -1288,9 +1194,11 @@ export default function HomeLiftInstallationHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Our Installation Process & Timeline
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-8">
-              {linkSeoKeywords(processIntro)}
-            </p>
+            <div className="mb-8 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base">
+                {linkSeoKeywords(processIntro)}
+              </p>
+            </div>
             <ol className="space-y-4 list-decimal pl-6 text-gray-700 leading-relaxed mb-8">
               {processSteps.map((step) => (
                 <li key={step}>{linkSeoKeywords(step)}</li>
@@ -1307,27 +1215,25 @@ export default function HomeLiftInstallationHyderabadPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Maintenance & After-Sales Support
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              {linkSeoKeywords(addedMaintenanceIntro)}
-            </p>
-            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed">
+            <div className="mb-8 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base">
+                {linkSeoKeywords(addedMaintenanceIntro)}
+              </p>
+            </div>
+            <ul className="space-y-4 list-none">
               {addedMaintenanceList.map((item) => (
-                <li key={item}>{linkSeoKeywords(item)}</li>
+                <li key={item} className="relative pl-6 text-gray-700 leading-relaxed">
+                  <span
+                    className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-green-600"
+                    aria-hidden="true"
+                  />
+                  <p>{linkSeoKeywords(item)}</p>
+                </li>
               ))}
             </ul>
           </div>
         </section>
 
-        <ListSection
-          id="solutions"
-          title="Our Home Lift Installation Solutions"
-          intro={solutionsIntro}
-          subIntro={solutionsSubIntro}
-          items={solutions}
-          aeo={solutionsAeo}
-          closing={solutionsClosing}
-          linkSeoKeywords={linkSeoKeywords}
-        />
 
         <section id="areas" className="py-16 bg-white scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
@@ -1336,9 +1242,7 @@ export default function HomeLiftInstallationHyderabadPage() {
                 <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                   Areas We Serve in Hyderabad
                 </h2>
-                <div className="space-y-4 text-gray-700 leading-relaxed">
-                  <p>{linkSeoKeywords(serviceAreasIntro)}</p>
-                </div>
+
               </div>
               <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 list-none">
                 {serviceAreas.map((area) => (
@@ -1377,17 +1281,24 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
+
         <section id="why-kashome" className="py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Why Choose KAS Home Elevators in Hyderabad
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
+            <p className="text-gray-700 leading-relaxed mb-8">
               {linkSeoKeywords(addedWhyKasIntro)}
             </p>
-            <ul className="space-y-3 list-disc pl-6 text-gray-700 leading-relaxed">
+            <ul className="space-y-4 list-none">
               {addedWhyKasPoints.map((item) => (
-                <li key={item}>{linkSeoKeywords(item)}</li>
+                <li key={item} className="relative pl-6 text-gray-700 leading-relaxed">
+                  <span
+                    className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-green-600"
+                    aria-hidden="true"
+                  />
+                  <p>{linkSeoKeywords(item)}</p>
+                </li>
               ))}
             </ul>
           </div>
@@ -1450,9 +1361,6 @@ export default function HomeLiftInstallationHyderabadPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-gray-700 leading-relaxed mb-8">
-                {linkSeoKeywords(contactClosing)}
-              </p>
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/contact"
