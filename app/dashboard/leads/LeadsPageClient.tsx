@@ -303,6 +303,7 @@ export default function LeadsPage() {
   const [fbSyncDisabled, setFbSyncDisabled] = useState(false);
   const isInitialMount = useRef(true);
   const allowFilterFetch = useRef(false);
+  const clearingFiltersRef = useRef(false);
   const [filtersHydrated, setFiltersHydrated] = useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -913,7 +914,7 @@ export default function LeadsPage() {
       isInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     loadLeads({ page: currentPage });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
@@ -941,7 +942,7 @@ export default function LeadsPage() {
       groupInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, groupId: selectedGroupId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -954,7 +955,7 @@ export default function LeadsPage() {
       sourceInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, source: selectedSourceFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -967,7 +968,7 @@ export default function LeadsPage() {
       stateInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, state: selectedState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -980,7 +981,7 @@ export default function LeadsPage() {
       bdmInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, assignedToUserId: selectedBdmUserId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -993,7 +994,7 @@ export default function LeadsPage() {
       stageInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, stage: selectedStageFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1006,7 +1007,7 @@ export default function LeadsPage() {
       contactStatusInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
+    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, contactStatus: selectedContactStatusFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1912,6 +1913,36 @@ NEXT ACTION:
     }
   };
 
+  const hasActiveSelectFilter = Boolean(
+    selectedGroupId ||
+    selectedStageFilter ||
+    selectedContactStatusFilter ||
+    selectedState ||
+    selectedBdmUserId
+  );
+
+  const handleClearFilters = () => {
+    if (!hasActiveSelectFilter) return;
+    clearingFiltersRef.current = true;
+    setSelectedGroupId("");
+    setSelectedStageFilter("");
+    setSelectedContactStatusFilter("");
+    setSelectedState("");
+    setSelectedBdmUserId("");
+    setCurrentPage(1);
+    loadLeads({
+      groupId: "",
+      stage: "",
+      contactStatus: "",
+      state: "",
+      assignedToUserId: "",
+      page: 1,
+    });
+    window.setTimeout(() => {
+      clearingFiltersRef.current = false;
+    }, 0);
+  };
+
   const handleViewDetails = async (lead: Lead) => {
     setSelectedLead(lead);
     setIsDetailsModalOpen(true);
@@ -2533,7 +2564,8 @@ NEXT ACTION:
               className="w-full h-10 pl-9 pr-4 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 flex-1 min-w-0">
             <select
               value={selectedGroupId}
               onChange={(e) => setSelectedGroupId(e.target.value)}
@@ -2603,6 +2635,18 @@ NEXT ACTION:
                 ))}
             </select>
             )}
+          </div>
+          {hasActiveSelectFilter && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              title="Clear filters"
+              aria-label="Clear filters"
+              className="h-10 w-10 shrink-0 self-end sm:self-center inline-flex items-center justify-center rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
+              <IoClose className="w-5 h-5 text-white" />
+            </button>
+          )}
           </div>
         </div>
       </div>
