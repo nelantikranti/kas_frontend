@@ -117,49 +117,6 @@ function mergeContactReportSections(
 
 const LEAD_GROUP_OPTIONS = ["Tamil Nadu", "Andhra Pradesh"] as const;
 
-const LEADS_FILTERS_STORAGE_KEY = "kas_leads_list_filters";
-
-type LeadsListFilters = {
-  groupId: string;
-  source: string;
-  state: string;
-  bdmUserId: string;
-  stage: string;
-  contactStatus: string;
-  search: string;
-  page: number;
-};
-
-function readLeadsListFilters(): Partial<LeadsListFilters> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = sessionStorage.getItem(LEADS_FILTERS_STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeLeadsListFilters(filters: LeadsListFilters) {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.setItem(LEADS_FILTERS_STORAGE_KEY, JSON.stringify(filters));
-  } catch {
-    // ignore quota / private mode
-  }
-}
-
-function stripRefreshQueryParam() {
-  if (typeof window === "undefined") return;
-  const url = new URL(window.location.href);
-  if (!url.searchParams.has("refresh")) return;
-  url.searchParams.delete("refresh");
-  const qs = url.searchParams.toString();
-  window.history.replaceState(null, "", url.pathname + (qs ? `?${qs}` : ""));
-}
-
 // All Indian States and Union Territories
 const indianStates = [
   "Andhra Pradesh",
@@ -302,9 +259,6 @@ export default function LeadsPage() {
   const fbSyncFailuresRef = useRef(0);
   const [fbSyncDisabled, setFbSyncDisabled] = useState(false);
   const isInitialMount = useRef(true);
-  const allowFilterFetch = useRef(false);
-  const clearingFiltersRef = useRef(false);
-  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -484,54 +438,18 @@ export default function LeadsPage() {
     };
 
     loadUser();
-    const stored = readLeadsListFilters();
-    // URL params (e.g. Groups page) take precedence over the last selected filters
-    const initialGroupId = searchParams.get("groupId") || stored.groupId || "";
-    const initialStage = searchParams.get("stage") || stored.stage || "";
-    const initialSource = stored.source || "";
-    const initialState = stored.state || "";
-    const initialBdm = stored.bdmUserId || "";
-    const initialContactStatus = stored.contactStatus || "";
-    const initialSearch = stored.search || "";
-    const initialPage = typeof stored.page === "number" && stored.page > 0 ? stored.page : 1;
-
-    if (initialGroupId) setSelectedGroupId(initialGroupId);
-    if (initialStage) setSelectedStageFilter(initialStage);
-    if (initialSource) setSelectedSourceFilter(initialSource);
-    if (initialState) setSelectedState(initialState);
-    if (initialBdm) setSelectedBdmUserId(initialBdm);
-    if (initialContactStatus) setSelectedContactStatusFilter(initialContactStatus);
-    if (initialSearch) setSearchTerm(initialSearch);
-    if (initialPage !== 1) setCurrentPage(initialPage);
-
-    writeLeadsListFilters({
-      groupId: initialGroupId,
-      source: initialSource,
-      state: initialState,
-      bdmUserId: initialBdm,
-      stage: initialStage,
-      contactStatus: initialContactStatus,
-      search: initialSearch,
-      page: initialPage,
-    });
-    setFiltersHydrated(true);
-
-    loadLeads({
-      groupId: initialGroupId,
-      stage: initialStage || undefined,
-      source: initialSource || undefined,
-      state: initialState || undefined,
-      assignedToUserId: initialBdm || undefined,
-      contactStatus: initialContactStatus || undefined,
-      search: initialSearch || undefined,
-      page: initialPage,
-    });
-
-    stripRefreshQueryParam();
-
-    const enableFilterFetches = window.setTimeout(() => {
-      allowFilterFetch.current = true;
-    }, 0);
+    // If coming from Groups page with a pre-selected groupId in URL, use it as initial filter
+    const initialGroupId = searchParams.get("groupId") || "";
+    const initialStage = searchParams.get("stage") || "";
+    if (initialStage) {
+      setSelectedStageFilter(initialStage);
+    }
+    if (initialGroupId) {
+      setSelectedGroupId(initialGroupId);
+      loadLeads({ groupId: initialGroupId, stage: initialStage || undefined, page: 1 });
+    } else {
+      loadLeads({ stage: initialStage || undefined, page: 1 });
+    }
 
     const loadGroups = async () => {
       try {
@@ -569,43 +487,17 @@ export default function LeadsPage() {
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.clearTimeout(enableFilterFetches);
     };
   }, []);
 
-  // Reload list after returning from edit lead page without resetting filters
+  // Reload list after returning from edit lead page
   useEffect(() => {
-    if (searchParams.get("refresh") !== "1") return;
-    if (allowFilterFetch.current) {
+    if (searchParams.get("refresh") === "1") {
       loadLeads({ page: currentPage });
+      router.replace("/dashboard/leads");
     }
-    stripRefreshQueryParam();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
-
-  useEffect(() => {
-    if (!filtersHydrated) return;
-    writeLeadsListFilters({
-      groupId: selectedGroupId,
-      source: selectedSourceFilter,
-      state: selectedState,
-      bdmUserId: selectedBdmUserId,
-      stage: selectedStageFilter,
-      contactStatus: selectedContactStatusFilter,
-      search: searchTerm,
-      page: currentPage,
-    });
-  }, [
-    filtersHydrated,
-    selectedGroupId,
-    selectedSourceFilter,
-    selectedState,
-    selectedBdmUserId,
-    selectedStageFilter,
-    selectedContactStatusFilter,
-    searchTerm,
-    currentPage,
-  ]);
 
   useEffect(() => {
     if (!isAssignModalOpen && !isModalOpen) return;
@@ -839,9 +731,7 @@ export default function LeadsPage() {
 
   const loadLeads = async (opts?: { groupId?: string; state?: string; stage?: string; contactStatus?: string; assignedToUserId?: string; page?: number; search?: string; source?: string }) => {
     try {
-      if (!allowFilterFetch.current) {
-        setLoading(true);
-      }
+      setLoading(true);
       const filterGroupId = opts?.groupId !== undefined ? opts.groupId : selectedGroupId;
       const page = opts?.page !== undefined ? opts.page : currentPage;
       const search = opts?.search !== undefined ? opts.search : searchTerm;
@@ -914,7 +804,6 @@ export default function LeadsPage() {
       isInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     loadLeads({ page: currentPage });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
@@ -926,7 +815,6 @@ export default function LeadsPage() {
       searchInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
     const timer = setTimeout(() => {
       setCurrentPage(1);
       loadLeads({ page: 1, search: searchTerm });
@@ -935,19 +823,6 @@ export default function LeadsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  // Reload when group filter changes (reset to page 1)
-  const groupInitialMount = useRef(true);
-  useEffect(() => {
-    if (groupInitialMount.current) {
-      groupInitialMount.current = false;
-      return;
-    }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
-    setCurrentPage(1);
-    loadLeads({ page: 1, groupId: selectedGroupId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGroupId]);
-
   // Reload when source filter changes (reset to page 1)
   const sourceInitialMount = useRef(true);
   useEffect(() => {
@@ -955,7 +830,6 @@ export default function LeadsPage() {
       sourceInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, source: selectedSourceFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -968,7 +842,6 @@ export default function LeadsPage() {
       stateInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, state: selectedState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -981,7 +854,6 @@ export default function LeadsPage() {
       bdmInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, assignedToUserId: selectedBdmUserId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -994,7 +866,6 @@ export default function LeadsPage() {
       stageInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, stage: selectedStageFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1007,7 +878,6 @@ export default function LeadsPage() {
       contactStatusInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current || clearingFiltersRef.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1, contactStatus: selectedContactStatusFilter });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1020,7 +890,6 @@ export default function LeadsPage() {
       pageSizeInitialMount.current = false;
       return;
     }
-    if (!allowFilterFetch.current) return;
     setCurrentPage(1);
     loadLeads({ page: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1913,36 +1782,6 @@ NEXT ACTION:
     }
   };
 
-  const hasActiveSelectFilter = Boolean(
-    selectedGroupId ||
-    selectedStageFilter ||
-    selectedContactStatusFilter ||
-    selectedState ||
-    selectedBdmUserId
-  );
-
-  const handleClearFilters = () => {
-    if (!hasActiveSelectFilter) return;
-    clearingFiltersRef.current = true;
-    setSelectedGroupId("");
-    setSelectedStageFilter("");
-    setSelectedContactStatusFilter("");
-    setSelectedState("");
-    setSelectedBdmUserId("");
-    setCurrentPage(1);
-    loadLeads({
-      groupId: "",
-      stage: "",
-      contactStatus: "",
-      state: "",
-      assignedToUserId: "",
-      page: 1,
-    });
-    window.setTimeout(() => {
-      clearingFiltersRef.current = false;
-    }, 0);
-  };
-
   const handleViewDetails = async (lead: Lead) => {
     setSelectedLead(lead);
     setIsDetailsModalOpen(true);
@@ -1971,16 +1810,6 @@ NEXT ACTION:
   };
 
   const handleEditLead = (lead: Lead) => {
-    writeLeadsListFilters({
-      groupId: selectedGroupId,
-      source: selectedSourceFilter,
-      state: selectedState,
-      bdmUserId: selectedBdmUserId,
-      stage: selectedStageFilter,
-      contactStatus: selectedContactStatusFilter,
-      search: searchTerm,
-      page: currentPage,
-    });
     const leadId = (lead as any)._id?.toString() || lead.id;
     router.push(`/dashboard/leads/edit/${leadId}`);
   };
@@ -2564,11 +2393,15 @@ NEXT ACTION:
               className="w-full h-10 pl-9 pr-4 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 flex-1 min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <select
               value={selectedGroupId}
-              onChange={(e) => setSelectedGroupId(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedGroupId(v);
+                setCurrentPage(1);
+                loadLeads({ groupId: v || undefined, page: 1 });
+              }}
               className="h-10 w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               aria-label="Filter by group"
             >
@@ -2635,18 +2468,6 @@ NEXT ACTION:
                 ))}
             </select>
             )}
-          </div>
-          {hasActiveSelectFilter && (
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              title="Clear filters"
-              aria-label="Clear filters"
-              className="h-10 w-10 shrink-0 self-end sm:self-center inline-flex items-center justify-center rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
-            >
-              <IoClose className="w-5 h-5 text-white" />
-            </button>
-          )}
           </div>
         </div>
       </div>

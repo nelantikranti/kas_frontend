@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import LeadForm from "@/components/LeadForm";
+import FaqItem from "@/components/FaqItem";
 import type { ReactNode } from "react";
 import installationImage from "../../../public/home-lift-installation-hyderabad.webp";
 
@@ -17,6 +19,15 @@ const brandPlaceholder = "KASHOME_ELEVATORS_BRAND";
 function createSeoLinker(excludeHref?: string) {
   const linkedHrefs = new Set<string>();
   const links = [
+    { phrase: "home lift in Hyderabad", href: "/home-lift-in-hyderabad" },
+    { phrase: "home elevator Hyderabad", href: "/home-elevator-in-hyderabad" },
+    { phrase: "hydraulic home lift", href: "/home-lift-in-hyderabad#lift-types" },
+    { phrase: "MRL home lift", href: "/home-lift-in-hyderabad#lift-types" },
+    { phrase: "gearless home lift", href: "/home-lift-in-hyderabad#lift-types" },
+    { phrase: "glass home lift", href: "/home-lift-in-hyderabad#lift-types" },
+    { phrase: "compact home lift", href: "/home-lift-in-hyderabad#lift-types" },
+    { phrase: "home lift maintenance", href: "/services" },
+    { phrase: "home lift cost", href: "/home-lift-in-hyderabad#cost" },
     { phrase: "residential elevators", href: "/residential-elevator-hyderabad" },
     { phrase: "residential elevator", href: "/residential-elevator-hyderabad" },
     { phrase: "home elevators", href: "/home-elevator-in-hyderabad" },
@@ -104,9 +115,9 @@ const ctaButtons = [
 ];
 
 const seoTitle =
-  "Lift Installation in Hyderabad | Certified Engineers & Free Site Visit – KAS";
+  "Home Lift Installation in Hyderabad | From ₹5 Lakh | Free Site Visit – KAS";
 const seoDescription =
-  "Lift installation in Hyderabad starting ₹5 lakh. Certified engineers, safety-tested lifts, transparent pricing. Free site inspection — book now.";
+  "Expert home lift installation in Hyderabad from ₹5 Lakh. MRL, hydraulic, gearless lifts installed by certified engineers in 4-7 weeks. 500+ installations. Free site visit & AMC. Call +91-8019219911";
 const lastUpdatedIso = "2026-07-31";
 const lastUpdatedDisplay = "31 July 2026";
 
@@ -283,17 +294,21 @@ const businessPhoneTel = "tel:+918019219911";
 const businessEmail = "assist@kashomeelevators.com";
 
 const tocLinks = [
-  { href: "#what-involve", label: "What Installation Involves" },
-  { href: "#why-choose", label: "Why Choose Professional Installation" },
   { href: "#benefits", label: "Benefits" },
+  { href: "#who-should-consider", label: "Who Should Consider" },
   { href: "#features", label: "Features" },
   { href: "#lift-types", label: "Types of Home Lifts" },
-  { href: "#cost", label: "Cost" },
+  { href: "#retrofit-guide", label: "Retrofit Guide" },
+  { href: "#cost", label: "Cost & Pricing" },
+  { href: "#quote-form", label: "Free Quote & Inspection" },
   { href: "#process", label: "Process & Timeline" },
+  { href: "#walkthrough-video", label: "Installation Video" },
+  { href: "#safety-compliance", label: "Safety & Compliance" },
+  { href: "#common-mistakes", label: "7 Mistakes to Avoid" },
   { href: "#maintenance", label: "Maintenance & AMC" },
-  { href: "#solutions", label: "Installation Solutions" },
+  { href: "#case-studies", label: "Recent Projects" },
   { href: "#areas", label: "Areas We Serve" },
-  { href: "#why-kashome", label: "Why KAS Home Elevators" },
+  { href: "#why-kashome", label: "Why Choose KAS" },
   { href: "#faqs", label: "FAQs" },
   { href: "#contact", label: "Contact Us" },
 ];
@@ -713,15 +728,14 @@ const faqs = [
       "Yes. We offer preventive maintenance, Annual Maintenance Contracts, technical support, inspections, repairs, and genuine spare parts.",
   },
   {
-    question:
-      "Why should I choose KAS Home Elevators for lift installation in Hyderabad?",
+    question: "Why should I choose KAS for lift installation in Hyderabad?",
     answer:
       "KAS combines 10+ years of experience, 500+ completed installations, certified engineers, transparent pricing, and dependable after-sales AMC support.",
   },
   {
-    question: "Is government or society approval required for a home lift in Hyderabad?",
+    question: "Is government approval required for a home lift in Hyderabad?",
     answer:
-      "Requirements vary — independent villas generally need standard structural and electrical compliance, while gated-community installations may require society approval. Our team guides you through applicable local approvals.",
+      "Requirements vary — independent villas need standard compliance, while gated communities may require society approval. Our team handles all documentation.",
   },
   {
     question: "What warranty do you provide on lift installation?",
@@ -732,6 +746,31 @@ const faqs = [
     question: "How much space is required to install a home lift?",
     answer:
       "A compact MRL home lift can fit into as little as 4-5 sq. ft. of shaft space. Our engineers confirm the exact requirement during the free site inspection.",
+  },
+  {
+    question: "Can a home lift be installed in an existing villa in Hyderabad without breaking walls?",
+    answer:
+      "Yes. Modern MRL and compact home lifts can often be installed inside existing staircase voids or exterior glass shafts with minimal civil work. In most cases, existing structural walls remain untouched. Our engineers assess feasibility during the free site visit.",
+  },
+  {
+    question: "What civil work is required before home lift installation begins?",
+    answer:
+      "Civil work requirements depend on lift type: MRL lifts need a shallow pit (200-300mm) and overhead clearance (2,800mm); hydraulic lifts need a shallow pit and small power pack area; vacuum lifts require virtually zero civil work. KAS provides complete civil drawings and coordinates with your contractor.",
+  },
+  {
+    question: "What is the electricity consumption of a home lift in Hyderabad?",
+    answer:
+      "A typical residential home lift uses 1.5 kW to 3.7 kW — comparable to a 1.5-ton split air conditioner. When running 15-20 trips per day, the monthly electricity cost is approximately ₹300 to ₹600. Lifts only consume power when moving.",
+  },
+  {
+    question: "What happens if there is a power cut while someone is inside the lift?",
+    answer:
+      "Every KAS home lift includes an Automatic Rescue Device (ARD) with battery backup. During a power failure, the ARD automatically brings the lift to the nearest floor and opens the doors, allowing passengers to exit safely. It does not require manual intervention.",
+  },
+  {
+    question: "How often does a home lift need servicing after installation?",
+    answer:
+      "We recommend routine maintenance every 2-3 months (4-6 services per year). Kashome Elevators provides complimentary first-year AMC with every new installation, covering quarterly inspections, lubrication, safety checks, and emergency breakdown support within 4 hours.",
   },
 ];
 
@@ -772,20 +811,50 @@ const contactClosing =
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  name: "Kashome Elevators",
-  image: imageUrl,
+  name: "Kashome Elevators (KAS) — Lift Installation",
+  description:
+    "Professional home lift installation in Hyderabad. MRL, hydraulic, gearless and glass lifts. Certified engineers, 500+ installations.",
+  url: pageUrl,
   telephone: "+91-8019219911",
   email: "assist@kashomeelevators.com",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "GFH5 plot 243, 244, 2C6, Rami Reddy Nagar, Jeedimetla",
+    streetAddress: "Jeedimetla",
     addressLocality: "Hyderabad",
     addressRegion: "Telangana",
     postalCode: "500055",
     addressCountry: "IN",
   },
-  areaServed: "Hyderabad",
-  url: pageUrl,
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: "17.4948",
+    longitude: "78.4528",
+  },
+  areaServed: [
+    "Banjara Hills",
+    "Jubilee Hills",
+    "Gachibowli",
+    "Madhapur",
+    "Kondapur",
+    "Kukatpally",
+    "Miyapur",
+    "HITEC City",
+    "Kompally",
+    "Manikonda",
+    "Tellapur",
+    "Shamshabad",
+    "Secunderabad",
+    "Uppal",
+    "LB Nagar",
+  ],
+  priceRange: "₹5,00,000 - ₹16,00,000",
+  openingHours: "Mo-Sa 09:00-18:00",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "500",
+  },
+  image: imageUrl,
 };
 
 const organizationSchema = {
@@ -808,19 +877,70 @@ const serviceSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
   name: "Home Lift Installation in Hyderabad",
-  serviceType: "Home Lift Installation",
   description:
-    "Kashome Elevators provides professional home lift installation in Hyderabad for villas, duplex homes, independent houses, and luxury residences with advanced safety features and customized solutions.",
+    "Professional home lift installation — site inspection, design, certified installation, safety testing, and AMC support.",
   provider: {
-    "@type": "Organization",
-    name: "Kashome Elevators",
-    url: "https://www.kashomeelevators.com",
+    "@type": "LocalBusiness",
+    name: "Kashome Elevators (KAS)",
+    telephone: "+91-8019219911",
   },
+  serviceType: "Elevator Installation",
   areaServed: {
     "@type": "City",
     name: "Hyderabad",
   },
-  url: pageUrl,
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "INR",
+    price: "500000",
+    priceSpecification: {
+      "@type": "PriceSpecification",
+      priceCurrency: "INR",
+      minPrice: "500000",
+      maxPrice: "1600000",
+    },
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Home Lift Installation",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "MRL Home Lift Installation",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Hydraulic Home Lift Installation",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Gearless Home Lift Installation",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Glass Home Lift Installation",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Compact Home Lift Installation",
+        },
+      },
+    ],
+  },
 };
 
 const webPageSchema = {
@@ -996,14 +1116,51 @@ export default function HomeLiftInstallationHyderabadPage() {
               Home Lift Installation in Hyderabad – Certified Engineers,
               Transparent Process, Trusted Results
             </h1>
-            <p className="text-slate-300 text-sm mb-8 lg:mb-10">
-              Trusted by Hyderabad homeowners · Certified engineers · Last
-              updated {lastUpdatedDisplay}
-            </p>
+
+            {/* Interactive Price Box */}
+            <div className="mb-6 p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-slate-900/40 backdrop-blur-sm max-w-4xl hover:border-emerald-400/60 transition-all duration-300 shadow-lg hover:shadow-emerald-950/50 group">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="text-xl sm:text-2xl font-bold text-amber-400 flex items-center gap-2">
+                  <span className="inline-block animate-pulse text-green-400">⚡</span>
+                  Professional Home Lift Installation Starting at Just ₹5 Lakh*
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/10">
+                <span className="text-xs text-slate-400 font-medium mr-1">Drive Options:</span>
+                {["MRL", "Hydraulic", "Gearless", "Glass"].map((type) => (
+                  <span
+                    key={type}
+                    className="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-200 hover:bg-emerald-500/20 hover:border-emerald-400 hover:text-emerald-300 transition-all duration-200 cursor-pointer shadow-sm hover:scale-105"
+                  >
+                    {type}
+                  </span>
+                ))}
+                <span className="text-xs text-emerald-400 font-medium ml-auto hidden md:inline">
+                  — All Types Installed
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive Trust Badges Row */}
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 mb-8 text-xs sm:text-sm font-semibold text-slate-200">
+              {[
+                { icon: "✅", label: "ISO Certified" },
+                { icon: "✅", label: "500+ Installations" },
+                { icon: "✅", label: "Certified Engineers" },
+                { icon: "✅", label: "4-7 Week Timeline" },
+              ].map((badge) => (
+                <div
+                  key={badge.label}
+                  className="flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-700/90 px-3.5 py-1.5 rounded-xl border border-slate-700/80 hover:border-emerald-400/60 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 cursor-pointer"
+                >
+                  <span className="text-emerald-400">{badge.icon}</span> {badge.label}
+                </div>
+              ))}
+            </div>
 
             <div
               id="quick-answer"
-              className="mb-8 p-5 rounded-xl border border-green-500/30 bg-green-500/10 text-slate-100 max-w-5xl"
+              className="mb-8 p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 text-slate-100 max-w-2xl hover:border-emerald-400/50 hover:bg-emerald-950/30 transition-all duration-300 shadow-sm"
             >
               <p className="text-sm sm:text-base leading-relaxed">
                 {linkSeoKeywords(quickAnswer, seoLinkClassHero)}
@@ -1015,25 +1172,75 @@ export default function HomeLiftInstallationHyderabadPage() {
                 <p>
                   {linkSeoKeywords(addedHeroParagraphs[0], seoLinkClassHero)}
                 </p>
-                <p>
-                  {linkSeoKeywords(addedHeroParagraphs[1], seoLinkClassHero)}
-                </p>
 
-                <div className="!mt-8 grid grid-cols-3 gap-4 max-w-md">
+                {/* Interactive Stats Cards */}
+                <div className="!mt-8 grid grid-cols-3 gap-3 sm:gap-4 max-w-lg">
                   {trustStats.map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <div className="text-2xl sm:text-3xl font-bold text-green-400">
+                    <div
+                      key={stat.label}
+                      className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-emerald-400/50 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md cursor-default text-center lg:text-left group"
+                    >
+                      <div className="text-2xl sm:text-3xl font-bold text-emerald-400 group-hover:text-emerald-300 transition-colors">
                         {stat.value}
                       </div>
-                      <div className="text-xs sm:text-sm text-slate-300 mt-1">
+                      <div className="text-xs sm:text-sm text-slate-300 mt-1 leading-snug">
                         {stat.label}
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Quick Info Spec Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 !mt-7">
+                  {[
+                    { label: "Starting Price", val: "₹5 Lakh*" },
+                    { label: "Best Type", val: "MRL / Hydraulic" },
+                    { label: "Timeline", val: "4–7 Weeks" },
+                    { label: "Shaft Space", val: "From 4×4 ft" },
+                  ].map((card) => (
+                    <div
+                      key={card.label}
+                      className="bg-slate-800/60 border border-slate-700/60 hover:border-emerald-400/50 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-800 transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-tight">
+                        {card.label}
+                      </div>
+                      <div className="text-sm font-bold text-emerald-400 mt-1">
+                        {card.val}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap gap-3.5 !mt-9 !mb-4">
+                  <a
+                    href="tel:+918019219911"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all duration-200 shadow-lg shadow-emerald-900/30 hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
+                  >
+                    <span>📞</span> Call +91-8019219911
+                  </a>
+                  <Link
+                    href="#contact"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-all duration-200 shadow-lg hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
+                  >
+                    <span>📋</span> Book Free Site Visit
+                  </Link>
+                  <a
+                    href="https://wa.me/918019219911?text=Hi%2C%20I%20am%20interested%20in%20Home%20Lift%20Installation%20in%20Hyderabad."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all duration-200 border border-slate-600 hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
+                  >
+                    <span>💬</span> WhatsApp Us
+                  </a>
+                </div>
+                <p className="text-xs text-slate-400 italic mt-2">
+                  *Indicative pricing. Final cost confirmed after free site inspection.
+                </p>
               </div>
 
-              <div className="lg:col-span-5 lg:sticky lg:top-32">
+              <div className="lg:col-span-5 lg:sticky lg:top-6 space-y-6 lg:-mt-52">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-600/50">
                   <Image
                     src={imagePath}
@@ -1044,6 +1251,7 @@ export default function HomeLiftInstallationHyderabadPage() {
                     className="object-cover"
                   />
                 </div>
+                <LeadForm variant="hero" />
               </div>
             </div>
           </div>
@@ -1090,12 +1298,43 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
+        <section className="py-16 bg-white border-y border-gray-100">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Who Should Consider Home Lift Installation in Hyderabad?
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              {linkSeoKeywords("Home lift installation in Hyderabad is the right choice for:")}
+            </p>
+            <ul className="space-y-4 list-disc pl-6 text-gray-700 leading-relaxed mb-6">
+              <li>
+                <strong>Villa and duplex homeowners</strong> — G+2/G+3 independent houses where daily stair climbing becomes a burden for elderly parents and young children.
+              </li>
+              <li>
+                <strong>Families with elderly or mobility-challenged members</strong> — seniors with knee/joint problems, post-surgery patients, or wheelchair users who cannot safely use stairs.
+              </li>
+              <li>
+                <strong>Homeowners building new properties</strong> — including a lift shaft during construction costs 30-40% less than retrofitting later.
+              </li>
+              <li>
+                <strong>Property investors</strong> — homes with installed lifts command 15-20% higher resale value in Hyderabad&apos;s villa market.
+              </li>
+              <li>
+                <strong>Homeowners planning for the future</strong> — even if you don&apos;t need a lift today, installing one future-proofs your home for ageing-in-place.
+              </li>
+            </ul>
+            <p className="text-gray-800 font-medium leading-relaxed p-4 rounded-xl bg-green-50 border border-green-200">
+              <strong>Rule of thumb:</strong> If your home has 2 or more floors, a professionally installed home lift is no longer a luxury — it&apos;s a practical investment in safety, comfort, and property value.
+            </p>
+          </div>
+        </section>
+
         <ListSection
           id="features"
           title="Features of Our Home Lift Installation Services"
           intro={featuresAeo}
           items={features}
-          bgWhite
+          bgWhite={false}
           linkSeoKeywords={linkSeoKeywords}
         />
 
@@ -1144,7 +1383,105 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section id="cost" className="py-16 bg-white scroll-mt-24">
+        <section id="retrofit-guide" className="py-16 bg-white border-y border-gray-100 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Installing a Home Lift in an Existing Home — Retrofit Guide
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8 text-base sm:text-lg">
+              One of the most common questions we receive is:{" "}
+              <em className="text-gray-900 font-medium">
+                &ldquo;Can I install a home lift in my already-built house in Hyderabad?&rdquo;
+              </em>{" "}
+              The answer is yes — modern lift technology makes retrofitting possible in most residential properties with minimal structural changes.
+            </p>
+
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+              Which Lift Types Work Best for Existing Homes?
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 mb-8 shadow-sm">
+              <table className="w-full text-left border-collapse text-sm sm:text-base">
+                <thead className="bg-green-700 text-white">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Lift Type</th>
+                    <th className="px-4 py-3 font-semibold">Retrofit Friendly?</th>
+                    <th className="px-4 py-3 font-semibold">Key Advantage</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  <tr className="bg-white">
+                    <td className="px-4 py-3.5 font-semibold text-gray-900">MRL (Machine Room-Less)</td>
+                    <td className="px-4 py-3.5 text-green-700 font-medium">✅ Excellent</td>
+                    <td className="px-4 py-3.5 text-gray-700">No machine room needed; fits inside staircase void</td>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <td className="px-4 py-3.5 font-semibold text-gray-900">Compact Home Lift</td>
+                    <td className="px-4 py-3.5 text-green-700 font-medium">✅ Excellent</td>
+                    <td className="px-4 py-3.5 text-gray-700">Minimal shaft space (4×4 ft); very low civil work</td>
+                  </tr>
+                  <tr className="bg-white">
+                    <td className="px-4 py-3.5 font-semibold text-gray-900">Vacuum / Pneumatic</td>
+                    <td className="px-4 py-3.5 text-green-700 font-medium">✅ Best for tight spaces</td>
+                    <td className="px-4 py-3.5 text-gray-700">No pit, no shaft; self-supporting structure</td>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <td className="px-4 py-3.5 font-semibold text-gray-900">Hydraulic</td>
+                    <td className="px-4 py-3.5 text-amber-700 font-medium">⚠️ Moderate</td>
+                    <td className="px-4 py-3.5 text-gray-700">Needs shallow pit; suitable if ground space available</td>
+                  </tr>
+                  <tr className="bg-white">
+                    <td className="px-4 py-3.5 font-semibold text-gray-900">Gearless</td>
+                    <td className="px-4 py-3.5 text-amber-700 font-medium">⚠️ Moderate</td>
+                    <td className="px-4 py-3.5 text-gray-700">Best for homes under renovation with shaft provision</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 my-8">
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  What to Expect During a Retrofit Installation
+                </h3>
+                <ol className="space-y-3.5 list-decimal pl-5 text-gray-700 leading-relaxed text-sm sm:text-base">
+                  <li>
+                    <strong>Site Assessment</strong> — Engineers evaluate available space, structural walls, staircase void, and electrical capacity.
+                  </li>
+                  <li>
+                    <strong>Structural Modifications (if needed)</strong> — Creating a shaft opening in staircase void, reinforcing floor slab at pit level, or upgrading electrical panel.
+                  </li>
+                  <li>
+                    <strong>Timelines for Retrofits</strong> — MRL/Compact: 4-5 weeks. Vacuum: 2-3 weeks. Hydraulic: 5-7 weeks.
+                  </li>
+                  <li>
+                    <strong>Cost Impact</strong> — Retrofit adds 10-15% to base cost due to civil modifications. Free site inspection provides exact quote.
+                  </li>
+                </ol>
+              </div>
+
+              <div className="bg-emerald-50/70 p-6 rounded-2xl border border-emerald-200 flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3">
+                    📍 Case Highlight
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    Real Example: Retrofit in Kondapur
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                    We installed a compact MRL lift in a 5-year-old G+2 duplex in Kondapur. Fitted into existing staircase void with only 3 days of civil work. Total project completed in 5 weeks. Elderly parents can now access all floors independently.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-emerald-200/60 flex items-center justify-between text-xs text-emerald-900 font-semibold">
+                  <span>✓ 3 Days Civil Work</span>
+                  <span>✓ 5 Weeks Total</span>
+                  <span>✓ 100% Independent Access</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="cost" className="py-16 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Lift Installation Cost in Hyderabad
@@ -1189,28 +1526,299 @@ export default function HomeLiftInstallationHyderabadPage() {
           </div>
         </section>
 
-        <section id="process" className="py-16 scroll-mt-24">
+        <section id="quote-form" className="py-16 bg-slate-900 text-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+                Get a Free Home Lift Installation Quote &amp; Site Visit
+              </h2>
+              <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+                Our certified engineers will visit your property, assess shaft requirements, and provide a customized quote — within 24 hours. No obligation.
+              </p>
+            </div>
+            <LeadForm variant="standalone" />
+          </div>
+        </section>
+
+        <section id="process" className="py-16 bg-white scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              Our Installation Process & Timeline
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Our Installation Process &amp; Timeline
             </h2>
-            <div className="mb-8 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
+            <div className="mb-10 p-5 rounded-xl border border-green-200 bg-green-50/60 text-gray-800 font-medium leading-relaxed">
               <p className="text-sm sm:text-base">
                 {linkSeoKeywords(processIntro)}
               </p>
             </div>
-            <ol className="space-y-4 list-decimal pl-6 text-gray-700 leading-relaxed mb-8">
-              {processSteps.map((step) => (
-                <li key={step}>{linkSeoKeywords(step)}</li>
+
+            {/* Visual Step-by-Step Cards Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+              {[
+                {
+                  step: "01",
+                  title: "Free Consultation & Site Feasibility",
+                  duration: "Day 1–2",
+                  description:
+                    "Our senior engineers visit your property in Hyderabad, measure available space (staircase void, pit, overhead), check electrical capacity, and discuss your design preferences.",
+                  deliverable: "Feasibility Report + Preliminary Layout Drawing",
+                },
+                {
+                  step: "02",
+                  title: "Custom Design & Quotation",
+                  duration: "Day 3–5",
+                  description:
+                    "Based on site measurements, our engineering team creates customized 3D lift drawings, specifies component details, and provides a transparent, itemized quotation with zero hidden costs.",
+                  deliverable: "3D Design Drawings + Itemized Quote + Component Specs",
+                },
+                {
+                  step: "03",
+                  title: "Component Fabrication & Civil Prep",
+                  duration: "Week 2–4",
+                  description:
+                    "Lift components (cabin, guide rails, drive unit, doors) are precision-manufactured. Simultaneously, we coordinate with your civil team for pit preparation and shaft enclosure.",
+                  deliverable: "Civil Work Checklist + Delivery Schedule",
+                },
+                {
+                  step: "04",
+                  title: "Mechanical & Electrical Installation",
+                  duration: "Week 4–6",
+                  description:
+                    "Certified KAS engineers install guide rails, counterweight/hydraulic system, cabin structure, drive motor, electrical wiring, safety switches, and landing doors.",
+                  deliverable: "Installation Progress Updates + Stage Completion Sign-off",
+                },
+                {
+                  step: "05",
+                  title: "Rigorous 12-Point Safety Testing",
+                  duration: "Week 6–7",
+                  description:
+                    "Complete testing including load test (125%), emergency ARD simulated power failure, speed governor, door interlocks, battery backup, and ride quality checks.",
+                  deliverable: "12-Point Safety Certificate + Inspection Report",
+                },
+                {
+                  step: "06",
+                  title: "Handover & AMC Activation",
+                  duration: "Week 7",
+                  description:
+                    "Final handover with comprehensive homeowner orientation, operating manual, warranty documentation, Telangana Lift Act license support, and 1st-year free AMC activation.",
+                  deliverable: "Handover Certificate + Warranty Card + 1st Year Free AMC",
+                },
+              ].map((item) => (
+                <div
+                  key={item.step}
+                  className="rounded-2xl border border-gray-200 bg-gray-50/70 p-6 flex flex-col justify-between hover:border-emerald-500 hover:bg-white hover:shadow-xl transition-all duration-300 group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-md shadow-emerald-900/20 group-hover:scale-110 transition-transform">
+                        {item.step}
+                      </span>
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        ⏱️ {item.duration}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2.5">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-700 leading-relaxed mb-6">
+                      {item.description}
+                    </p>
+                  </div>
+                  <div className="pt-4 border-t border-gray-200/80">
+                    <span className="block text-[11px] uppercase tracking-wider font-bold text-emerald-800 mb-1">
+                      Key Deliverable:
+                    </span>
+                    <p className="text-xs font-semibold text-gray-900">
+                      📦 {item.deliverable}
+                    </p>
+                  </div>
+                </div>
               ))}
-            </ol>
-            <p className="text-gray-700 leading-relaxed rounded-xl border border-green-100 bg-green-50/60 px-5 py-4">
+            </div>
+
+            <p className="text-gray-700 leading-relaxed rounded-xl border border-green-200 bg-green-50/60 px-5 py-4">
               {linkSeoKeywords(processTimeline)}
             </p>
           </div>
         </section>
 
-        <section id="maintenance" className="py-16 bg-white scroll-mt-24">
+        <section id="walkthrough-video" className="py-16 bg-gray-50 border-y border-gray-200/80 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Watch: Complete Home Lift Installation Process in Hyderabad
+            </h2>
+            <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto mb-8 text-base sm:text-lg">
+              See how our certified engineering team installs a residential home lift — from initial site preparation to final safety testing and handover:
+            </p>
+
+            <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-gray-300 mb-4">
+              <video
+                src="/latest_home.mp4"
+                controls
+                preload="metadata"
+                className="absolute inset-0 w-full h-full object-cover"
+                title="Home Lift Installation in Hyderabad — Step-by-Step Walkthrough by Kashome Elevators"
+              />
+            </div>
+
+            <p className="text-sm text-gray-600 italic max-w-3xl mx-auto">
+              In this video: Site measurement, shaft preparation, guide rail alignment, cabin assembly, electrical wiring, 12-point safety testing, and client handover in a Hyderabad villa.
+            </p>
+          </div>
+        </section>
+
+        <section id="safety-compliance" className="py-16 bg-white border-y border-gray-100 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              Safety Standards &amp; Compliance in Our Installations
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-8 text-base sm:text-lg">
+              {linkSeoKeywords("Every KAS home lift installation adheres to rigorous safety and compliance standards.")}
+            </p>
+
+            <div className="grid lg:grid-cols-12 gap-8 mb-8">
+              {/* Left Column: Certifications & Telangana Lift Act */}
+              <div className="lg:col-span-6 space-y-6">
+                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    Certifications We Follow
+                  </h3>
+                  <ul className="space-y-3 list-disc pl-5 text-gray-700 leading-relaxed text-sm sm:text-base">
+                    <li>
+                      <strong>ISO 9001:2015</strong> — Quality Management System
+                    </li>
+                    <li>
+                      <strong>IS 14665</strong> — Bureau of Indian Standards for elevator safety
+                    </li>
+                    <li>
+                      <strong>EN 81-41 equivalent</strong> — European residential lift safety benchmarks
+                    </li>
+                    <li>
+                      <strong>Telangana Lift Act</strong> — All documentation handled by our team
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-emerald-50/70 rounded-2xl p-6 border border-emerald-200">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    What the Telangana Lift Act Requires
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3">
+                    Every elevator installation must be registered with the Electrical Inspectorate, issued a &ldquo;Permit to Erect&rdquo; before installation, and a &ldquo;License to Work&rdquo; after safety inspection.
+                  </p>
+                  <p className="text-emerald-950 font-bold text-sm sm:text-base bg-emerald-100/80 px-4 py-2.5 rounded-xl">
+                    ✓ KAS handles ALL documentation on your behalf.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column: 12-Point Safety Checklist */}
+              <div className="lg:col-span-6 bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-500/30">
+                    🛡️ Quality Assurance
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
+                    Our 12-Point Safety Checklist Before Handover
+                  </h3>
+                  <ol className="grid sm:grid-cols-2 gap-x-4 gap-y-2.5 text-xs sm:text-sm text-slate-200 list-decimal pl-5">
+                    <li>Load testing at 125% rated capacity</li>
+                    <li>Emergency stop function verification</li>
+                    <li>Automatic Rescue Device (ARD) test during simulated power cut</li>
+                    <li>Door interlock and sensor validation</li>
+                    <li>Overload protection activation test</li>
+                    <li>Emergency alarm and two-way communication check</li>
+                    <li>Battery backup duration test</li>
+                    <li>Speed governor function check</li>
+                    <li>Buffer compression test</li>
+                    <li>Pit switch and limit switch verification</li>
+                    <li>Fire-rated landing door check (where applicable)</li>
+                    <li>Final ride quality and noise measurement</li>
+                  </ol>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-800 text-xs text-emerald-400 font-semibold">
+                  Only after passing all 12 checks is the lift handed over to the homeowner.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="common-mistakes" className="py-16 bg-slate-900 text-white scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              7 Common Mistakes to Avoid During Home Lift Installation
+            </h2>
+            <p className="text-slate-300 leading-relaxed mb-10 text-base sm:text-lg">
+              After 500+ installations across Hyderabad, here are the costly mistakes homeowners make:
+            </p>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  num: "01",
+                  title: "Choosing the Cheapest Installer",
+                  desc: "Low-cost installers cut corners on components and safety testing, leading to breakdowns and higher long-term costs. Always verify certifications and ask for reference installations.",
+                },
+                {
+                  num: "02",
+                  title: "Skipping the Site Inspection",
+                  desc: "Every home is structurally unique. Installing without feasibility study leads to wrong lift type or inadequate shaft dimensions. KAS provides a free site inspection.",
+                },
+                {
+                  num: "03",
+                  title: "Ignoring Safety Certifications",
+                  desc: "Ensure your installer follows IS 14665 and Telangana Lift Act. Non-compliant installations risk legal penalties and insurance claim rejection.",
+                },
+                {
+                  num: "04",
+                  title: "Not Planning for Maintenance",
+                  desc: "A lift is a 15-20 year investment. Confirm AMC availability, emergency response time (KAS: within 4 hours), and spare parts availability before installation.",
+                },
+                {
+                  num: "05",
+                  title: "Underestimating Space Requirements",
+                  desc: "Shaft dimensions, pit depth, and overhead clearance vary by type. Wrong dimensions mean expensive rework. Our engineers provide exact drawings before civil work.",
+                },
+                {
+                  num: "06",
+                  title: "Not Considering Future Needs",
+                  desc: "Elderly parents moving in? Choose wheelchair-accessible cabin. Adding floors later? Select a lift supporting additional stops. Resale value? Premium finishes attract buyers.",
+                },
+                {
+                  num: "07",
+                  title: "Choosing Based Only on Brand Name",
+                  desc: "International brands charge 2-3× more with proprietary parts increasing AMC costs. Certified local installers like KAS offer same safety with lower lifecycle costs.",
+                },
+              ].map((m, idx) => (
+                <div
+                  key={m.num}
+                  className={`p-6 rounded-2xl bg-slate-800/90 border border-slate-700/80 hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col justify-between ${
+                    idx === 6 ? "md:col-span-2 lg:col-span-3" : ""
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        Mistake #{idx + 1}
+                      </span>
+                      <span className="text-2xl font-black text-slate-600">
+                        {m.num}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2.5">
+                      {m.title}
+                    </h3>
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                      {m.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="maintenance" className="py-16 bg-white border-y border-gray-100 scroll-mt-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Maintenance & After-Sales Support
@@ -1231,6 +1839,124 @@ export default function HomeLiftInstallationHyderabadPage() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section id="case-studies" className="py-16 scroll-mt-24">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Recent Home Lift Installation Projects in Hyderabad
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-10 text-base sm:text-lg">
+              Here are three real-world installation projects completed by Kashome Elevators:
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Project 1 */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-7 flex flex-col justify-between hover:border-green-600 hover:shadow-xl transition-all duration-300">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-4">
+                    📍 Jubilee Hills
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    Project 1: G+2 Villa in Jubilee Hills
+                  </h3>
+                  <ul className="space-y-2.5 text-sm text-gray-700 leading-relaxed mb-6">
+                    <li>
+                      <strong className="text-gray-900">Property Type:</strong> G+2 Independent Villa (4,500 sq.ft)
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Lift Type Installed:</strong> 4-Passenger MRL Home Lift
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Key Challenge:</strong> Premium interior design — client wanted the lift to match Italian marble flooring and teak-wood wall panels.
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Solution:</strong> Custom glass-and-gold cabin finish with concealed door frames. Installed in dedicated shaft provision created during construction.
+                    </li>
+                  </ul>
+                </div>
+                <div className="pt-4 border-t border-gray-200 text-xs space-y-1.5">
+                  <div className="flex justify-between font-semibold text-gray-900">
+                    <span>Timeline:</span>
+                    <span className="text-green-700">5 weeks to handover</span>
+                  </div>
+                  <div className="text-gray-600 italic">
+                    Result: Seamless luxury integration with whisper-quiet operation.
+                  </div>
+                </div>
+              </div>
+
+              {/* Project 2 */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-7 flex flex-col justify-between hover:border-green-600 hover:shadow-xl transition-all duration-300">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-4">
+                    📍 Gachibowli
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    Project 2: Retrofit in Gachibowli Duplex
+                  </h3>
+                  <ul className="space-y-2.5 text-sm text-gray-700 leading-relaxed mb-6">
+                    <li>
+                      <strong className="text-gray-900">Property Type:</strong> 8-Year-Old G+1 Duplex Apartment (3,200 sq.ft)
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Lift Type Installed:</strong> Compact Hydraulic Home Lift (2-Passenger)
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Key Challenge:</strong> No existing shaft provision; elderly family member recovering from knee surgery needed urgent access to 1st-floor bedroom.
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Solution:</strong> Installed compact hydraulic lift inside staircase void with only 4 days of minor civil work and shallow pit (200mm).
+                    </li>
+                  </ul>
+                </div>
+                <div className="pt-4 border-t border-gray-200 text-xs space-y-1.5">
+                  <div className="flex justify-between font-semibold text-gray-900">
+                    <span>Timeline:</span>
+                    <span className="text-green-700">4 weeks to commissioning</span>
+                  </div>
+                  <div className="text-gray-600 italic">
+                    Result: Complete mobility restored for elderly resident within one month.
+                  </div>
+                </div>
+              </div>
+
+              {/* Project 3 */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-7 flex flex-col justify-between hover:border-green-600 hover:shadow-xl transition-all duration-300">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-4">
+                    📍 Kompally
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    Project 3: Panoramic Glass Lift in Kompally Bungalow
+                  </h3>
+                  <ul className="space-y-2.5 text-sm text-gray-700 leading-relaxed mb-6">
+                    <li>
+                      <strong className="text-gray-900">Property Type:</strong> G+3 Luxury Bungalow (6,000 sq.ft)
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Lift Type Installed:</strong> 6-Passenger Panoramic Glass Lift (Gearless)
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Key Challenge:</strong> Client wanted a statement architectural piece visible from the central living area, serving 4 levels.
+                    </li>
+                    <li>
+                      <strong className="text-gray-900">Solution:</strong> Full round glass shaft with 360-degree panoramic glass cabin, stainless steel gold trim, and smart touch-screen controls.
+                    </li>
+                  </ul>
+                </div>
+                <div className="pt-4 border-t border-gray-200 text-xs space-y-1.5">
+                  <div className="flex justify-between font-semibold text-gray-900">
+                    <span>Timeline:</span>
+                    <span className="text-green-700">7 weeks total</span>
+                  </div>
+                  <div className="text-gray-600 italic">
+                    Result: Centerpiece architectural feature with significant property value appreciation.
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1306,19 +2032,16 @@ export default function HomeLiftInstallationHyderabadPage() {
 
         <section id="faqs" className="py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 text-center">
               Frequently Asked Questions (FAQs)
             </h2>
-            <ul className="space-y-6 list-none">
+            <div className="space-y-4 max-w-4xl mx-auto">
               {faqs.map((item, index) => (
-                <li key={item.question} className="text-gray-700 leading-relaxed">
-                  <h3 className="text-gray-900 font-bold mb-2">
-                    {index + 1}. {item.question}
-                  </h3>
-                  <p>{linkSeoKeywords(item.answer)}</p>
-                </li>
+                <FaqItem key={item.question} question={item.question} index={index}>
+                  {linkSeoKeywords(item.answer)}
+                </FaqItem>
               ))}
-            </ul>
+            </div>
           </div>
         </section>
 
