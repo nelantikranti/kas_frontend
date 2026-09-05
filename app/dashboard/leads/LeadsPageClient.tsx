@@ -17,6 +17,39 @@ import { LEAD_CONTACT_STATUSES } from "@/lib/leadContactStatuses";
 
 const stages: Lead["stage"][] = [...LEAD_FUNNEL_STAGES];
 
+const LEADS_FILTERS_STORAGE_KEY = "kas_leads_list_filters";
+
+type StoredLeadsFilters = {
+  groupId?: string;
+  source?: string;
+  state?: string;
+  bdmUserId?: string;
+  stage?: string;
+  contactStatus?: string;
+  search?: string;
+  page?: number;
+  perPage?: number;
+};
+
+function readStoredLeadsFilters(): StoredLeadsFilters {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = sessionStorage.getItem(LEADS_FILTERS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredLeadsFilters) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeStoredLeadsFilters(filters: StoredLeadsFilters) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(LEADS_FILTERS_STORAGE_KEY, JSON.stringify(filters));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
 function buildContactReportNotes(lead: Lead, data: any): string {
   return `
 BASIC LEAD DETAILS:
@@ -241,8 +274,9 @@ export default function LeadsPage() {
   const [orderLostReasonOther, setOrderLostReasonOther] = useState<string>("");
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(() => readStoredLeadsFilters().search || "");
   const [loading, setLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [newNote, setNewNote] = useState("");
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
@@ -274,17 +308,23 @@ export default function LeadsPage() {
   } | null>(null);
   const [stageChangeError, setStageChangeError] = useState<{ [key: string]: string }>({});
   const [groups, setGroups] = useState<{ id: string; groupName: string }[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
-  const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>("");
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(() => readStoredLeadsFilters().groupId || "");
+  const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>(() => readStoredLeadsFilters().source || "");
   const [availableStates, setAvailableStates] = useState<string[]>([]);
-  const [selectedState, setSelectedState] = useState<string>("");
-  const [selectedBdmUserId, setSelectedBdmUserId] = useState<string>("");
-  const [selectedStageFilter, setSelectedStageFilter] = useState<string>("");
-  const [selectedContactStatusFilter, setSelectedContactStatusFilter] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedState, setSelectedState] = useState<string>(() => readStoredLeadsFilters().state || "");
+  const [selectedBdmUserId, setSelectedBdmUserId] = useState<string>(() => readStoredLeadsFilters().bdmUserId || "");
+  const [selectedStageFilter, setSelectedStageFilter] = useState<string>(() => readStoredLeadsFilters().stage || "");
+  const [selectedContactStatusFilter, setSelectedContactStatusFilter] = useState<string>(() => readStoredLeadsFilters().contactStatus || "");
+  const [currentPage, setCurrentPage] = useState(() => {
+    const p = readStoredLeadsFilters().page;
+    return typeof p === "number" && p > 0 ? p : 1;
+  });
   const [totalLeads, setTotalLeads] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [leadsPerPage, setLeadsPerPage] = useState(20);
+  const [leadsPerPage, setLeadsPerPage] = useState(() => {
+    const n = readStoredLeadsFilters().perPage;
+    return typeof n === "number" && n > 0 ? n : 20;
+  });
   const [facebookConfigured, setFacebookConfigured] = useState(false);
   const [isBulkReassignModalOpen, setIsBulkReassignModalOpen] = useState(false);
   const [bulkReassignFromUserId, setBulkReassignFromUserId] = useState("");
@@ -438,18 +478,25 @@ export default function LeadsPage() {
     };
 
     loadUser();
-    // If coming from Groups page with a pre-selected groupId in URL, use it as initial filter
-    const initialGroupId = searchParams.get("groupId") || "";
-    const initialStage = searchParams.get("stage") || "";
-    if (initialStage) {
+    // URL params (e.g. from Groups/dashboard) override stored filters
+    const initialGroupId = searchParams.get("groupId") || selectedGroupId || "";
+    const initialStage = searchParams.get("stage") || selectedStageFilter || "";
+    if (searchParams.get("groupId")) {
+      setSelectedGroupId(initialGroupId);
+    }
+    if (searchParams.get("stage")) {
       setSelectedStageFilter(initialStage);
     }
-    if (initialGroupId) {
-      setSelectedGroupId(initialGroupId);
-      loadLeads({ groupId: initialGroupId, stage: initialStage || undefined, page: 1 });
-    } else {
-      loadLeads({ stage: initialStage || undefined, page: 1 });
-    }
+    loadLeads({
+      groupId: initialGroupId || undefined,
+      stage: initialStage || undefined,
+      state: selectedState || undefined,
+      source: selectedSourceFilter || undefined,
+      contactStatus: selectedContactStatusFilter || undefined,
+      assignedToUserId: selectedBdmUserId || undefined,
+      search: searchTerm || undefined,
+      page: currentPage,
+    });
 
     const loadGroups = async () => {
       try {
@@ -490,14 +537,39 @@ export default function LeadsPage() {
     };
   }, []);
 
-  // Reload list after returning from edit lead page
+  // Reload list after returning from edit lead page (keep filters; strip refresh only)
   useEffect(() => {
     if (searchParams.get("refresh") === "1") {
       loadLeads({ page: currentPage });
-      router.replace("/dashboard/leads");
+      router.replace("/dashboard/leads", { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Persist filters so they survive edit/detail navigation
+  useEffect(() => {
+    writeStoredLeadsFilters({
+      groupId: selectedGroupId,
+      source: selectedSourceFilter,
+      state: selectedState,
+      bdmUserId: selectedBdmUserId,
+      stage: selectedStageFilter,
+      contactStatus: selectedContactStatusFilter,
+      search: searchTerm,
+      page: currentPage,
+      perPage: leadsPerPage,
+    });
+  }, [
+    selectedGroupId,
+    selectedSourceFilter,
+    selectedState,
+    selectedBdmUserId,
+    selectedStageFilter,
+    selectedContactStatusFilter,
+    searchTerm,
+    currentPage,
+    leadsPerPage,
+  ]);
 
   useEffect(() => {
     if (!isAssignModalOpen && !isModalOpen) return;
@@ -772,6 +844,7 @@ export default function LeadsPage() {
       setTotalPages(typeof tp === "number" ? tp : 1);
       setBackendConnected(true);
       setAccessDenied(false);
+      setHasLoadedOnce(true);
     } catch (error: any) {
       console.error("Failed to load leads:", error);
       const status = error?.status;
@@ -783,10 +856,12 @@ export default function LeadsPage() {
         setLeadList([]);
         setTotalLeads(0);
         setTotalPages(1);
+        setHasLoadedOnce(true);
         // Do not set backendConnected = false so we don't show connection banner
       } else {
         setAccessDenied(false);
         setBackendConnected(false);
+        setHasLoadedOnce(true);
         if (errorMessage.includes("Unable to connect") || errorMessage.includes("Failed to fetch") || errorMessage.includes("ERR_CONNECTION_REFUSED")) {
           toast.error("Unable to connect. Please try again later.");
         } else {
@@ -2278,7 +2353,7 @@ NEXT ACTION:
     return filtered.slice(0, 25);
   }, [salesExecutiveSuggestions, newLead.assignedTo]);
 
-  if (loading) {
+  if (loading && !hasLoadedOnce) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-500">Loading leads...</div>
