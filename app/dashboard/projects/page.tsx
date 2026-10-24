@@ -230,13 +230,13 @@ export default function ProjectsPage() {
 
   const handleStageChange = async (projectId: string, newStage: ProjectStage) => {
     try {
-      await projectsAPI.update(projectId, { currentStage: newStage });
+      const updated = await projectsAPI.update(projectId, { currentStage: newStage });
       const updatedProjects = projectList.map(project => {
         if (project.id === projectId) {
           const stageIndex = projectStages.indexOf(newStage);
           // Calculate progress: current stage index (0-based) + 1, divided by total stages
           const progress = stageIndex >= 0 ? Math.round(((stageIndex + 1) / projectStages.length) * 100) : 0;
-          return { ...project, currentStage: newStage, progress };
+          return { ...project, currentStage: newStage, progress, stageHistory: updated?.stageHistory ?? project.stageHistory };
         }
         return project;
       });
@@ -609,13 +609,26 @@ export default function ProjectsPage() {
     }
   };
 
-  const timelineItems = selectedProject
-    ? projectStages.map((stage) => ({
-        stage,
-        completed: projectStages.indexOf(stage) < projectStages.indexOf(selectedProject.currentStage),
-        date: selectedProject.startDate,
-      }))
-    : [];
+  const timelineItems = (() => {
+    if (!selectedProject) return [];
+    let previousDate = "";
+    return projectStages.map((stage) => {
+      const completed = projectStages.indexOf(stage) < projectStages.indexOf(selectedProject.currentStage);
+      let date: string | undefined;
+      if (completed) {
+        const ownDate =
+          selectedProject.stageHistory?.find((h) => h.stage === stage)?.completedAt?.split("T")[0] ||
+          (selectedProject.documents || [])
+            .filter((d) => d.stage === stage && d.uploadedDate)
+            .map((d) => d.uploadedDate.split("T")[0])
+            .sort()[0] ||
+          selectedProject.startDate;
+        date = ownDate && ownDate > previousDate ? ownDate : previousDate || ownDate;
+        previousDate = date || previousDate;
+      }
+      return { stage, completed, date };
+    });
+  })();
 
   // Filter projects based on search query
   const filteredProjects = useMemo(() => {

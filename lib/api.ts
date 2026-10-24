@@ -353,6 +353,10 @@ export interface Project {
   location: string;
   elevatorType: string;
   currentStage: ProjectStage;
+  stageHistory?: Array<{
+    stage: string;
+    completedAt: string;
+  }>;
   startDate: string;
   expectedCompletion: string;
   progress: number;
