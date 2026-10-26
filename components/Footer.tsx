@@ -28,6 +28,10 @@ export default function Footer() {
       text: "212, 2nd Floor, Levana Cyber Heights, Vibhuti Khand, Gomti Nagar, Lucknow-226010",
       mapUrl: "https://www.google.com/maps/search/?api=1&query=350-A+Vishal+Khand+Gomti+Nagar+Lucknow+UP"
     },
+    {
+      text: "1st floor, Ladlee Towers, Mahakavi vylopilli rd, THAMMANAM, KOCHI, kerala, 682032",
+      mapUrl: "https://share.google/LeiCuxe9t62lydfW7"
+    },
   ];
 
   const quickLinks = [
@@ -47,9 +51,9 @@ export default function Footer() {
   return (
     <footer className="bg-green-100 text-gray-700 py-8 sm:py-12">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-4 sm:mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 sm:gap-8 mb-4 sm:mb-5">
           {/* Company Introduction */}
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className="sm:col-span-2 lg:col-span-3">
             <div className="mb-4">
               <Link href="/" className="block">
                 <div className="text-2xl sm:text-3xl font-bold mb-2 hover:opacity-80 transition-opacity cursor-pointer">
@@ -64,7 +68,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="lg:col-span-2">
             <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Quick Links</h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               {quickLinks.map((link) => (
@@ -81,7 +85,7 @@ export default function Footer() {
           </div>
 
           {/* Follow Us & Contact */}
-          <div>
+          <div className="lg:col-span-2">
             <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Follow us</h4>
             <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <a 
@@ -130,9 +134,9 @@ export default function Footer() {
           </div>
 
           {/* Address */}
-          <div>
+          <div className="sm:col-span-2 lg:col-span-5">
             <h4 className="text-green-700 font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Address</h4>
-            <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 sm:gap-y-3 text-xs sm:text-sm">
               {addresses.map((address, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <IoLocation className="w-3 h-3 sm:w-4 sm:h-4 text-green-700 flex-shrink-0 mt-1" />
